@@ -2,6 +2,7 @@ local base = require( "radical.base" )
 local print = print
 local unpack = unpack
 local debug = debug
+local type = type
 local setmetatable = setmetatable
 local color     = require( "gears.color"      )
 local wibox     = require( "wibox"            )
@@ -11,6 +12,7 @@ local awful     = require( "awful"            )
 local util      = require( "awful.util"       )
 local button    = require( "awful.button"     )
 local layout    = require( "radical.layout"   )
+local checkbox  = require( "radical.widgets.checkbox" )
 local arrow_style = require( "radical.style.arrow" )
 
 local capi,module = { mouse = mouse , screen = screen , keygrabber = keygrabber },{}
@@ -134,6 +136,8 @@ local function setup_drawable(data)
   function internal:set_visible(value)
     internal.w.visible = value
   end
+  local fit_w,fit_h = data._internal.layout:fit()
+  data.width = fit_w
 end
 
 local function setup_item(data,item,args)
@@ -163,9 +167,14 @@ local function setup_item(data,item,args)
 
   --Be sure to always hide sub menus, even when data.visible is set manually
   data:connect_signal("visible::changed",function(_,vis)
-  if data._tmp_menu and data.visible == false then
-        data._tmp_menu.visible = false
-      end
+    if data._tmp_menu and data.visible == false then
+      data._tmp_menu.visible = false
+    end
+  end)
+  data:connect_signal("parent_geometry::changed",function(_,vis)
+    local fit_w,fit_h = data._internal.layout:fit()
+    data.height = fit_h
+    data.style(data)
   end)
   item.widget:buttons( util.table.join(unpack(buttons)))
 
@@ -219,6 +228,22 @@ local function setup_item(data,item,args)
       return wibox.widget.background.fit(box,w,h,...)
     end
   end
+  if item.checkable then
+    item._internal.get_map.checked = function()
+      if type(item._private_data.checked) == "function" then
+        return item._private_data.checked()
+      else
+        return item._private_data.checked
+      end
+    end
+    local ck = wibox.widget.imagebox()
+    ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
+    lr:add(ck)
+    item._internal.set_map.checked = function (value)
+      item._private_data.checked = value
+      ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
+    end
+  end
   if args.suffix_widget then
     lr:add(args.suffix_widget)
   end
@@ -227,7 +252,6 @@ local function setup_item(data,item,args)
   item.widget:set_widget(m)
   local fit_w,fit_h = data._internal.layout:fit()
   data.height = fit_h
---   data.width = fit_w
   data.style(data)
 end
 
@@ -241,6 +265,9 @@ local function new(args)
     args.internal.setup_item     = args.internal.setup_item or setup_item
     args.style = args.style or arrow_style
     local ret = base(args)
+    ret:connect_signal("clear::menu",function(_,vis)
+      ret._internal.layout:reset()
+    end)
     return ret
 end
 

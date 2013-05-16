@@ -115,6 +115,8 @@ function add_item(data,args)
       sub_menu_m = (args.sub_menu and type(args.sub_menu) == "table" and args.sub_menu.is_menu) and args.sub_menu or nil,
       sub_menu_f = (args.sub_menu and type(args.sub_menu) == "function") and args.sub_menu or nil,
       selected   = false,
+      checkable  = args.checkable or (args.checked ~= nil) or false,
+      checked    = args.checked or false,
     },
     force_private = {
       visible = true,
@@ -128,6 +130,7 @@ function add_item(data,args)
     autogen_signals = true,
   })
   item._private_data = private_data
+  item._internal = {get_map=get_map,set_map=set_map}
 
   for i=1,10 do
     item["button"..i] = args["button"..i]
@@ -136,7 +139,7 @@ function add_item(data,args)
   set_map.selected = function(value)
     private_data.selected = value
     if value == false then
-      data.item_style(data,item,false,false)
+      data.item_style(data,item,false--[[ or (item._tmp_menu ~= nil and item._tmp_menu == data._tmp_menu)]],false)
       return
     end
     if data._current_item and data._current_item ~= item then
@@ -149,12 +152,14 @@ function add_item(data,args)
     end
     if (private_data.sub_menu_f  or private_data.sub_menu_m)and data._current_item ~= item then
       local sub_menu = private_data.sub_menu_m or private_data.sub_menu_f()
-      sub_menu.arrow_type = module.arrow_type.NONE
-      sub_menu.parent_item = item
-      sub_menu.parent_geometry = data
-      sub_menu.visible = true
-      item._tmp_menu = sub_menu
-      data._tmp_menu = sub_menu
+      if sub_menu then
+        sub_menu.arrow_type = module.arrow_type.NONE
+        sub_menu.parent_item = item
+        sub_menu.parent_geometry = data
+        sub_menu.visible = true
+        item._tmp_menu = sub_menu
+        data._tmp_menu = sub_menu
+      end
     end
     data.item_style(data,item,true,false)
     data._current_item = item
@@ -305,6 +310,11 @@ local function new(args)
         internal.filter_hooks = internal.filter_hooks or {}
         internal.filter_hooks[{key = key, event = event, mod = mod}] = func
     end
+  end
+
+  function data:clear()
+    internal.items = {}
+    data:emit_signal("clear::menu")
   end
 
   if private_data.layout then
