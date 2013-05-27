@@ -138,123 +138,12 @@ local function setup_drawable(data)
   end
   local fit_w,fit_h = data._internal.layout:fit()
   data.width = fit_w
+  data.height = fit_h
 end
 
 local function setup_item(data,item,args)
-  --Create the background
-  item.widget = wibox.widget.background()
-  data.item_style(data,item,false,false)
-  item.widget:set_fg(item._private_data.fg)
-
-  --Event handling
-  item.widget:connect_signal("mouse::enter", function() item.selected = true end)
-  item.widget:connect_signal("mouse::leave", function() item.selected = false end)
-  data._internal.layout:add(item)
-  local buttons = {}
-  for i=1,10 do
-    if args["button"..i] then
-      buttons[#buttons+1] = button({},i,args["button"..i])
-    end
-  end
-  if not buttons[3] then --Hide on right click
-    buttons[#buttons+1] = button({},3,function()
-      data.visible = false
-      if data.parent_geometry and data.parent_geometry.is_menu then
-        data.parent_geometry.visible = false
-      end
-    end)
-  end
-
-  --Be sure to always hide sub menus, even when data.visible is set manually
-  data:connect_signal("visible::changed",function(_,vis)
-    if data._tmp_menu and data.visible == false then
-      data._tmp_menu.visible = false
-    end
-  end)
-  data:connect_signal("parent_geometry::changed",function(_,vis)
-    local fit_w,fit_h = data._internal.layout:fit()
-    data.height = fit_h
-    data.style(data)
-  end)
-  item.widget:buttons( util.table.join(unpack(buttons)))
-
-  --Create the main item layout
-  local l,la,lr = wibox.layout.fixed.horizontal(),wibox.layout.align.horizontal(),wibox.layout.fixed.horizontal()
-  local m = wibox.layout.margin(la)
-  m:set_margins (0)
-  m:set_left  ( data.item_style.margins.LEFT   )
-  m:set_right ( data.item_style.margins.RIGHT  )
-  m:set_top   ( data.item_style.margins.TOP    )
-  m:set_bottom( data.item_style.margins.BOTTOM )
-  local text_w = wibox.widget.textbox()
-  item._private_data._fit = wibox.widget.background.fit
-  m.fit = function(...)
-      if item.visible == false or item._filter_out == true then
-        return 0,0
-      end
-      return data._internal.layout.item_fit(data,item,...)
-  end
-  
-  if data.fkeys_prefix == true then
-    local pref = wibox.widget.textbox()
-    pref.draw = function(self,w, cr, width, height)
-      cr:set_source(color(beautiful.fg_normal))
-      cr:paint()
-      wibox.widget.textbox.draw(self,w, cr, width, height)
-    end
-    pref:set_markup("<span fgcolor='".. beautiful.bg_normal .."'><tt><b>F11</b></tt></span>")
-    l:add(pref)
-    m:set_left  ( 0 )
-  end
-
-  if args.prefix_widget then
-    l:add(args.prefix_widget)
-  end
-
-  if args.icon then
-    local icon = wibox.widget.imagebox()
-    icon:set_image(args.icon)
-    l:add(icon)
-  end
-  text_w:set_markup(item._private_data.text)
-  l:add(text_w)
-  if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
-    local subArrow  = wibox.widget.imagebox() --TODO, make global
-    subArrow.fit = function(box, w, h) return subArrow._image:get_width(),item.height end
-    subArrow:set_image( beautiful.menu_submenu_icon   )
-    lr:add(subArrow)
-    item.widget.fit = function(box,w,h,...)
-      args.y = data.height-h-data.margins.top
-      return wibox.widget.background.fit(box,w,h,...)
-    end
-  end
-  if item.checkable then
-    item._internal.get_map.checked = function()
-      if type(item._private_data.checked) == "function" then
-        return item._private_data.checked()
-      else
-        return item._private_data.checked
-      end
-    end
-    local ck = wibox.widget.imagebox()
-    ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
-    lr:add(ck)
-    item._internal.set_map.checked = function (value)
-      item._private_data.checked = value
-      ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
-    end
-  end
-  if args.suffix_widget then
-    lr:add(args.suffix_widget)
-  end
-  la:set_left(l)
-  la:set_right(lr)
-  item.widget:set_widget(m)
-  local fit_w,fit_h = data._internal.layout:fit()
-  data.height = fit_h
-  data.style(data)
+  (data._internal.layout.setup_item or layout.vertical.setup_item)(data._internal.layout,data,item,args)
 end
-
 
 local function new(args)
     local args = args or {}
