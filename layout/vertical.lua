@@ -6,6 +6,7 @@ local button    = require( "awful.button"     )
 local checkbox  = require( "radical.widgets.checkbox" )
 local beautiful = require("beautiful")
 local wibox     = require( "wibox" )
+local color     = require( "gears.color"      )
 
 local module = {}
 
