@@ -127,11 +127,11 @@ function module:setup_item(data,item,args)
     l:add(args.prefix_widget)
   end
 
+  local icon = wibox.widget.imagebox()
   if args.icon then
-    local icon = wibox.widget.imagebox()
     icon:set_image(args.icon)
-    l:add(icon)
   end
+  l:add(icon)
   text_w:set_markup(item._private_data.text)
   l:add(text_w)
   if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
@@ -170,6 +170,12 @@ function module:setup_item(data,item,args)
   data.width = fit_w
   data.height = fit_h
   data.style(data)
+  item._internal.set_map.text = function (value)
+    text_w:set_markup(value)
+  end
+  item._internal.set_map.icon = function (value)
+    icon:set_image(value)
+  end
 end
 
 local function new(data)

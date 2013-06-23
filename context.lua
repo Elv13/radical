@@ -142,7 +142,7 @@ local function setup_drawable(data)
 end
 
 local function setup_item(data,item,args)
-  (data._internal.layout.setup_item or layout.vertical.setup_item)(data._internal.layout,data,item,args)
+  ;(data._internal.layout.setup_item or layout.vertical.setup_item)(data._internal.layout,data,item,args);
 end
 
 local function new(args)

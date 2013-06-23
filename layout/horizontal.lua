@@ -125,14 +125,15 @@ function module:setup_item(data,item,args)
     l:add(args.prefix_widget)
   end
 
+  
+  local icon_flex = wibox.layout.align.horizontal()
+  local icon = wibox.widget.imagebox()
+  icon.fit = function(...) return icon_fit(data,...) end
   if args.icon then
-    local icon_flex = wibox.layout.align.horizontal()
-    local icon = wibox.widget.imagebox()
-    icon.fit = function(...) return icon_fit(data,...) end
     icon:set_image(args.icon)
-    icon_flex:set_middle(icon)
-    l:add(icon_flex)
   end
+  icon_flex:set_middle(icon)
+  l:add(icon_flex)
   text_w:set_markup(item._private_data.text)
   l:add(text_w)
   if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
@@ -171,6 +172,12 @@ function module:setup_item(data,item,args)
   data.width = fit_w
   data.height = fit_h
   data.style(data)
+  item._internal.set_map.text = function (value)
+    text_w:set_markup(value)
+  end
+  item._internal.set_map.icon = function (value)
+    icon:set_image(value)
+  end
 end
 
 --Get preferred item geometry
