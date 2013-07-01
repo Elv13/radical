@@ -134,7 +134,6 @@ function module:setup_item(data,item,args)
   end
   icon_flex:set_middle(icon)
   l:add(icon_flex)
-  text_w:set_markup(item._private_data.text)
   l:add(text_w)
   if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
     local subArrow  = wibox.widget.imagebox() --TODO, make global
@@ -173,11 +172,21 @@ function module:setup_item(data,item,args)
   data.height = fit_h
   data.style(data)
   item._internal.set_map.text = function (value)
-    text_w:set_markup(value)
+    text_w:set_markup(value)    
+    if data.auto_resize then
+      local fit_w,fit_h = text_w:fit(999,9999)
+      local is_largest = item == data._internal.largest_item_h
+      --TODO find new largest is item is smaller
+      if not data._internal.largest_item_h_v or data._internal.largest_item_h_v < fit_h then
+        data._internal.largest_item_h =item
+        data._internal.largest_item_h_v = fit_h
+      end
+    end
   end
   item._internal.set_map.icon = function (value)
     icon:set_image(value)
   end
+  item._internal.set_map.text(item._private_data.text)
 end
 
 --Get preferred item geometry
@@ -190,7 +199,12 @@ local function new(data)
   local l = wibox.layout.fixed.horizontal()
   l.fit = function(a1,a2,a3)
     local result,r2 = wibox.layout.fixed.fit(a1,99999,99999)
-    return data.rowcount*(data.item_width or data.default_width),data.item_height
+--     return data.rowcount*(data.item_width or data.default_width),data.item_height
+    if data.auto_resize and data._internal.largest_item_h then
+      return data.rowcount*(data.item_width or data.default_width),data._internal.largest_item_h_v > data.item_height and data._internal.largest_item_h_v or data.item_height
+    else
+      return data.rowcount*(data.item_width or data.default_width),data.item_height
+    end
   end
   l.add = function(l,item)
     return wibox.layout.fixed.add(l,item.widget)

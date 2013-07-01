@@ -216,7 +216,8 @@ local function new(data)
     local result,r2 = wibox.layout.fixed.fit(a1,99999,99999)
     local total = data._total_item_height
     if data.auto_resize and data._internal.largest_item_w then
-      return data._internal.largest_item_w_v+100,(total and total > 0 and total or data.rowcount*data.item_height) + (filter_tb and data.item_height or 0)
+      return data._internal.largest_item_w_v+100 > data.default_width and data._internal.largest_item_w_v+100 or data.default_width
+        ,(total and total > 0 and total or data.rowcount*data.item_height) + (filter_tb and data.item_height or 0)
     else
       return data.default_width, (total and total > 0 and total or data.rowcount*data.item_height) + (filter_tb and data.item_height or 0)
     end
