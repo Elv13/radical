@@ -16,7 +16,7 @@ local module = {
     CENTERED = 2,
 }}
 
-function filter(data)
+local function filter(data)
   local fs,visible_counter = data.filter_string:lower(),0
   for k,v in pairs(data.items) do
     local tmp = v[1]._filter_out
