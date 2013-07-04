@@ -7,6 +7,7 @@ local checkbox  = require( "radical.widgets.checkbox" )
 local beautiful = require("beautiful")
 local wibox     = require( "wibox" )
 local color     = require( "gears.color"      )
+local cairo      = require( "lgi"            ).cairo
 
 local module = {}
 
@@ -56,13 +57,38 @@ local function item_fit(data,item,...)
   if item._internal.has_changed and data.visible then
     w, h = item._private_data._fit(...)
     item._internal.has_changed = false
+    item._internal.pix_cache = {} --Clear the pimap cache
   end
   return w, item._private_data.height or h
 end
 
+-- As of July 2013, LGI is too slow to redraw big menus at ok speed
+-- This do a pixmap cache to allow pre-rendering
+local function cache_pixmap(item)
+  item._internal.pix_cache = {}
+  item.widget._draw = item.widget.draw
+  item.widget.draw = function(self,wibox, cr, width, height)
+    if item._internal.pix_cache[10*width+7*height+(item.selected and 8888 or 999)] then
+      cr:set_source_surface(item._internal.pix_cache[10*width+7*height+(item.selected and 8888 or 999)])
+      cr:paint()
+    else
+      local img5 = cairo.ImageSurface.create(cairo.Format.ARGB32, width, height)
+      local cr5 = cairo.Context(img5)
+      item.widget._draw(self,wibox, cr5, width, height)
+      cr:set_source_surface(img5)
+      cr:paint()
+      item._internal.pix_cache[10*width+7*height+(item.selected and 8888 or 999)] = img5
+      return
+    end
+  end
+end
+
+
 function module:setup_item(data,item,args)
-    --Create the background
+  --Create the background
   item.widget = wibox.widget.background()
+  cache_pixmap(item)
+  
   data.item_style(data,item,false,false)
   item.widget:set_fg(item._private_data.fg)
   item._internal.has_changed = true
