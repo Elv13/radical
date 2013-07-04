@@ -191,6 +191,23 @@ function module:setup_item(data,item,args)
   item._internal.set_map.text(item._private_data.text)
 end
 
+local function compute_geo(data)
+  local w = data.default_width
+  if data.auto_resize and data._internal.largest_item_w then
+    w = data._internal.largest_item_w_v+100 > data.default_width and data._internal.largest_item_w_v+100 or data.default_width
+  end
+  if not data._internal.has_widget then
+    return w,(total and total > 0 and total or data.rowcount*data.item_height) + (filter_tb and data.item_height or 0)
+  else
+    local h = (data.rowcount-#data._internal.widgets)*data.item_height
+    for k,v in ipairs(data._internal.widgets) do
+      local fw,fh = v.widget:fit(9999,9999)
+      h = h + fh
+    end
+    return w,h
+  end
+end
+
 local function new(data)
   local l,real_l = wibox.layout.fixed.vertical(),nil
   local filter_tb = nil
@@ -215,12 +232,7 @@ local function new(data)
   real_l.fit = function(a1,a2,a3)
     local result,r2 = wibox.layout.fixed.fit(a1,99999,99999)
     local total = data._total_item_height
-    if data.auto_resize and data._internal.largest_item_w then
-      return data._internal.largest_item_w_v+100 > data.default_width and data._internal.largest_item_w_v+100 or data.default_width
-        ,(total and total > 0 and total or data.rowcount*data.item_height) + (filter_tb and data.item_height or 0)
-    else
-      return data.default_width, (total and total > 0 and total or data.rowcount*data.item_height) + (filter_tb and data.item_height or 0)
-    end
+    return compute_geo(data)
   end
   real_l.add = function(real_l,item)
     return wibox.layout.fixed.add(l,item.widget)

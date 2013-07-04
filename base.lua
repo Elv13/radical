@@ -99,7 +99,7 @@ end
 
 
 ---------------------------------ITEM HANDLING----------------------------------
-function add_item(data,args)
+local function add_item(data,args)
   local args = args or {}
   local item,set_map,get_map,private_data = object({
     private_data = {
@@ -175,11 +175,54 @@ function add_item(data,args)
 end
 
 
+local function add_widget(data,widget,args)
+  args = args or {}
+  data._internal.has_widget = true
+  widget._fit = widget.fit
+  widget.fit = function(...)
+    local w,h = widget._fit(...)
+    return args.width or w,args.height or h
+  end
+
+  local item,set_map,get_map,private_data = object({
+    private_data = {
+      widget = widget,
+      selected = false,
+    },
+    force_private = {
+      visible = true,
+      selected = true,
+    },
+    get_map = {
+      y = function() return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height end, --Hack around missing :fit call for last item
+    },
+    autogen_getmap  = true,
+    autogen_setmap  = true,
+    autogen_signals = true,
+  })
+  item._private_data = private_data
+  item._internal = {get_map=get_map,set_map=set_map}
+  
+  data._internal.widgets[#data._internal.widgets+1] = item
+  data._internal.items[#data._internal.items+1] = {item}
+  data._internal.layout:add(item)
+  if data.visible then
+    local fit_w,fit_h = data._internal.layout:fit()
+    data.width = fit_w
+    data.height = fit_h
+  end
+end
+
+local function add_embeded_menu(data,menu)
+  
+end
+
 
 ---------------------------------MENU HANDLING----------------------------------
 local function new(args)
   local internal,args = args.internal or {},args or {}
   if not internal.items then internal.items = {} end
+  if not internal.widgets then internal.widgets = {} end
 
   -- All the magic in the universe
   local data,set_map,get_map,private_data = object({
@@ -238,7 +281,7 @@ local function new(args)
     autogen_signals = true,
   })
   internal.get_map,internal.set_map,internal.private_data = get_map,set_map,private_data
-  data.add_item,data._internal = add_item,internal
+  data.add_item,data.add_widget,data.add_embeded_menu,data._internal = add_item,add_widget,add_embeded_menu,internal
 
   set_map.parent_geometry = function(value)
     private_data.parent_geometry = value
@@ -251,6 +294,11 @@ local function new(args)
   end
 
   set_map.visible = function(value)
+    if value then
+      local fit_w,fit_h = data._internal.layout:fit()
+      data.width = fit_w
+      data.height = fit_h
+    end
     if internal.has_changed and data.style then
       data.style(data,{arrow_x=20,margin=internal.margin})
     end
