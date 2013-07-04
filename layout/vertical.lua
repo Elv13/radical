@@ -208,7 +208,7 @@ local function compute_geo(data)
     w = data._internal.largest_item_w_v+100 > data.default_width and data._internal.largest_item_w_v+100 or data.default_width
   end
   if not data._internal.has_widget then
-    return w,(total and total > 0 and total or data.rowcount*data.item_height) + (filter_tb and data.item_height or 0)
+    return w,(total and total > 0 and total or data.rowcount*data.item_height) + (data._internal.filter_tb and data.item_height or 0)
   else
     local h = (data.rowcount-#data._internal.widgets)*data.item_height
     for k,v in ipairs(data._internal.widgets) do
@@ -237,6 +237,7 @@ local function new(data)
       filter_tb:set_markup("<b>Filter:</b> "..data.filter_string)
     end)
     real_l:add(bg)
+    data._internal.filter_tb = filter_tb
   else
     real_l = l
   end
