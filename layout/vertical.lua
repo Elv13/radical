@@ -133,6 +133,10 @@ function module:setup_item(data,item,args)
   end
 
   local icon = wibox.widget.imagebox()
+  icon.fit = function(...)
+    local w,h = wibox.widget.imagebox.fit(...)
+    return w+3,h
+  end
   if args.icon then
     icon:set_image(args.icon)
   end
@@ -145,7 +149,7 @@ function module:setup_item(data,item,args)
     lr:add(subArrow)
     item.widget.fit = function(box,w,h,...)
       args.y = data.height-h-data.margins.top
-      return item._internal.cache_w,item._internal.cache_h
+      return wibox.widget.background.fit(box,w,h)
     end
   end
   if item.checkable then
