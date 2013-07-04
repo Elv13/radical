@@ -95,7 +95,7 @@ local function setup_drawable(data)
   get_map.y         = function() return internal.w.y end
   get_map.width     = function() return internal.w.width end
   get_map.height    = function() return internal.w.height end
-  get_map.visible   = function() return internal.w.visible end
+  get_map.visible   = function() return private_data.visible end
   get_map.direction = function() return private_data.direction end
   get_map.margins   = function()
     local ret = {left=data.border_width,right=data.border_width,top=data.style.margins.TOP,bottom=data.style.margins.BOTTOM}

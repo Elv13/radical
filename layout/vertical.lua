@@ -52,7 +52,11 @@ end
 
 --Get preferred item geometry
 local function item_fit(data,item,...)
-  local w, h = item._private_data._fit(...)
+  local w, h = item._internal.cache_w or 1,item._internal.cache_h or 1
+  if item._internal.has_changed and data.visible then
+    w, h = item._private_data._fit(...)
+    item._internal.has_changed = false
+  end
   return w, item._private_data.height or h
 end
 
@@ -61,6 +65,7 @@ function module:setup_item(data,item,args)
   item.widget = wibox.widget.background()
   data.item_style(data,item,false,false)
   item.widget:set_fg(item._private_data.fg)
+  item._internal.has_changed = true
 
   --Event handling
   item.widget:connect_signal("mouse::enter", function() item.selected = true end)
@@ -105,10 +110,10 @@ function module:setup_item(data,item,args)
   local text_w = wibox.widget.textbox()
   item._private_data._fit = wibox.widget.background.fit
   m.fit = function(...)
-      if item.visible == false or item._filter_out == true then
-        return 0,0
-      end
-      return data._internal.layout.item_fit(data,item,...)
+    if not data.visible or (item.visible == false or item._filter_out == true) then
+      return 1,1
+    end
+    return data._internal.layout.item_fit(data,item,...)
   end
 
   if data.fkeys_prefix == true then
@@ -140,7 +145,7 @@ function module:setup_item(data,item,args)
     lr:add(subArrow)
     item.widget.fit = function(box,w,h,...)
       args.y = data.height-h-data.margins.top
-      return wibox.widget.background.fit(box,w,h,...)
+      return item._internal.cache_w,item._internal.cache_h
     end
   end
   if item.checkable then
@@ -157,6 +162,7 @@ function module:setup_item(data,item,args)
     item._internal.set_map.checked = function (value)
       item._private_data.checked = value
       ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
+      item._internal.has_changed = true
     end
   end
   if args.suffix_widget then
@@ -174,6 +180,7 @@ function module:setup_item(data,item,args)
     if data.auto_resize then
       local fit_w,fit_h = text_w:fit(999,9999)
       local is_largest = item == data._internal.largest_item_w
+      item._internal.has_changed = true
       if not data._internal.largest_item_w_v or data._internal.largest_item_w_v < fit_w then
         data._internal.largest_item_w = item
         data._internal.largest_item_w_v = fit_w
@@ -230,6 +237,7 @@ local function new(data)
     real_l = l
   end
   real_l.fit = function(a1,a2,a3)
+    if not data.visible then return 1,1 end
     local result,r2 = wibox.layout.fixed.fit(a1,99999,99999)
     local total = data._total_item_height
     return compute_geo(data)

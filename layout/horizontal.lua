@@ -191,6 +191,7 @@ end
 
 --Get preferred item geometry
 local function item_fit(data,item,...)
+  if not data.visible then return 1,1 end
   local w, h = item._private_data._fit(...)
   return data.item_width or 70, item._private_data.height or h
 end

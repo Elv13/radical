@@ -294,6 +294,7 @@ local function new(args)
   end
 
   set_map.visible = function(value)
+    private_data.visible = value
     if value then
       local fit_w,fit_h = data._internal.layout:fit()
       data.width = fit_w
@@ -308,7 +309,6 @@ local function new(args)
     if internal.set_visible then
       internal:set_visible(value)
     end
-    private_data.visible = value
     if value and not capi.keygrabber.isrunning() then
       activateKeyboard(data)
     elseif data.parent_geometry and not data.parent_geometry.is_menu then
