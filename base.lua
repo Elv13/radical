@@ -120,6 +120,7 @@ local function add_item(data,args)
       selected   = false,
       checkable  = args.checkable or (args.checked ~= nil) or false,
       checked    = args.checked or false,
+      underlay   = args.underlay or nil,
     },
     force_private = {
       visible = true,
@@ -262,6 +263,7 @@ local function new(args)
       suffix_widget   = args.suffix_widget or nil,
       prefix_widget   = args.prefix_widget or nil,
       fkeys_prefix    = args.fkeys_prefix or false,
+      underlay_alpha  = args.underlay_alpha or 0.7,
     },
     get_map = {
       is_menu       = function() return true end,

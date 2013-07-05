@@ -63,6 +63,14 @@ local function item_fit(data,item,...)
   return w, item._private_data.height or h
 end
 
+-- Like an overlay, but under
+local function paint_underlay(data,item,cr,width,height)
+  cr:save()
+  cr:set_source_surface(item.underlay,width-item.underlay:get_width()-3)
+  cr:paint_with_alpha(data.underlay_alpha)
+  cr:restore()
+end
+
 -- As of July 2013, LGI is too slow to redraw big menus at ok speed
 -- This do a pixmap cache to allow pre-rendering
 local function cache_pixmap(item)
@@ -136,6 +144,15 @@ function module:setup_item(data,item,args)
   m:set_top   ( data.item_style.margins.TOP    )
   m:set_bottom( data.item_style.margins.BOTTOM )
   local text_w = wibox.widget.textbox()
+
+  text_w.draw = function(self,w, cr, width, height)
+    if item.underlay then
+      paint_underlay(data,item,cr,width,height)
+    end
+    wibox.widget.textbox.draw(self,w, cr, width, height)
+  end
+  text_w.fit = function(self,width,height) return width,height end
+
   item._private_data._fit = wibox.widget.background.fit
   m.fit = function(...)
     if not data.visible or (item.visible == false or item._filter_out == true) then
@@ -181,7 +198,6 @@ function module:setup_item(data,item,args)
     icon:set_image(args.icon)
   end
   l:add(icon)
-  l:add(text_w)
   if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
     local subArrow  = wibox.widget.imagebox() --TODO, make global
     subArrow.fit = function(box, w, h) return subArrow._image:get_width(),item.height end
@@ -213,6 +229,7 @@ function module:setup_item(data,item,args)
     lr:add(args.suffix_widget)
   end
   la:set_left(l)
+  la:set_middle(text_w)
   la:set_right(lr)
   item.widget:set_widget(m)
   local fit_w,fit_h = data._internal.layout:fit()
@@ -222,7 +239,7 @@ function module:setup_item(data,item,args)
   item._internal.set_map.text = function (value)
     text_w:set_markup(value)
     if data.auto_resize then
-      local fit_w,fit_h = text_w:fit(999,9999)
+      local fit_w,fit_h = wibox.widget.textbox.fit(text_w,9999,9999)
       local is_largest = item == data._internal.largest_item_w
       item._internal.has_changed = true
       if not data._internal.largest_item_w_v or data._internal.largest_item_w_v < fit_w then
