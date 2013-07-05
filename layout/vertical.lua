@@ -1,6 +1,7 @@
 local setmetatable = setmetatable
 local print,pairs = print,pairs
 local unpack=unpack
+local math = math
 local util      = require( "awful.util"       )
 local button    = require( "awful.button"     )
 local checkbox  = require( "radical.widgets.checkbox" )
@@ -68,6 +69,7 @@ local function cache_pixmap(item)
   item._internal.pix_cache = {}
   item.widget._draw = item.widget.draw
   item.widget.draw = function(self,wibox, cr, width, height)
+    if not wibox.visible then return end
     if item._internal.pix_cache[10*width+7*height+(item.selected and 8888 or 999)] then
       cr:set_source_surface(item._internal.pix_cache[10*width+7*height+(item.selected and 8888 or 999)])
       cr:paint()
@@ -142,12 +144,24 @@ function module:setup_item(data,item,args)
     return data._internal.layout.item_fit(data,item,...)
   end
 
+  local pref
   if data.fkeys_prefix == true then
-    local pref = wibox.widget.textbox()
+    pref = wibox.widget.textbox()
     pref.draw = function(self,w, cr, width, height)
       cr:set_source(color(beautiful.fg_normal))
-      cr:paint()
-      wibox.widget.textbox.draw(self,w, cr, width, height)
+      cr:arc((height-4)/2 + 2, (height-4)/2 + 2, (height-4)/2,0,2*math.pi)
+      cr:arc(width - (height-4)/2 - 2, (height-4)/2 + 2, (height-4)/2,0,2*math.pi)
+      cr:rectangle((height-4)/2+2,2,width - (height),(height-4))
+      cr:fill()
+      cr:select_font_face("Verdana", cairo.FontSlant.NORMAL, cairo.FontWeight.BOLD)
+      cr:set_font_size(height-6)
+      cr:move_to(height/2,height-4)
+      cr:set_source(color(beautiful.bg_normal))
+      local text = (item._internal.f_key and item._internal.f_key <= 12) and ("F"..(item._internal.f_key)) or "---"
+      cr:show_text(text)
+    end
+    pref.fit = function(...)
+      return 35,data.item_height
     end
     pref:set_markup("<span fgcolor='".. beautiful.bg_normal .."'><tt><b>F11</b></tt></span>")
     l:add(pref)
@@ -222,6 +236,18 @@ function module:setup_item(data,item,args)
   --     end
     end
   end
+  
+  item._internal.set_map.f_key = function(value)
+    item._internal.has_changed = true
+    item._internal.f_key = value
+    data:remove_key_hook("F"..value)
+    data:add_key_hook({}, "F"..value      , "press", function()
+      item.button1()
+      data.visible = false
+    end)
+  end
+  item._internal.get_map.f_key = function() return item._internal.f_key end
+  
   item._internal.set_map.icon = function (value)
     icon:set_image(value)
   end
