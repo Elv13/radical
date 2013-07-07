@@ -1,6 +1,7 @@
 local setmetatable = setmetatable
 local color     = require( "gears.color"      )
 local cairo     = require( "lgi"              ).cairo
+local beautiful = require( "beautiful"        )
 local print = print
 
 local module = {
@@ -12,7 +13,7 @@ local module = {
   }
 }
 
-local focussed,default = nil, nil
+local focussed,default,alt = nil, nil,nil
 
 local function gen(item_height,bg_color,border_color)
   local img = cairo.ImageSurface(cairo.Format.ARGB32, 800,item_height)
@@ -25,21 +26,24 @@ local function gen(item_height,bg_color,border_color)
   return cairo.Pattern.create_for_surface(img)
 end
 
-local function draw(data,item,is_focussed,is_pressed)
+local function draw(data,item,is_focussed,is_pressed,is_alt)
   local ih = data.item_height
   if not focussed or not focussed[ih] then
     if not focussed then
-      focussed,default={},{}
+      focussed,default,alt={},{},{}
     end
     local bc = data.border_color
     focussed[ih] = gen(ih,data.bg_focus,bc)
     default [ih] = gen(ih,data.bg,bc)
+    alt     [ih] = gen(ih,beautiful.bg_highlight,bc)
   end
 
   if is_focussed then
     item.widget:set_bg(focussed[ih])
+  elseif is_alt then
+    item.widget:set_bg(alt[ih])
   else
-      item.widget:set_bg(default[ih])
+    item.widget:set_bg(default[ih])
   end
 end
 

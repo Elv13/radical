@@ -5,6 +5,9 @@ local math = math
 local util      = require( "awful.util"       )
 local button    = require( "awful.button"     )
 local checkbox  = require( "radical.widgets.checkbox" )
+local scroll    = require( "radical.widgets.scroll" )
+local filter    = require( "radical.widgets.filter" )
+local fkey      = require( "radical.widgets.fkey" )
 local beautiful = require("beautiful")
 local wibox     = require( "wibox" )
 local color     = require( "gears.color"      )
@@ -161,27 +164,8 @@ function module:setup_item(data,item,args)
     return data._internal.layout.item_fit(data,item,...)
   end
 
-  local pref
   if data.fkeys_prefix == true then
-    pref = wibox.widget.textbox()
-    pref.draw = function(self,w, cr, width, height)
-      cr:set_source(color(beautiful.fg_normal))
-      cr:arc((height-4)/2 + 2, (height-4)/2 + 2, (height-4)/2,0,2*math.pi)
-      cr:arc(width - (height-4)/2 - 2, (height-4)/2 + 2, (height-4)/2,0,2*math.pi)
-      cr:rectangle((height-4)/2+2,2,width - (height),(height-4))
-      cr:fill()
-      cr:select_font_face("Verdana", cairo.FontSlant.NORMAL, cairo.FontWeight.BOLD)
-      cr:set_font_size(height-6)
-      cr:move_to(height/2,height-4)
-      cr:set_source(color(beautiful.bg_normal))
-      local text = (item._internal.f_key and item._internal.f_key <= 12) and ("F"..(item._internal.f_key)) or "---"
-      cr:show_text(text)
-    end
-    pref.fit = function(...)
-      return 35,data.item_height
-    end
-    pref:set_markup("<span fgcolor='".. beautiful.bg_normal .."'><tt><b>F11</b></tt></span>")
-    l:add(pref)
+    l:add(fkey(data,item))
     m:set_left  ( 0 )
   end
 
@@ -277,7 +261,7 @@ local function compute_geo(data)
     w = data._internal.largest_item_w_v+100 > data.default_width and data._internal.largest_item_w_v+100 or data.default_width
   end
   if not data._internal.has_widget then
-    return w,(total and total > 0 and total or data.rowcount*data.item_height) + (data._internal.filter_tb and data.item_height or 0)
+    return w,(total and total > 0 and total or data.rowcount*data.item_height) + (data._internal.filter_tb and data.item_height or 0) + (data.max_items and data._internal.scroll_w["up"].visible and (2*data.item_height) or 0)
   else
     local h = (data.rowcount-#data._internal.widgets)*data.item_height
     for k,v in ipairs(data._internal.widgets) do
@@ -290,25 +274,23 @@ end
 
 local function new(data)
   local l,real_l = wibox.layout.fixed.vertical(),nil
-  local filter_tb = nil
+  real_l = wibox.layout.fixed.vertical()
+  if data.max_items then
+    data._internal.scroll_w = scroll(data)
+    real_l:add(data._internal.scroll_w["up"])
+  end
+  real_l:add(l)
   if data.show_filter then
-    real_l = wibox.layout.fixed.vertical()
-    real_l:add(l)
-    filter_tb = wibox.widget.textbox()
-    local bg = wibox.widget.background()
-    bg:set_bg(beautiful.bg_highlight)
-    bg:set_widget(filter_tb)
-    filter_tb:set_markup("<b>Filter:</b>")
-    filter_tb.fit = function(tb,width,height)
-      return width,data.item_height
+    if data.max_items then
+      real_l:add(data._internal.scroll_w["down"])
     end
-    data:connect_signal("filter_string::changed",function()
-      filter_tb:set_markup("<b>Filter:</b> "..data.filter_string)
-    end)
-    real_l:add(bg)
-    data._internal.filter_tb = filter_tb
+    local filter_tb = filter(data)
+    real_l:add(filter_tb)
+    data._internal.filter_tb = filter_tb.widget
   else
-    real_l = l
+    if data.max_items then
+      real_l:add(data._internal.scroll_w["down"])
+    end
   end
   real_l.fit = function(a1,a2,a3)
     if not data.visible then return 1,1 end

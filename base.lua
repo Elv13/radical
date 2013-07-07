@@ -264,6 +264,8 @@ local function new(args)
       prefix_widget   = args.prefix_widget or nil,
       fkeys_prefix    = args.fkeys_prefix or false,
       underlay_alpha  = args.underlay_alpha or 0.7,
+      filter_prefix   = args.filter_prefix or "Filter:",
+      max_items       = args.max_items or nil,
     },
     get_map = {
       is_menu       = function() return true end,
