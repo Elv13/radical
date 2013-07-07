@@ -42,7 +42,7 @@ local function set_position(self)
     if parent.direction == "right" then
       ret={x=parent.x-self.width,y=parent.y+(self.parent_item.y)}
     else
-      ret={x=parent.x+parent.width,y=parent.y+(self.parent_item.y)}
+      ret={x=parent.x+parent.width,y=parent.y+(self.parent_item.y)- (parent.show_filter and parent.item_height or 0)}
       if ret.y+self.height > capi.screen[capi.mouse.screen].geometry.height then
         ret.y = ret.y - self.height + self.item_height
       end
@@ -147,6 +147,31 @@ end
 local function setup_item(data,item,args)
   local f = (data._internal.layout.setup_item) or (layout.vertical.setup_item)
   f(data._internal.layout,data,item,args)
+  local buttons = {}
+  for i=1,10 do
+    if args["button"..i] then
+      buttons[#buttons+1] = button({},i,args["button"..i])
+    end
+  end
+  if not buttons[3] then --Hide on right click
+    buttons[#buttons+1] = button({},3,function()
+      data.visible = false
+      if data.parent_geometry and data.parent_geometry.is_menu then
+        data.parent_geometry.visible = false
+      end
+    end)
+  end
+  if not buttons[4] then
+    buttons[#buttons+1] = button({},4,function()
+      data:scroll_up()
+    end)
+  end
+  if not buttons[5] then
+    buttons[#buttons+1] = button({},5,function()
+      data:scroll_down()
+    end)
+  end
+  item.widget:buttons( util.table.join(unpack(buttons)))
 end
 
 local function new(args)
@@ -160,6 +185,9 @@ local function new(args)
     local ret = base(args)
     ret:connect_signal("clear::menu",function(_,vis)
       ret._internal.layout:reset()
+    end)
+    ret:connect_signal("_hidden::changed",function(_,item)
+      item.widget:emit_signal("widget::updated")
     end)
     return ret
 end

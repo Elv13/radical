@@ -1,16 +1,16 @@
 local setmetatable = setmetatable
 local print = print
-local color = require("gears.color")
-local cairo     = require( "lgi"              ).cairo
-local wibox = require("wibox")
-
-local beautiful    = require( "beautiful"    )
+local color      = require( "gears.color"  )
+local cairo      = require( "lgi"          ).cairo
+local wibox      = require( "wibox"        )
+local util       = require( "awful.util"   )
+local button     = require( "awful.button" )
+local beautiful  = require( "beautiful"    )
 
 local module = {}
 
-local arr_up
-local arr_down
-local isinit      = false
+local arr_up,arr_down
+local isinit = false
 
 local function init()
     local size = beautiful.menu_height or 16
@@ -18,31 +18,14 @@ local function init()
     arr_up    = cairo.ImageSurface(cairo.Format.ARGB32, size,size)
     local cr2         = cairo.Context(arr_down)
     local cr          = cairo.Context(arr_up)
-    cr:set_operator(cairo.Operator.CLEAR)
-    cr2:set_operator(cairo.Operator.CLEAR)
-    cr:paint()
-    cr2:paint()
-    cr:set_operator(cairo.Operator.SOURCE)
-    cr2:set_operator(cairo.Operator.SOURCE)
-    local sp = 2.5
-    local rs = size - (2*sp)
     cr:set_source(color(beautiful.fg_normal))
     cr2:set_source(color(beautiful.fg_normal))
-    cr:set_line_width(2)
-    cr2:set_line_width(2)
-    cr:move_to( sp , sp );cr:line_to( rs , sp )
-    cr:move_to( sp , sp );cr:line_to( sp , rs )
-    cr:move_to( sp , rs );cr:line_to( rs , rs )
-    cr:move_to( rs , sp );cr:line_to( rs , rs )
-    cr:move_to( sp , sp );cr:line_to( rs , rs )
-    cr:move_to( sp , rs );cr:line_to( rs , sp )
-    cr:stroke()
-
-    cr2:move_to(  sp , sp );cr2:line_to (rs , sp , beautiful.fg_normal )
-    cr2:move_to(  sp , sp );cr2:line_to (sp , rs , beautiful.fg_normal )
-    cr2:move_to(  sp , rs );cr2:line_to (rs , rs , beautiful.fg_normal )
-    cr2:move_to(  rs , sp );cr2:line_to (rs , rs , beautiful.fg_normal )
-    cr2:stroke()
+    for i=1,5 do
+      cr:rectangle(i, (size-11)/2+(11/2)-i, 11-i*2, 1)
+      cr2:rectangle(i, (11)-(11/2)+i, 11-i*2, 1)
+    end
+    cr:fill()
+    cr2:fill()
 
     isinit = true
 end
@@ -76,7 +59,16 @@ local function new(data)
     scroll_w[v] = wibox.widget.background()
     scroll_w[v]:set_widget(ib)
     scroll_w[v].visible = true
-    data.item_style(data,{widget=scroll_w[v]},false,false,true)
+    data.item_style(data,{widget=scroll_w[v]},false,false,beautiful.bg_highlight)
+    scroll_w[v]:connect_signal("mouse::enter",function()
+      data.item_style(data,{widget=scroll_w[v]},false,false,beautiful.bg_alternate or beautiful.bg_focus)
+    end)
+    scroll_w[v]:connect_signal("mouse::leave",function()
+      data.item_style(data,{widget=scroll_w[v]},false,false,beautiful.bg_highlight)
+    end)
+    scroll_w[v]:buttons( util.table.join( button({ }, 1, function()
+      data["scroll_"..v](data)
+    end) ))
   end
   return scroll_w
 end
