@@ -108,6 +108,7 @@ function module:setup_item(data,item,args)
   --Event handling
   item.widget:connect_signal("mouse::enter", function() item.selected = true end)
   item.widget:connect_signal("mouse::leave", function() item.selected = false end)
+  item.widget:connect_signal("widget::updated", function() item._internal.has_changed = true end)
   data._internal.layout:add(item)
 
   --Be sure to always hide sub menus, even when data.visible is set manually

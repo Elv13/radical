@@ -127,7 +127,7 @@ local function setup_drawable(data)
   set_map.height = function(value)
     local margins = data.margins
     local need_update = (internal.w.height ~= (value + margins.top + margins.bottom))
-    internal.w.height = value + margins.top + margins.bottom
+    internal.w.height = (value + margins.top + margins.bottom) or 1
     if need_update then
       data.style(data)
       internal.set_position(data)
