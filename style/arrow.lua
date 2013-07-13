@@ -53,7 +53,7 @@ end
 
 local function set_direction(data,direction)
   local geometry = (direction == "left" or direction == "right") and {width = data.wibox.height, height = data.wibox.width} or {height = data.wibox.height, width = data.wibox.width}
-  local top_clip_surface        = do_gen_menu_top(data,geometry.width,geometry.height,10,data.border_width,{bg=beautiful.fg_normal or "#0000ff",fg=beautiful.bg_normal or "#00ffff"})
+  local top_clip_surface        = do_gen_menu_top(data,geometry.width,geometry.height,10,data.border_width,{bg=beautiful.fg_normal or "#0000ff",fg=data.bg or "#00ffff"})
   local top_bounding_surface    = do_gen_menu_top(data,geometry.width,geometry.height,10,0,{bg="#00000000",fg="#ffffffff"})
 
   local arr_margin,angle,mar_func = (data.arrow_type == base.arrow_type.NONE) and 0 or 13,0

@@ -14,7 +14,7 @@ local function draw(data,item,is_focussed,is_pressed)
   if is_focussed then
     item.widget:set_bg(data.bg_focus)
   else
-      item.widget:set_bg(data.bg)
+      item.widget:set_bg(nil)
   end
 end
 

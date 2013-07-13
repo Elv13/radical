@@ -293,6 +293,7 @@ local function new(data)
     if not data.visible then return 1,1 end
     local result,r2 = wibox.layout.fixed.fit(a1,99999,99999)
     local total = data._total_item_height
+    print("salut",compute_geo(data))
     return compute_geo(data)
   end
   real_l.add = function(real_l,item)
