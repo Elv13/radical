@@ -41,7 +41,7 @@ local function draw(data,item,is_focussed,is_pressed,col)
     alt[col][ih] = gen(ih,color(col),bc)
   end
 
-  if is_focussed then
+  if is_focussed or (item._tmp_menu) then
     item.widget:set_bg(focussed[ih])
   elseif col then
     item.widget:set_bg(alt[col][ih])

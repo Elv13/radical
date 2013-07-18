@@ -11,10 +11,10 @@ local module = {
 }
 
 local function draw(data,item,is_focussed,is_pressed)
-  if is_focussed then
+  if is_focussed or (item._tmp_menu) then
     item.widget:set_bg(data.bg_focus)
   else
-      item.widget:set_bg(nil)
+    item.widget:set_bg(nil)
   end
 end
 

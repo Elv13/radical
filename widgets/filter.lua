@@ -11,7 +11,7 @@ local module = {}
 local function new(data)
   local filter_tb = wibox.widget.textbox()
   local bg = wibox.widget.background()
-  bg:set_bg(beautiful.bg_highlight)
+  bg:set_bg(data.bg_highlight)
   bg:set_widget(filter_tb)
   filter_tb:set_markup(" <b>".. data.filter_prefix .."</b> ")
   filter_tb.fit = function(tb,width,height)

@@ -17,23 +17,25 @@ local module = {
 }}
 
 local function filter(data)
-  local fs,visible_counter = data.filter_string:lower(),0
-  data._internal.visible_item_count = 0
-  for k,v in pairs(data.items) do
-    local tmp = v[1]._filter_out
-    v[1]._filter_out = (v[1].text:lower():find(fs) == nil)-- or (fs ~= "")
-    if tmp ~= v[1]._filter_out then
-      v[1].widget:emit_signal("widget::updated")
+  if not data.filter == false then
+    local fs,visible_counter = data.filter_string:lower(),0
+    data._internal.visible_item_count = 0
+    for k,v in pairs(data.items) do
+      local tmp = v[1]._filter_out
+      v[1]._filter_out = (v[1].text:lower():find(fs) == nil)-- or (fs ~= "")
+      if tmp ~= v[1]._filter_out then
+        v[1].widget:emit_signal("widget::updated")
+      end
+      if not v[1]._filter_out then
+        visible_counter = visible_counter + v[1].height
+        data._internal.visible_item_count = data._internal.visible_item_count +1
+        v[1].f_key = data._internal.visible_item_count
+      end
     end
-    if not v[1]._filter_out then
-      visible_counter = visible_counter + v[1].height
-      data._internal.visible_item_count = data._internal.visible_item_count +1
-      v[1].f_key = data._internal.visible_item_count
-    end
+    data._total_item_height = visible_counter
+    local w,h = data._internal.layout:fit()
+    data.height = h
   end
-  data._total_item_height = visible_counter
-  local w,h = data._internal.layout:fit()
-  data.height = h
 end
 
 ------------------------------------KEYBOARD HANDLING-----------------------------------
@@ -75,21 +77,8 @@ local function activateKeyboard(data)
         elseif (key == 'BackSpace') and data.filter_string ~= "" and data.filter == true then
             data.filter_string = data.filter_string:sub(1,-2)
             filter(data)
---             data:filter(data.filter_string:lower())
---             if getFilterWidget() ~= nil then
---               getFilterWidget().textbox:set_markup(getFilterWidget().textbox._layout.text:sub(1,-2))
---             end
         elseif data.filter == true and key:len() == 1 then
             data.filter_string = data.filter_string .. key:lower()
---             local fw = getFilterWidget()
---             if fw ~= nil then
---               fw.textbox:set_markup(fw.textbox._layout.text .. key:lower())
---               if data.settings.autoresize and fw.textbox._layout:get_pixel_extents().width > data.settings.itemWidth then
---                 data.settings.itemWidth = fw.textbox._layout:get_pixel_extents().width + 40
---                 data.hasChanged = true
---                 data:set_coords()
---               end
---             end
             filter(data)
         else
           data.visible = false
@@ -147,7 +136,7 @@ local function add_item(data,args)
   set_map.selected = function(value)
     private_data.selected = value
     if value == false then
-      data.item_style(data,item,false--[[ or (item._tmp_menu ~= nil and item._tmp_menu == data._tmp_menu)]],false)
+      data.item_style(data,item,false,false)
       return
     end
     if data._current_item and data._current_item ~= item then
@@ -155,6 +144,7 @@ local function add_item(data,args)
         data._current_item._tmp_menu.visible = false
         data._current_item._tmp_menu = nil
         data._tmp_menu = nil
+        data.item_style(data,data._current_item,false,false)
       end
       data._current_item.selected = false
     end
@@ -242,6 +232,8 @@ local function new(args)
       fg              = args.fg or beautiful.menu_fg_normal or beautiful.fg_normal or "#ffffff",
       bg_focus        = args.bg_focus or beautiful.menu_bg_focus or beautiful.bg_focus or "#ffffff",
       fg_forcus       = args.fg_focus or beautiful.menu_fg_focus or beautiful.fg_focus or "#000000",
+      bg_alternate    = args.bg_alternate or beautiful.menu_bg_alternate or beautiful.bg_alternate or beautiful.bg_normal,
+      bg_highlight    = args.bg_highlight or beautiful.menu_bg_highlight or beautiful.bg_highlight or beautiful.bg_normal,
       border_color    = args.border_color or beautiful.menu_border_color or beautiful.border_color or "#333333",
       border_width    = args.border_width or beautiful.menu_border_width or beautiful.border_width or 3,
       item_height     = args.item_height  or beautiful.menu_height or 30,
@@ -261,7 +253,7 @@ local function new(args)
       screen          = args.screen or nil,
       style           = args.style  or nil,
       item_style      = args.item_style or item_style.basic,
-      filter          = args.filter or true,
+      filter          = args.filter ~= false,
       show_filter     = args.show_filter or false,
       filter_string   = args.filter_string or "",
       suffix_widget   = args.suffix_widget or nil,
@@ -295,7 +287,6 @@ local function new(args)
   })
   internal.get_map,internal.set_map,internal.private_data = get_map,set_map,private_data
   data.add_item,data.add_widget,data.add_embeded_menu,data._internal = add_item,add_widget,add_embeded_menu,internal
-
   set_map.parent_geometry = function(value)
     private_data.parent_geometry = value
     if data._internal.get_direction then
@@ -312,6 +303,11 @@ local function new(args)
       local fit_w,fit_h = data._internal.layout:fit()
       data.width = fit_w
       data.height = fit_h
+    elseif data._tmp_menu and data._current_item then
+--       data._tmp_menu = nil
+      data._current_item._tmp_menu = nil
+--       data._current_item.selected = false
+      data.item_style(data,data._current_item,false,false)
     end
     if internal.has_changed and data.style then
       data.style(data,{arrow_x=20,margin=internal.margin})

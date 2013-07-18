@@ -42,7 +42,7 @@ local function draw(data,item,is_focussed,is_pressed)
     default [ih] = gen(ih,data.bg,bc)
   end
 
-  if is_focussed then
+  if is_focussed or (item._tmp_menu) then
     item.widget:set_bg(focussed[ih])
   else
       item.widget:set_bg(default[ih])

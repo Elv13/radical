@@ -56,13 +56,11 @@ local function new(data)
   local constraint = mode and data.column or data.row or 2
   for i=1,constraint do
     local l2 = wibox.layout.fixed[mode and "vertical" or "horizontal"]()
-    print("adding",(mode and "vertical" or "horizontal"))
     l:add(l2)
     rows[#rows+1] = l2
   end
   l.fit = function(a1,a2,a3)
     local r1,r2 = data.item_height*math.ceil(data.rowcount/constraint),data.item_height*constraint
-    print("geo",(mode and r2 or r1),(mode and r1 or r2))
     return (mode and r2 or r1),(mode and r1 or r2)
   end
   l.add = function(l,item)
@@ -71,8 +69,6 @@ local function new(data)
     end
     local rc = data.rowcount+1
     for i=1,rc do
---       local r = math.ceil(i/math.ceil(rc/constraint))
---       if r == math.inf or r == 0 then r =1 end
       rows[((i-1)%constraint)+1]:add((rc == i and item.widget or data.items[i][1].widget))
     end
     return true
