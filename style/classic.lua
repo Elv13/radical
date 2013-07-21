@@ -12,8 +12,10 @@ local module = {
 
 local function draw(data)
   data.arrow_type = base.arrow_type.NONE
-  data.wibox.border_width = 1
-  data.wibox.border_color = data.border_color
+  if data.wibox then
+    data.wibox.border_width = 1
+    data.wibox.border_color = data.border_color
+  end
 end
 
 return setmetatable(module, { __call = function(_, ...) return draw(...) end })

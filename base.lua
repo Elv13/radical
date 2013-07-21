@@ -179,8 +179,8 @@ local function add_widget(data,widget,args)
   args = args or {}
   data._internal.has_widget = true
   widget._fit = widget.fit
-  widget.fit = function(...)
-    local w,h = widget._fit(...)
+  widget.fit = function(self,width,height)
+    local w,h = widget._fit(self,width or 1, height or 1)
     return args.width or w,args.height or h
   end
 
@@ -214,7 +214,7 @@ local function add_widget(data,widget,args)
 end
 
 local function add_embeded_menu(data,menu)
-  
+  add_widget(data,menu._internal.layout)
 end
 
 
@@ -300,7 +300,7 @@ local function new(args)
   set_map.visible = function(value)
     private_data.visible = value
     if value then
-      local fit_w,fit_h = data._internal.layout:fit()
+      local fit_w,fit_h = data._internal.layout:fit(9999,9999)
       data.width = fit_w
       data.height = fit_h
     elseif data._tmp_menu and data._current_item then
