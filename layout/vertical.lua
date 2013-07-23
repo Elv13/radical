@@ -301,6 +301,7 @@ local function new(data)
   real_l.item_fit = item_fit
   real_l.setup_key_hooks = module.setup_key_hooks
   real_l.setup_item = module.setup_item
+  data._internal.content_layout = l
   return real_l
 end
 

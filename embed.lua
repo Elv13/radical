@@ -66,7 +66,8 @@ local function new(args)
     args.style = args.style or classic_style
     local ret = base(args)
     ret:connect_signal("clear::menu",function(_,vis)
-      ret._internal.layout:reset()
+      local l = ret._internal.content_layout or ret._internal.layout
+      l:reset()
     end)
     ret:connect_signal("_hidden::changed",function(_,item)
       item.widget:emit_signal("widget::updated")

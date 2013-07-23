@@ -202,7 +202,7 @@ local function add_widget(data,widget,args)
   })
   item._private_data = private_data
   item._internal = {get_map=get_map,set_map=set_map}
-  
+
   data._internal.widgets[#data._internal.widgets+1] = item
   data._internal.items[#data._internal.items+1] = {item}
   data._internal.layout:add(item)

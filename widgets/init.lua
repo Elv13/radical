@@ -3,5 +3,6 @@ return {
     scroll   = require( "radical.widgets.scroll"   ),
     filter   = require( "radical.widgets.filter"   ),
     fkey     = require( "radical.widgets.fkey"     ),
-    table    = require( "radical.wigdets.table"    ),
+    table    = require( "radical.widgets.table"    ),
+    header   = require( "radical.widgets.header"   ),
 }
