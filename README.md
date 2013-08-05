@@ -138,6 +138,8 @@ Multiple items can have multiple sets of options.
 | underlay_alpha  | Underlay (see item options) opacity                | 0-1                           |
 | filter_prefix   | Text to be shown at begenning of the filter string | string                        |
 | max_items       | Maximum number of items before showing scrollbar   | number                        |
+| x               | X position (absolute)                              | number                        |
+| y               | Y position (absolute)                              | number                        |
 
 ###Item options
 
