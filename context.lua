@@ -38,6 +38,7 @@ end
 
 local function set_position(self)
   local ret,parent = {x=self.wibox.x,y=self.wibox.y},self.parent_geometry
+  local prefx,prefy = self._internal.private_data.x,self._internal.private_data.y
   if parent and parent.is_menu then
     if parent.direction == "right" then
       ret={x=parent.x-self.width,y=parent.y+(self.parent_item.y)}
@@ -54,7 +55,15 @@ local function set_position(self)
     else
       ret = {x=drawable_geom.x+parent.x-((self.arrow_type ~= base.arrow_type.NONE) and (self._arrow_x or 20)+11-parent.width/2 or 0),y=(self.direction == "bottom") and drawable_geom.y-self.wibox.height or drawable_geom.y+drawable_geom.height}
     end
-  elseif not self.parent_geometry then --Use mouse position to set position --TODO it is called too often
+  elseif prefx ~= 0 or prefy ~= 0 then
+    ret = capi.mouse.coords()
+    if prefx then
+      ret.x = prefx
+    end
+    if prefy then
+      ret.y = prefy
+    end
+  elseif not parent then --Use mouse position to set position --TODO it is called too often
     ret = capi.mouse.coords()
     local draw = awful.mouse.wibox_under_pointer and awful.mouse.wibox_under_pointer() or awful.mouse.drawin_under_pointer and awful.mouse.drawin_under_pointer()
     if draw then

@@ -263,6 +263,8 @@ local function new(args)
       underlay_alpha  = args.underlay_alpha or 0.7,
       filter_prefix   = args.filter_prefix or "Filter:",
       max_items       = args.max_items or nil,
+      x               = args.x or 0,
+      y               = args.y or 0,
     },
     get_map = {
       is_menu       = function() return true end,
