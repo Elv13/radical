@@ -42,7 +42,7 @@ end
 local function activateKeyboard(data)
   if not data then return end
   if not data or grabKeyboard == true then return end
-  if (not (data.keyboardnav == false)) and data.visible == true then
+  if (not (data._internal.private_data.enable_keyboard == false)) and data.visible == true then
     capi.keygrabber.run(function(mod, key, event)
         for k,v in pairs(data._internal.filter_hooks or {}) do --TODO modkeys
             if k.key == "Mod4" and (key == "End" or key == "Super_L") then
@@ -262,6 +262,7 @@ local function new(args)
       fkeys_prefix    = args.fkeys_prefix or false,
       underlay_alpha  = args.underlay_alpha or 0.7,
       filter_prefix   = args.filter_prefix or "Filter:",
+      enable_keyboard = (args.enable_keyboard ~= false),
       max_items       = args.max_items or nil,
       x               = args.x or 0,
       y               = args.y or 0,
