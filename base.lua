@@ -26,7 +26,7 @@ local function filter(data)
       if tmp ~= v[1]._filter_out then
         v[1].widget:emit_signal("widget::updated")
       end
-      if not v[1]._filter_out then
+      if (not v[1]._filter_out) and (not v[1]._hidden) then
         visible_counter = visible_counter + v[1].height
         data._internal.visible_item_count = data._internal.visible_item_count +1
         v[1].f_key = data._internal.visible_item_count
@@ -208,7 +208,7 @@ local function add_widget(data,widget,args)
   data._internal.layout:add(item)
   if data.visible then
     local fit_w,fit_h = data._internal.layout:fit()
-    data.width = fit_w
+    data.width = data._internal.width or fit_w
     data.height = fit_h
   end
 end
@@ -305,7 +305,7 @@ local function new(args)
     private_data.visible = value
     if value then
       local fit_w,fit_h = data._internal.layout:fit(9999,9999)
-      data.width = fit_w
+      data.width = internal.width or fit_w
       data.height = fit_h
     elseif data._tmp_menu and data._current_item then
 --       data._tmp_menu = nil
@@ -396,6 +396,7 @@ local function new(args)
       data:emit_signal("_hidden::changed",internal.items[data._start_at][1])
       internal.items[data._start_at+data.max_items][1]._hidden = true
       data:emit_signal("_hidden::changed",internal.items[data._start_at+data.max_items][1])
+      filter(data)
     end
   end
   
@@ -406,6 +407,7 @@ local function new(args)
       data:emit_signal("_hidden::changed",internal.items[data._start_at-1][1])
       internal.items[data._start_at-1+data.max_items][1]._hidden = false
       data:emit_signal("_hidden::changed",internal.items[data._start_at-1+data.max_items][1])
+      filter(data)
     end
   end
 
