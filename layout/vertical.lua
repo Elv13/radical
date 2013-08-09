@@ -238,6 +238,12 @@ function module:setup_item(data,item,args)
     icon:set_image(value)
   end
   item._internal.set_map.text(item._private_data.text)
+  
+  if data._internal.scroll_w and data.rowcount > data.max_items then
+    data._internal.scroll_w.visible = true
+    data._internal.scroll_w["up"]:emit_signal("widget::updated")
+    data._internal.scroll_w["down"]:emit_signal("widget::updated")
+  end
 end
 
 local function compute_geo(data)
@@ -258,7 +264,7 @@ local function compute_geo(data)
     end
   end
   if not data._internal.has_widget then
-    return w,(total and total > 0 and total or visblerow*data.item_height) + (data._internal.filter_tb and data.item_height or 0) + (data.max_items and data._internal.scroll_w["up"].visible and (2*data.item_height) or 0)
+    return w,(total and total > 0 and total or visblerow*data.item_height) + (data._internal.filter_tb and data.item_height or 0) + (data.max_items and data._internal.scroll_w.visible and (2*data.item_height) or 0)
   else
     local h = (visblerow-#data._internal.widgets)*data.item_height
     for k,v in ipairs(data._internal.widgets) do

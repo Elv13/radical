@@ -46,14 +46,20 @@ end
 
 local function new(data)
   local scroll_w = {}
+  scroll_w.visible = false
   for k,v in ipairs({"up","down"}) do
     local ib = wibox.widget.imagebox()
     ib:set_image(module[v]())
     ib.fit = function(tb,width,height)
+      if scroll_w.visible == false then
+        return 0,0
+      end
       return width,data.item_height
     end
     ib.draw = function(self,wibox, cr, width, height)
-      cr:set_source_surface(self._image, width/2 - self._image:get_width()/2, 0)
+      if width > 0 and height > 0 then
+        cr:set_source_surface(self._image, width/2 - self._image:get_width()/2, 0)
+      end
       cr:paint()
     end
     scroll_w[v] = wibox.widget.background()
