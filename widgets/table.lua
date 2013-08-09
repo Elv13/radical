@@ -30,7 +30,7 @@ local function create_h_header(main_l,cols,w,args)
   if args.h_header then
     local bg = wibox.widget.background()
     local row_l = wibox.layout.fixed.horizontal()
-    bg:set_bg(beautiful.fg_normal)
+    bg:set_bg(beautiful.menu_bg_header or beautiful.fg_normal)
     bg:set_widget(row_l)
     if args.v_header then
       local t = create_textbox(w,cols,args.v_header ~= nil,args.row_height)
@@ -70,7 +70,7 @@ local function new(content,args)
       local t = create_textbox(w,cols,args.v_header ~= nil,args.row_height)
       t:set_markup("<span color='".. beautiful.bg_normal .."'>".. (args.v_header[j] or "-") .."</span>")
       local bg = wibox.widget.background()
-      bg:set_bg(beautiful.fg_normal)
+      bg:set_bg(beautiful.menu_bg_header or beautiful.fg_normal)
       bg:set_widget(t)
       row_l:add(bg)
     end

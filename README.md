@@ -180,3 +180,4 @@ Radical also use the some of the same theme options as awful.menu, plus some:
  * menu_bg_header
  * menu_bg_normal
  * menu_bg_highlight
+ * menu_submenu_icon
