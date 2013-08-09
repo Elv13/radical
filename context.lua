@@ -39,12 +39,13 @@ end
 local function set_position(self)
   local ret,parent = {x=self.wibox.x,y=self.wibox.y},self.parent_geometry
   local prefx,prefy = self._internal.private_data.x,self._internal.private_data.y
+  local src_geo = capi.screen[capi.mouse.screen].geometry
   if parent and parent.is_menu then
     if parent.direction == "right" then
       ret={x=parent.x-self.width,y=parent.y+(self.parent_item.y)}
     else
       ret={x=parent.x+parent.width,y=parent.y+(self.parent_item.y)- (parent.show_filter and parent.item_height or 0)}
-      if ret.y+self.height > capi.screen[capi.mouse.screen].geometry.height then
+      if ret.y+self.height > src_geo.height then
         ret.y = ret.y - self.height + self.item_height
       end
     end
@@ -71,12 +72,17 @@ local function set_position(self)
       if self.direction == "top" or self.direction == "bottom" then
         ret.x = ret.x - (self.arrow_x or 20) - 13
         ret.y = geometry.y+geometry.height
-        if ret.y+self.height > capi.screen[capi.mouse.screen].geometry.height then
+        if ret.y+self.height > src_geo.height then
           self.direction = "bottom"
           ret.y = geometry.y-self.height
         end
       end
     end
+  end
+  if ret.x+self.width > src_geo.x + src_geo.width then
+    ret.x = ret.x - (ret.x+self.width - (src_geo.x + src_geo.width))
+  elseif ret.x < 0 then
+    ret.x = 0
   end
   self.wibox.x = ret.x
   self.wibox.y = ret.y - 2*(self.wibox.border_width or 0)
