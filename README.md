@@ -139,6 +139,7 @@ Multiple items can have multiple sets of options.
 | filter_prefix   | Text to be shown at begenning of the filter string | string                        |
 | max_items       | Maximum number of items before showing scrollbar   | number                        |
 | enable_keyboard | Enable or disable keyboard navigation / hooks      | boolean                       |
+| disable_markup  | Disable pango markup in items text                 | boolean                       |
 | x               | X position (absolute)                              | number                        |
 | y               | Y position (absolute)                              | number                        |
 

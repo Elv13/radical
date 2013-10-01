@@ -206,7 +206,11 @@ function module:setup_item(data,item,args)
   data.height = fit_h
   data.style(data)
   item._internal.set_map.text = function (value)
-    text_w:set_markup(value)
+    if data.disable_markup then
+      text_w:set_text(value)
+    else
+      text_w:set_markup(value)
+    end
     if data.auto_resize then
       local fit_w,fit_h = wibox.widget.textbox.fit(text_w,9999,9999)
       local is_largest = item == data._internal.largest_item_w

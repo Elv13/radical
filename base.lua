@@ -264,6 +264,7 @@ local function new(args)
       filter_prefix   = args.filter_prefix or "Filter:",
       enable_keyboard = (args.enable_keyboard ~= false),
       max_items       = args.max_items or nil,
+      disable_markup  = args.disable_markup or false,
       x               = args.x or 0,
       y               = args.y or 0,
     },

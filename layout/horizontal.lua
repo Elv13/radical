@@ -116,7 +116,6 @@ function module:setup_item(data,item,args)
       cr:paint()
       wibox.widget.textbox.draw(self,w, cr, width, height)
     end
-    pref:set_markup("<span fgcolor='".. beautiful.bg_normal .."'><tt><b>F11</b></tt></span>")
     l:add(pref)
     m:set_left  ( 0 )
   end
@@ -172,7 +171,11 @@ function module:setup_item(data,item,args)
   data.height = fit_h
   data.style(data)
   item._internal.set_map.text = function (value)
-    text_w:set_markup(value)    
+    if data.disable_markup then
+      text_w:set_text(value)
+    else
+      text_w:set_markup(value)
+    end
     if data.auto_resize then
       local fit_w,fit_h = text_w:fit(999,9999)
       local is_largest = item == data._internal.largest_item_h
