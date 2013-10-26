@@ -151,8 +151,11 @@ local function setup_drawable(data)
   end
   function internal:set_visible(value)
     internal.w.visible = value
+    if not value then
+      capi.keygrabber.stop()
+    end
   end
-  
+
   if data.visible then
     local fit_w,fit_h = data._internal.layout:fit()
     data.width = fit_w

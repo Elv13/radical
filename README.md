@@ -110,7 +110,7 @@ Multiple items can have multiple sets of options.
 | bg              | Background color                                   | String/gradient/pattern       |
 | fg              | Foreground (text) color                            | String/gradient/pattern       |
 | bg_focus        | Background of focussed items                       | String/gradient/pattern       |
-| fg_forcus       | Foreground of focussed items                       | String/gradient/pattern       |
+| fg_focus        | Foreground of focussed items                       | String/gradient/pattern       |
 | bg_alternate    | Alternate background color                         | String/gradient/pattern       |
 | bg_highlight    | Highlight background color                         | String/gradient/pattern       |
 | bg_header       | Header (see widgets section) color                 | String/gradient/pattern       |

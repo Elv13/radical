@@ -231,7 +231,7 @@ local function new(args)
       bg              = args.bg or beautiful.menu_bg_normal or beautiful.bg_normal or "#000000",
       fg              = args.fg or beautiful.menu_fg_normal or beautiful.fg_normal or "#ffffff",
       bg_focus        = args.bg_focus or beautiful.menu_bg_focus or beautiful.bg_focus or "#ffffff",
-      fg_forcus       = args.fg_focus or beautiful.menu_fg_focus or beautiful.fg_focus or "#000000",
+      fg_focus        = args.fg_focus or beautiful.menu_fg_focus or beautiful.fg_focus or "#000000",
       bg_alternate    = args.bg_alternate or beautiful.menu_bg_alternate or beautiful.bg_alternate or beautiful.bg_normal,
       bg_highlight    = args.bg_highlight or beautiful.menu_bg_highlight or beautiful.bg_highlight or beautiful.bg_normal,
       bg_header       = args.bg_header    or beautiful.menu_bg_header or beautiful.fg_normal,
@@ -365,6 +365,7 @@ local function new(args)
 --         data.style(data,{arrow_x=20,margin=internal.margin})
       else
         data.has_changed = true
+        internal.layout:emit_signal("widget::updated")
       end
     end)
   end
