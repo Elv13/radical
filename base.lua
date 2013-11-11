@@ -150,7 +150,7 @@ local function add_item(data,args)
     end
     if (private_data.sub_menu_f  or private_data.sub_menu_m)and data._current_item ~= item then
       local sub_menu = private_data.sub_menu_m or private_data.sub_menu_f()
-      if sub_menu then
+      if sub_menu and sub_menu.rowcount > 0 then
         sub_menu.arrow_type = module.arrow_type.NONE
         sub_menu.parent_item = item
         sub_menu.parent_geometry = data
@@ -365,7 +365,6 @@ local function new(args)
 --         data.style(data,{arrow_x=20,margin=internal.margin})
       else
         data.has_changed = true
-        internal.layout:emit_signal("widget::updated")
       end
     end)
   end

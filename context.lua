@@ -15,7 +15,7 @@ local layout    = require( "radical.layout"   )
 local checkbox  = require( "radical.widgets.checkbox" )
 local arrow_style = require( "radical.style.arrow" )
 
-local capi,module = { mouse = mouse , screen = screen , keygrabber = keygrabber },{}
+local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
 
 local function get_direction(data)
   local parent_geometry = data.parent_geometry --Local cache to avoid always calling the object hooks
@@ -143,7 +143,8 @@ local function setup_drawable(data)
   set_map.height = function(value)
     local margins = data.margins
     local need_update = (internal.w.height ~= (value + margins.top + margins.bottom))
-    internal.w.height = (value + margins.top + margins.bottom) or 1
+    local new_height = (value + margins.top + margins.bottom) or 1
+    internal.w.height = new_height > 0 and new_height or 1
     if need_update then
       data.style(data)
       internal.set_position(data)
