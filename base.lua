@@ -325,7 +325,7 @@ local function new(args)
     end
     if value and not capi.keygrabber.isrunning() then
       activateKeyboard(data)
-    elseif data.parent_geometry and not data.parent_geometry.is_menu then
+    elseif data.parent_geometry and not data.parent_geometry.is_menu and data.enable_keyboard then
       capi.keygrabber.stop()
     end
   end

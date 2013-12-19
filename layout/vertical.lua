@@ -2,7 +2,6 @@ local setmetatable = setmetatable
 local print,pairs  = print,pairs
 local unpack       = unpack
 local util      = require( "awful.util"               )
-local button    = require( "awful.button"             )
 local checkbox  = require( "radical.widgets.checkbox" )
 local scroll    = require( "radical.widgets.scroll"   )
 local filter    = require( "radical.widgets.filter"   )
