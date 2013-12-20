@@ -44,47 +44,47 @@ local function activateKeyboard(data)
   if not data or grabKeyboard == true then return end
   if (not (data._internal.private_data.enable_keyboard == false)) and data.visible == true then
     capi.keygrabber.run(function(mod, key, event)
-        for k,v in pairs(data._internal.filter_hooks or {}) do --TODO modkeys
-            if k.key == "Mod4" and (key == "End" or key == "Super_L") then
-                local found = false
-                for k3,v3 in ipairs(mod) do
-                    if v3 == "Mod4" and event == k.event then
-                        local retval,self = v(data,mod)
-                        if self and type(self) == "table" then
-                          data = self
-                        end
-                    end
-                end
+      for k,v in pairs(data._internal.filter_hooks or {}) do --TODO modkeys
+        if k.key == "Mod4" and (key == "End" or key == "Super_L") then
+          local found = false
+          for k3,v3 in ipairs(mod) do
+            if v3 == "Mod4" and event == k.event then
+              local retval,self = v(data,mod)
+              if self and type(self) == "table" then
+                data = self
+              end
             end
-            if k.key == key and k.event == event then
-                local retval, self = v(data,mod)
-                if self and type(self) == "table" then
-                  data = self
-                end
-                return retval
-            end
+          end
         end
-        if event == "release" then
-            return true
+        if k.key == key and k.event == event then
+          local retval, self = v(data,mod)
+          if self and type(self) == "table" then
+            data = self
+          end
+          return retval
         end
+      end
+      if event == "release" then
+          return true
+      end
 
-        if (key == 'Return') and data._current_item and data._current_item.button1 then
-            data._current_item.button1()
-            data.visible = false
-        elseif key == 'Escape' or (key == 'Tab' and data.filter_string == "") then
-            data.visible = false
-            capi.keygrabber.stop()
-        elseif (key == 'BackSpace') and data.filter_string ~= "" and data.filter == true then
-            data.filter_string = data.filter_string:sub(1,-2)
-            filter(data)
-        elseif data.filter == true and key:len() == 1 then
-            data.filter_string = data.filter_string .. key:lower()
-            filter(data)
-        else
-          data.visible = false
-          capi.keygrabber.stop()
-        end
-        return true
+      if (key == 'Return') and data._current_item and data._current_item.button1 then
+        data._current_item.button1()
+        data.visible = false
+      elseif key == 'Escape' or (key == 'Tab' and data.filter_string == "") then
+        data.visible = false
+        capi.keygrabber.stop()
+      elseif (key == 'BackSpace') and data.filter_string ~= "" and data.filter == true then
+        data.filter_string = data.filter_string:sub(1,-2)
+        filter(data)
+      elseif data.filter == true and key:len() == 1 then
+        data.filter_string = data.filter_string .. key:lower()
+        filter(data)
+      else
+        data.visible = false
+        capi.keygrabber.stop()
+      end
+      return true
     end)
   end
 end
@@ -400,7 +400,7 @@ local function new(args)
       filter(data)
     end
   end
-  
+
   function data:scroll_down()
     if data.max_items ~= nil and data.rowcount >= data.max_items and (data._start_at or 1)+data.max_items <= data.rowcount then
       data._start_at  = (data._start_at or 1) + 1
