@@ -9,4 +9,5 @@ return {
     style      = require( "radical.style"      ),
     item_style = require( "radical.item_style" ),
     widgets    = require( "radical.widgets"    ),
+    tooltip    = require( "radical.tooltip"    )
 }

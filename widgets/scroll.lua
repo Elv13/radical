@@ -14,8 +14,8 @@ local isinit = false
 
 local function init()
     local size = beautiful.menu_height or 16
-    arr_down = cairo.ImageSurface(cairo.Format.ARGB32, size,size)
-    arr_up    = cairo.ImageSurface(cairo.Format.ARGB32, size,size)
+    arr_down = cairo.ImageSurface(cairo.Format.ARGB32, 10,size)
+    arr_up    = cairo.ImageSurface(cairo.Format.ARGB32, 10,size)
     local cr2         = cairo.Context(arr_down)
     local cr          = cairo.Context(arr_up)
     cr:set_source(color(beautiful.fg_normal))
