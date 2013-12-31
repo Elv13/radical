@@ -138,5 +138,3 @@ end
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;
-rn new(...) end })
--- kate: space-indent on; indent-width 2; replace-tabs on;
