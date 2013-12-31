@@ -21,6 +21,7 @@ local function setup_drawable(data)
   local internal = data._internal
   local get_map,set_map,private_data = internal.get_map,internal.set_map,internal.private_data
   get_map.visible = function() return true end --Let the parent handle that
+  set_map.visible = function(v) if data._embeded_parent then data._embeded_parent.visible = v end end
   if not data.layout then
     data.layout = layout.vertical
   end

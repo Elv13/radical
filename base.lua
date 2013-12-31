@@ -215,6 +215,7 @@ end
 
 local function add_embeded_menu(data,menu)
   add_widget(data,menu._internal.layout)
+  menu._embeded_parent = data
 end
 
 
