@@ -19,7 +19,7 @@ end
 -- Keep its own history instead of using awful.client.focus.history
 local focusIdx,focusTable = 1,setmetatable({}, { __mode = 'v' })
 local function push_focus(c)
-  if not pause_monitoring then
+  if c and not pause_monitoring then
     focusTable[c] = focusIdx
     focusIdx = focusIdx + 1
   end
@@ -72,10 +72,10 @@ local function is_in_tag(t,c)
 end
 
 local function new(args)
+  local t,auto_release = tag.selected(capi.client.focus and capi.client.focus.screen or capi.mouse.screen),args.auto_release
   local currentMenu = menu({filter = true, show_filter=true, autodiscard = true,
-    disable_markup=true,fkeys_prefix=true,width=(((capi.screen[capi.mouse.screen]).geometry.width)/2)})
+    disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[capi.client.focus and capi.client.focus.screen or capi.mouse.screen]).geometry.width)/2)})
 
-  local t = tag.selected(capi.mouse.screen)
 
   currentMenu:add_key_hook({}, "Tab", "press", select_next)
   currentMenu:add_key_hook({}, "Shift_L", "press", function()
@@ -98,11 +98,11 @@ local function new(args)
       currentMenu:add_item({
         text          = v.name,
         icon          = module.icon_transform and module.icon_transform(v.icon or module.default_icon) or v.icon or module.default_icon,
-        suffix_widget = l,
-        selected      = capi.client.focus == v,
+        suffix_widget = not auto_release and l or nil,
+        selected      = capi.client.focus and capi.client.focus == v,
         underlay      = v:tags()[1] and draw_underlay(v:tags()[1].name),
-        checkable     = not args.auto_release,
-        checked       = is_in_tag(t,v),
+        checkable     = not auto_release,
+        checked       = not auto_release and is_in_tag(t,v) or nil,
         button1       = function()
           if v:tags()[1] and v:tags()[1].selected == false then
             tag.viewonly(v:tags()[1])
@@ -113,7 +113,7 @@ local function new(args)
     end
   end
 
-  if args and args.auto_release then
+  if auto_release then
     currentMenu:add_key_hook({}, "Alt_L", "release", function(_)
       currentMenu.visible = false
       return false
@@ -137,4 +137,6 @@ function module.altTabBack(args)
 end
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
+-- kate: space-indent on; indent-width 2; replace-tabs on;
+rn new(...) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;
