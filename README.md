@@ -4,6 +4,8 @@
 This is Radical, one of the largest Awesome extension module. It provide un
 unified interface to generate multiple types of menus.
 
+[![Too many menus](https://raw.github.com/Elv13/radical/master/screenshot/all.png)](https://raw.github.com/Elv13/radical/master/screenshot/all.png)
+
 ## Installation
 
 Installing Radical is simple, just move to ~/.config/awesome and clone the
