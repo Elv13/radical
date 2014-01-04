@@ -95,7 +95,14 @@ On top of each styles, menu can also have different layouts to display items:
         item_style = radical.item_style.classic ,
         layout     = radical.layout.vertical    })
     
+    -- To add the menu to a widget:
+    local mytextbox = wibox.widget.textbox()
+    mytextbox:set_menu(m,3) -- 3 = right mouse button, 1 = left mouse button
+    
 ```
+
+Please note that `:set_menu` can also take a lazy-loading function instead of a
+menu. The second parameter is not mandatory, the default is "1".
 
 ### Tooltip
 
