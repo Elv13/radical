@@ -225,7 +225,7 @@ function module:setup_item(data,item,args)
   --     end
     end
   end
-  
+
   item._internal.set_map.f_key = function(value)
     item._internal.has_changed = true
     item._internal.f_key = value
@@ -236,17 +236,20 @@ function module:setup_item(data,item,args)
     end)
   end
   item._internal.get_map.f_key = function() return item._internal.f_key end
-  
+
   item._internal.set_map.icon = function (value)
     icon:set_image(value)
   end
   item._internal.set_map.text(item._private_data.text)
-  
+
   if data._internal.scroll_w and data.rowcount > data.max_items then
     data._internal.scroll_w.visible = true
     data._internal.scroll_w["up"]:emit_signal("widget::updated")
     data._internal.scroll_w["down"]:emit_signal("widget::updated")
   end
+
+  -- Setup tooltip
+  item.widget:set_tooltip(item.tooltip)
 end
 
 local function compute_geo(data)

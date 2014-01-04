@@ -65,9 +65,9 @@ be created by beautiful themes. The current ones are:
 
 Arrow also have a few types:
 
- * radical.base.NONE
- * radical.base.PRETTY
- * radical.base.CENTERED
+ * radical.base.arrow_type.NONE
+ * radical.base.arrow_type.PRETTY
+ * radical.base.arrow_type.CENTERED
 
 ### Item style
 
@@ -95,6 +95,18 @@ On top of each styles, menu can also have different layouts to display items:
         item_style = radical.item_style.classic ,
         layout     = radical.layout.vertical    })
     
+```
+
+### Tooltip
+
+Radical also have its own styled tooltip widget. It can be used in menus, but
+also in every widgets using the `set_tooltip` method:
+
+```lua
+
+local mytextbox = wibox.widget.textbox()
+mytextbox:set_tooltip("foo bar")
+
 ```
 
 ## Options
@@ -164,6 +176,7 @@ Multiple items can have multiple sets of options.
 | underlay       | Text to render at the far-right of the item  | string            |
 | prefix_widget  | Widget to append at the begenning of the item| widget            |
 | suffix_widget  | Widget to append at the end of the item      | widget            |
+| tooltip        | A tooltip shown on the side or bottom        | string            |
 | button1        | Left mouse button action                     | function          |
 | button2        | Mid mouse button action                      | function          |
 | button3        | Right mouse button action                    | function          |

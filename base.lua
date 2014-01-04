@@ -135,8 +135,9 @@ local function add_item(data,args)
       sub_menu_f = (args.sub_menu and type(args.sub_menu) == "function") and args.sub_menu or nil,
       selected   = false,
       checkable  = args.checkable or (args.checked ~= nil) or false,
-      checked    = args.checked or false,
+      checked    = args.checked  or false,
       underlay   = args.underlay or nil,
+      tooltip    = args.tooltip  or nil,
     },
     force_private = {
       visible = true,

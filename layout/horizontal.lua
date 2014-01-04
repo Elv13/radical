@@ -190,6 +190,9 @@ function module:setup_item(data,item,args)
     icon:set_image(value)
   end
   item._internal.set_map.text(item._private_data.text)
+
+  -- Setup tooltip
+  item.widget:set_tooltip(item.tooltip)
 end
 
 --Get preferred item geometry

@@ -103,6 +103,9 @@ local function create_item(item,data)
   item.widget = bg
   tb:set_text("bob")
 
+  -- Tooltip
+  item.widget:set_tooltip(item.tooltip)
+
   -- Draw
   data.item_style(data,item,false,false)
   item.widget:set_fg(item._private_data.fg)

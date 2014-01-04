@@ -203,6 +203,7 @@ local function setup_item(data,item,args)
     end)
   end
   item.widget:buttons( util.table.join(unpack(buttons)))
+  item.widget:set_tooltip(item.tooltip)
 end
 
 local function new(args)
