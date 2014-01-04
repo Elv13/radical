@@ -14,6 +14,12 @@ local module = {
     NONE     = 0,
     PRETTY   = 1,
     CENTERED = 2,
+  },
+  sub_menu_on ={
+    SELECTED = 0,
+    CLICKED  = 1,
+    NEVER    = 2,
+  }
 }}
 
 local function filter(data)

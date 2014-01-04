@@ -52,7 +52,7 @@ end
 
 local function set_data(self,data)
   self._data = data
-  self:emit_signal("widget::changed")
+  self:emit_signal("widget::updated")
 end
 
 local function new(data)

@@ -6,6 +6,7 @@ return {
     context    = require( "radical.context"    ),
     embed      = require( "radical.embed"      ),
     box        = require( "radical.box"        ),
+    bar        = require( "radical.bar"        ),
     style      = require( "radical.style"      ),
     item_style = require( "radical.item_style" ),
     widgets    = require( "radical.widgets"    ),
