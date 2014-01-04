@@ -173,7 +173,14 @@ local function setup_item(data,item,args)
       buttons[#buttons+1] = button({},i,args["button"..i])
     end
   end
-  if not buttons[3] then --Hide on right click
+
+  -- Click to open sub_menu
+  if not buttons[1] and data.sub_menu_on == base.sub_menu_on.BUTTON1 then
+    buttons[#buttons+1] = button({},1,function() base._execute_sub_menu(data,item) end)
+  end
+
+  --Hide on right click
+  if not buttons[3] then
     buttons[#buttons+1] = button({},3,function()
       data.visible = false
       if data.parent_geometry and data.parent_geometry.is_menu then
@@ -181,11 +188,15 @@ local function setup_item(data,item,args)
       end
     end)
   end
+
+  -- Scroll up
   if not buttons[4] then
     buttons[#buttons+1] = button({},4,function()
       data:scroll_up()
     end)
   end
+
+  -- Scroll down
   if not buttons[5] then
     buttons[#buttons+1] = button({},5,function()
       data:scroll_down()

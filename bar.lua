@@ -93,6 +93,11 @@ local function create_item(item,data)
   m:set_widget(layout)
 
   -- Content
+  if item.icon then
+    local icon = wibox.widget.imagebox()
+    icon:set_image(item.icon)
+    layout:add(icon)
+  end
   local tb = wibox.widget.textbox()
   layout:add(tb)
   item.widget = bg

@@ -16,11 +16,13 @@ local module = {
     CENTERED = 2,
   },
   sub_menu_on ={
-    SELECTED = 0,
-    CLICKED  = 1,
-    NEVER    = 2,
-  }
-}}
+    NEVER    = 0,
+    BUTTON1  = 1,
+    BUTTON2  = 2,
+    BUTTON3  = 3,
+    SELECTED = 100,
+  },
+}
 
 local function filter(data)
   if not data.filter == false then
@@ -43,6 +45,21 @@ local function filter(data)
     data.height = h
   end
 end
+
+local function execute_sub_menu(data,item)
+  if (item._private_data.sub_menu_f  or item._private_data.sub_menu_m) then
+    local sub_menu = item._private_data.sub_menu_m or item._private_data.sub_menu_f()
+    if sub_menu and sub_menu.rowcount > 0 then
+      sub_menu.arrow_type = module.arrow_type.NONE
+      sub_menu.parent_item = item
+      sub_menu.parent_geometry = data
+      sub_menu.visible = true
+      item._tmp_menu = sub_menu
+      data._tmp_menu = sub_menu
+    end
+  end
+end
+module._execute_sub_menu = execute_sub_menu
 
 ------------------------------------KEYBOARD HANDLING-----------------------------------
 local function activateKeyboard(data)
@@ -75,8 +92,12 @@ local function activateKeyboard(data)
       end
 
       if (key == 'Return') and data._current_item and data._current_item.button1 then
-        data._current_item.button1()
-        data.visible = false
+        if data.sub_menu_on == module.sub_menu_on.BUTTON1 then
+          execute_sub_menu(data,data._current_item)
+        else
+          data._current_item.button1()
+          data.visible = false
+        end
       elseif key == 'Escape' or (key == 'Tab' and data.filter_string == "") then
         data.visible = false
         capi.keygrabber.stop()
@@ -154,16 +175,8 @@ local function add_item(data,args)
       end
       data._current_item.selected = false
     end
-    if (private_data.sub_menu_f  or private_data.sub_menu_m)and data._current_item ~= item then
-      local sub_menu = private_data.sub_menu_m or private_data.sub_menu_f()
-      if sub_menu and sub_menu.rowcount > 0 then
-        sub_menu.arrow_type = module.arrow_type.NONE
-        sub_menu.parent_item = item
-        sub_menu.parent_geometry = data
-        sub_menu.visible = true
-        item._tmp_menu = sub_menu
-        data._tmp_menu = sub_menu
-      end
+    if data.sub_menu_on == module.sub_menu_on.SELECTED and data._current_item ~= item then
+      execute_sub_menu(data,item)
     end
     data.item_style(data,item,true,false)
     data._current_item = item
@@ -274,6 +287,7 @@ local function new(args)
       disable_markup  = args.disable_markup or false,
       x               = args.x or 0,
       y               = args.y or 0,
+      sub_menu_on     = args.sub_menu_on or module.sub_menu_on.SELECTED,
     },
     get_map = {
       is_menu       = function() return true end,
