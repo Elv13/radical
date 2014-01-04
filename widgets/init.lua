@@ -6,4 +6,5 @@ return {
     table    = require( "radical.widgets.table"    ),
     header   = require( "radical.widgets.header"   ),
     piechart = require( "radical.widgets.piechart" ),
+    separator= require( "radical.widgets.separator"),
 }

@@ -258,6 +258,7 @@ local function new(args)
       bg_header       = args.bg_header    or beautiful.menu_bg_header or beautiful.fg_normal,
       border_color    = args.border_color or beautiful.menu_border_color or beautiful.border_color or "#333333",
       border_width    = args.border_width or beautiful.menu_border_width or beautiful.border_width or 3,
+      separator_color = args.separator_color or beautiful.menu_separator_color or args.border_color or beautiful.menu_border_color or beautiful.border_color or "#333333",
       item_height     = args.item_height  or beautiful.menu_height or 30,
       item_width      = args.item_width or nil,
       width           = args.width or beautiful.menu_width or 130,

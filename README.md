@@ -40,12 +40,19 @@ The most simple kind of menus, contexts one, can be created like this:
         smenu:add_item({text="item 2"})
         return smenu
     end})
+    
+    -- To add the menu to a widget:
+    local mytextbox = wibox.widget.textbox()
+    mytextbox:set_menu(m,3) -- 3 = right mouse button, 1 = left mouse button
 ```
 
 In this example, a simple 3 item menu is created with a dynamically generated
 submenu. Please note that generating submenus using function will generate it
 every time it is being shown. For static menus, it is faster to simply create
 them once and passing the submenu object to the "sub_menu" item property.
+
+`:set_menu` can also take a lazy-loading function instead of a
+menu. The second parameter is not mandatory, the default is `1`.
 
 ### Menu types
 
@@ -95,14 +102,8 @@ On top of each styles, menu can also have different layouts to display items:
         item_style = radical.item_style.classic ,
         layout     = radical.layout.vertical    })
     
-    -- To add the menu to a widget:
-    local mytextbox = wibox.widget.textbox()
-    mytextbox:set_menu(m,3) -- 3 = right mouse button, 1 = left mouse button
-    
 ```
 
-Please note that `:set_menu` can also take a lazy-loading function instead of a
-menu. The second parameter is not mandatory, the default is "1".
 
 ### Tooltip
 
@@ -205,3 +206,4 @@ Radical also use the some of the same theme options as awful.menu, plus some:
  * menu_bg_normal
  * menu_bg_highlight
  * menu_submenu_icon
+ * menu_separator_color
