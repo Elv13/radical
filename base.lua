@@ -124,15 +124,16 @@ local function add_item(data,args)
     private_data = {
       text       = args.text     or ""                                                                  ,
       height     = args.height   or beautiful.menu_height or 30                                         ,
+      width      = args.width    or nil                                                                 ,
       icon       = args.icon     or nil                                                                 ,
       prefix     = args.prefix   or ""                                                                  ,
       suffix     = args.suffix   or ""                                                                  ,
       bg         = args.bg       or nil                                                                 ,
-      fg         = args.fg       or data.fg       or beautiful.menu_fg_normal or beautiful.fg_normal,
-      fg_focus   = args.fg_focus or data.fg_focus or beautiful.menu_fg_focus  or beautiful.fg_focus ,
-      bg_focus   = args.bg_focus or data.bg_focus or beautiful.menu_bg_focus  or beautiful.bg_focus ,
+      fg         = args.fg       or data.fg       or beautiful.menu_fg_normal or beautiful.fg_normal    ,
+      fg_focus   = args.fg_focus or data.fg_focus or beautiful.menu_fg_focus  or beautiful.fg_focus     ,
+      bg_focus   = args.bg_focus or data.bg_focus or beautiful.menu_bg_focus  or beautiful.bg_focus     ,
       sub_menu_m = (args.sub_menu and type(args.sub_menu) == "table" and args.sub_menu.is_menu) and args.sub_menu or nil,
-      sub_menu_f = (args.sub_menu and type(args.sub_menu) == "function") and args.sub_menu or nil,
+      sub_menu_f = (args.sub_menu and type(args.sub_menu) == "function") and args.sub_menu or nil       ,
       selected   = false,
       checkable  = args.checkable or (args.checked ~= nil) or false,
       checked    = args.checked  or false,
@@ -400,7 +401,7 @@ local function new(args)
   end
 
   function data:remove_key_hook(key)
-      for k,v in pairs(internal.filter_hooks) do
+      for k,v in pairs(internal.filter_hooks or {}) do
           if k.key == key then
               internal.filter_hooks[k] = nil
               break

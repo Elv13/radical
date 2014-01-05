@@ -11,18 +11,18 @@ local module = {}
 
 local keys = {}
 
-local pango_l,pango_crx,max_width,m_h = nil,nil,0,0
-local function create_pango()
+local pango_l,pango_crx,max_width = nil,nil,0
+local function create_pango(height)
   local padding = beautiful.menu_height/5
   pango_crx = pangocairo.font_map_get_default():create_context()
   pango_l = pango.Layout.new(pango_crx)
   local desc = pango.FontDescription()
   desc:set_family("Verdana")
   desc:set_weight(pango.Weight.BOLD)
-  desc:set_size((m_h-padding*2) * pango.SCALE)
+  desc:set_size((height-padding*2) * pango.SCALE)
   pango_l:set_font_description(desc)
   pango_l.text = "F88"
-  max_width = pango_l:get_pixel_extents().width + m_h + 4
+  max_width = pango_l:get_pixel_extents().width + height + 4
 end
 
 local function new(data,item)
@@ -30,19 +30,17 @@ local function new(data,item)
   local padding = beautiful.menu_height/5
   pref.draw = function(self,w, cr, width, height)
     local key = item._internal.f_key
-    if m_h == 0 then
-      m_h = height
+    if not keys[height]  then
       pref:emit_signal("widget::updated")
-      create_pango()
-      keys = {}
+      create_pango(height)
+      keys[height] = {}
     end
-    if key and key > 12 and keys[0] then
-      cr:set_source_surface(keys[0])
+    if key and key > 12 and keys[height][0] then
+      cr:set_source_surface(keys[height][0])
       cr:paint()
-    elseif not keys[key] then
+    elseif not keys[height] or not keys[height][key] then
       if not pango_l then
-        m_h = height
-        create_pango()
+        create_pango(height)
       end
       local img = cairo.ImageSurface(cairo.Format.ARGB32, max_width,beautiful.menu_height)
       local cr2 = cairo.Context(img)
@@ -59,16 +57,16 @@ local function new(data,item)
       pango_l.text = text
       cr2:show_layout(pango_l)
       if key > 12 then
-        keys[0] = img
+        keys[height][0] = img
       else
-        keys[key] = img
+        keys[height][key] = img
       end
     end
-    if key and key > 12 and keys[0] then
-      cr:set_source_surface(keys[0])
+    if key and key > 12 and keys[height][0] then
+      cr:set_source_surface(keys[height][0])
       cr:paint()
     else
-      cr:set_source_surface(keys[key])
+      cr:set_source_surface(keys[height][key])
       cr:paint()
     end
   end

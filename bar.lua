@@ -8,9 +8,11 @@ local beautiful = require( "beautiful"        )
 local cairo     = require( "lgi"              ).cairo
 local awful     = require( "awful"            )
 local util      = require( "awful.util"       )
+local fkey      = require( "radical.widgets.fkey" )
 local button    = require( "awful.button"     )
 local checkbox  = require( "radical.widgets.checkbox" )
 local item_style   = require( "radical.item_style.arrow_alt" )
+local vertical = require( "radical.layout.vertical" )
 
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
 
@@ -75,7 +77,22 @@ local function setup_drawable(data)
   data.draw = internal.margin.draw
 end
 
-local function create_item(item,data)
+-- Use all the space, let "align_fit" compute the right size
+local function textbox_fit(box,w,h)
+  return w,h
+end
+
+-- Force the width or compute the minimum space
+local function align_fit(box,w,h)
+  if box._item.width then return box._item.width - box._data.item_style.margins.LEFT - box._data.item_style.margins.RIGHT,h end
+  local lw = box.first:fit(w,h)
+  local cw = wibox.widget.textbox.fit(box.second,w,h)
+  local lr = box.third:fit(w,h)
+  return lw+cw+lr,h
+end
+
+-- Create the actual widget
+local function create_item(item,data,args)
   -- Background
   local bg = wibox.widget.background()
 
@@ -87,21 +104,54 @@ local function create_item(item,data)
   m:set_top   ( data.item_style.margins.TOP    )
   m:set_bottom( data.item_style.margins.BOTTOM )
 
-  -- Layout
+  -- Layout (left)
   local layout = wibox.layout.fixed.horizontal()
   bg:set_widget(m)
-  m:set_widget(layout)
 
-  -- Content
-  if item.icon then
-    local icon = wibox.widget.imagebox()
-    icon:set_image(item.icon)
-    layout:add(icon)
+  -- Layout (right)
+  local right = wibox.layout.fixed.horizontal()
+
+  -- F keys
+  vertical:setup_fkey(item,data)
+  if data.fkeys_prefix == true then
+    layout:add(fkey(data,item))
+    m:set_left  ( 0 )
   end
+
+  -- Icon
+  layout:add(vertical:setup_icon(item,data))
+
+  -- Prefix
+  if args.prefix_widget then
+    layout:add(args.prefix_widget)
+  end
+
+  -- Text
   local tb = wibox.widget.textbox()
-  layout:add(tb)
+  tb.fit = textbox_fit
   item.widget = bg
-  tb:set_text("bob")
+  tb:set_text(item.text)
+
+  -- Checkbox
+  local ck = vertical:setup_checked(item,data)
+  if ck then
+    right:add(ck)
+  end
+
+  -- Suffix
+  if args.suffix_widget then
+    right:add(args.suffix_widget)
+  end
+
+  -- Layout (align)
+  local align = wibox.layout.align.horizontal()
+  align:set_middle( tb     )
+  align:set_left  ( layout )
+  align:set_right ( right  )
+  m:set_widget    ( align  )
+  align._item = item
+  align._data = data
+  align.fit   = align_fit
 
   -- Tooltip
   item.widget:set_tooltip(item.tooltip)
@@ -116,7 +166,7 @@ end
 local function setup_item(data,item,args)
 
   -- Add widgets
-  data._internal.layout:add(create_item(item,data))
+  data._internal.layout:add(create_item(item,data,args))
   item.widget:connect_signal("mouse::enter", function() item.selected = true end)
   item.widget:connect_signal("mouse::leave", function() item.selected = false end)
 

@@ -94,6 +94,90 @@ local function cache_pixmap(item)
   end
 end
 
+function module:setup_fkey(item,data)
+  item._internal.set_map.f_key = function(value)
+    item._internal.has_changed = true
+    item._internal.f_key = value
+    data:remove_key_hook("F"..value)
+    data:add_key_hook({}, "F"..value      , "press", function()
+      item.button1()
+      data.visible = false
+    end)
+  end
+  item._internal.get_map.f_key = function() return item._internal.f_key end
+end
+
+function module:setup_checked(item,data)
+  if item.checkable then
+    item._internal.get_map.checked = function()
+      if type(item._private_data.checked) == "function" then
+        return item._private_data.checked()
+      else
+        return item._private_data.checked
+      end
+    end
+    local ck = wibox.widget.imagebox()
+    ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
+    item._internal.set_map.checked = function (value)
+      item._private_data.checked = value
+      ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
+      item._internal.has_changed = true
+    end
+    return ck
+  end
+end
+
+function module:setup_icon(item,data)
+  local icon = wibox.widget.imagebox()
+  icon.fit = function(...)
+    local w,h = wibox.widget.imagebox.fit(...)
+    return w+3,h
+  end
+  if item.icon then
+    icon:set_image(item.icon)
+  end
+
+  item._internal.set_map.icon = function (value)
+    icon:set_image(value)
+  end
+  return icon
+end
+
+function module:setup_text(item,data)
+  local text_w = wibox.widget.textbox()
+
+  text_w.draw = function(self,w, cr, width, height)
+    if item.underlay then
+      paint_underlay(data,item,cr,width,height)
+    end
+    wibox.widget.textbox.draw(self,w, cr, width, height)
+  end
+  text_w.fit = function(self,width,height) return width,height end
+
+  item._internal.set_map.text = function (value)
+    if data.disable_markup then
+      text_w:set_text(value)
+    else
+      text_w:set_markup(value)
+    end
+    if data.auto_resize then
+      local fit_w,fit_h = wibox.widget.textbox.fit(text_w,9999,9999)
+      local is_largest = item == data._internal.largest_item_w
+      item._internal.has_changed = true
+      if not data._internal.largest_item_w_v or data._internal.largest_item_w_v < fit_w then
+        data._internal.largest_item_w = item
+        data._internal.largest_item_w_v = fit_w
+      end
+      --TODO find new largest is item is smaller
+  --     if data._internal.largest_item_h_v < fit_h then
+  --       data._internal.largest_item_h =item
+  --       data._internal.largest_item_h_v = fit_h
+  --     end
+    end
+  end
+  item._internal.set_map.text(item._private_data.text)
+  return text_w
+end
 
 function module:setup_item(data,item,args)
   --Create the background
@@ -130,16 +214,11 @@ function module:setup_item(data,item,args)
   m:set_right ( data.item_style.margins.RIGHT  )
   m:set_top   ( data.item_style.margins.TOP    )
   m:set_bottom( data.item_style.margins.BOTTOM )
-  local text_w = wibox.widget.textbox()
 
-  text_w.draw = function(self,w, cr, width, height)
-    if item.underlay then
-      paint_underlay(data,item,cr,width,height)
-    end
-    wibox.widget.textbox.draw(self,w, cr, width, height)
-  end
-  text_w.fit = function(self,width,height) return width,height end
+  -- Text
+  local text_w = module:setup_text(item,data)
 
+  -- Background
   item._private_data._fit = wibox.widget.background.fit
   m.fit = function(...)
     if not data.visible or (item.visible == false or item._filter_out == true or item._hidden == true) then
@@ -148,24 +227,21 @@ function module:setup_item(data,item,args)
     return data._internal.layout.item_fit(data,item,...)
   end
 
+  -- F keys
   if data.fkeys_prefix == true then
     l:add(fkey(data,item))
     m:set_left  ( 0 )
   end
 
+  -- Prefix
   if args.prefix_widget then
     l:add(args.prefix_widget)
   end
 
-  local icon = wibox.widget.imagebox()
-  icon.fit = function(...)
-    local w,h = wibox.widget.imagebox.fit(...)
-    return w+3,h
-  end
-  if args.icon then
-    icon:set_image(args.icon)
-  end
+  -- Icon
+  local icon = module:setup_icon(item,data)
   l:add(icon)
+
   if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
     local subArrow  = wibox.widget.imagebox() --TODO, make global
     subArrow.fit = function(box, w, h) return subArrow._image:get_width(),item.height end
@@ -176,26 +252,19 @@ function module:setup_item(data,item,args)
       return wibox.widget.background.fit(box,w,h)
     end
   end
-  if item.checkable then
-    item._internal.get_map.checked = function()
-      if type(item._private_data.checked) == "function" then
-        return item._private_data.checked()
-      else
-        return item._private_data.checked
-      end
-    end
-    local ck = wibox.widget.imagebox()
-    ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
+
+  -- Checkbox
+  local ck = module:setup_checked(item,data)
+  if ck then
     lr:add(ck)
-    item._internal.set_map.checked = function (value)
-      item._private_data.checked = value
-      ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
-      item._internal.has_changed = true
-    end
   end
+
+  -- Suffix
   if args.suffix_widget then
     lr:add(args.suffix_widget)
   end
+
+  -- Layout
   la:set_left(l)
   la:set_middle(text_w)
   la:set_right(lr)
@@ -203,45 +272,14 @@ function module:setup_item(data,item,args)
   local fit_w,fit_h = data._internal.layout:fit()
   data.width = fit_w
   data.height = fit_h
-  data.style(data)
-  item._internal.set_map.text = function (value)
-    if data.disable_markup then
-      text_w:set_text(value)
-    else
-      text_w:set_markup(value)
-    end
-    if data.auto_resize then
-      local fit_w,fit_h = wibox.widget.textbox.fit(text_w,9999,9999)
-      local is_largest = item == data._internal.largest_item_w
-      item._internal.has_changed = true
-      if not data._internal.largest_item_w_v or data._internal.largest_item_w_v < fit_w then
-        data._internal.largest_item_w = item
-        data._internal.largest_item_w_v = fit_w
-      end
-      --TODO find new largest is item is smaller
-  --     if data._internal.largest_item_h_v < fit_h then
-  --       data._internal.largest_item_h =item
-  --       data._internal.largest_item_h_v = fit_h
-  --     end
-    end
+  if data.style then
+    data.style(data)
   end
 
-  item._internal.set_map.f_key = function(value)
-    item._internal.has_changed = true
-    item._internal.f_key = value
-    data:remove_key_hook("F"..value)
-    data:add_key_hook({}, "F"..value      , "press", function()
-      item.button1()
-      data.visible = false
-    end)
-  end
-  item._internal.get_map.f_key = function() return item._internal.f_key end
+  -- F keys
+  module:setup_fkey(item,data)
 
-  item._internal.set_map.icon = function (value)
-    icon:set_image(value)
-  end
-  item._internal.set_map.text(item._private_data.text)
-
+  -- Enable scrollbar if necessary
   if data._internal.scroll_w and data.rowcount > data.max_items then
     data._internal.scroll_w.visible = true
     data._internal.scroll_w["up"]:emit_signal("widget::updated")
