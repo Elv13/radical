@@ -1,18 +1,16 @@
-local base = require( "radical.base" )
-local print = print
-local unpack = unpack
-local setmetatable = setmetatable
-local color     = require( "gears.color"      )
-local wibox     = require( "wibox"            )
-local beautiful = require( "beautiful"        )
-local cairo     = require( "lgi"              ).cairo
-local awful     = require( "awful"            )
-local util      = require( "awful.util"       )
-local fkey      = require( "radical.widgets.fkey" )
-local button    = require( "awful.button"     )
-local checkbox  = require( "radical.widgets.checkbox" )
-local item_style   = require( "radical.item_style.arrow_alt" )
-local vertical = require( "radical.layout.vertical" )
+local setmetatable,unpack = setmetatable,unpack
+local base       = require( "radical.base"                 )
+local color      = require( "gears.color"                  )
+local wibox      = require( "wibox"                        )
+local beautiful  = require( "beautiful"                    )
+local cairo      = require( "lgi"                          ).cairo
+local awful      = require( "awful"                        )
+local util       = require( "awful.util"                   )
+local fkey       = require( "radical.widgets.fkey"         )
+local button     = require( "awful.button"                 )
+local checkbox   = require( "radical.widgets.checkbox"     )
+local item_style = require( "radical.item_style.arrow_alt" )
+local vertical   = require( "radical.layout.vertical"      )
 
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
 
@@ -24,6 +22,7 @@ local function set_position(self)
   return --Nothing to do
 end
 
+-- Draw the menu background
 local function bg_draw(self, w, cr, width, height)
     cr:save()
     cr:set_source(color(self._data.bg))
@@ -42,36 +41,18 @@ local function setup_drawable(data)
   internal.margin._data = data
   internal.margin.draw = bg_draw
 
-  internal.layout = wibox.layout.fixed.horizontal() --data.layout(data) --TODO fix
+  internal.layout = wibox.layout.fixed.horizontal()
   internal.margin:set_widget(internal.layout)
 
   --Getters
-  get_map.wibox     = function() return nil end -- Will this break?
-  get_map.x         = function() return 0 end
-  get_map.y         = function() return 0 end
-  get_map.width     = function() return 500 end
-  get_map.height    = function() return 40 end
-  get_map.visible   = function() return private_data.visible end
-  get_map.direction = function() return private_data.direction end
-  get_map.margins   = function()
-    local ret = {left=data.border_width,right=data.border_width,top=data.style.margins.TOP,bottom=data.style.margins.BOTTOM}
-    if data.arrow_type ~= base.arrow_type.NONE then
-      ret[data.direction] = ret[data.direction]+13
-    end
-    return ret
-  end
+  get_map.x         = function() return 0                                            end
+  get_map.y         = function() return 0                                            end
+  get_map.width     = function() return internal.margin.fix(internal.margin,9999,99) end
+  get_map.height    = function() return beautiful.default_height                     end
+  get_map.visible   = function() return true                                         end
+  get_map.direction = function() return "left"                                       end
+  get_map.margins   = function() return {left=0,right=0,top=0,bottom=0}              end
 
-  --Setters
-  function internal:set_visible(value)
-    -- TODO
-  end
-
---   if data.visible then
---     local fit_w,fit_h = data._internal.layout:fit()
---     data.width = fit_w
---     data.height = fit_h
---   end
-  
   -- This widget do not use wibox, so setup correct widget interface
   data.fit = internal.margin.fit
   data.draw = internal.margin.draw
@@ -85,10 +66,7 @@ end
 -- Force the width or compute the minimum space
 local function align_fit(box,w,h)
   if box._item.width then return box._item.width - box._data.item_style.margins.LEFT - box._data.item_style.margins.RIGHT,h end
-  local lw = box.first:fit(w,h)
-  local cw = wibox.widget.textbox.fit(box.second,w,h)
-  local lr = box.third:fit(w,h)
-  return lw+cw+lr,h
+  return box.first:fit(w,h)+wibox.widget.textbox.fit(box.second,w,h)+box.third:fit(w,h),h
 end
 
 -- Create the actual widget
@@ -163,39 +141,43 @@ local function create_item(item,data,args)
   return bg
 end
 
-local function setup_item(data,item,args)
-
-  -- Add widgets
-  data._internal.layout:add(create_item(item,data,args))
-  item.widget:connect_signal("mouse::enter", function() item.selected = true end)
-  item.widget:connect_signal("mouse::leave", function() item.selected = false end)
-
-  -- Setup buttons
+local function setup_buttons(data,item,args)
   local buttons = {}
   for i=1,10 do
     if args["button"..i] then
       buttons[#buttons+1] = button({},i,args["button"..i])
     end
   end
-  if not buttons[3] then --Hide on right click
-    buttons[#buttons+1] = button({},3,function()
-      data.visible = false
-      if data.parent_geometry and data.parent_geometry.is_menu then
-        data.parent_geometry.visible = false
-      end
-    end)
+
+  -- Setup sub_menu
+  if (item.sub_menu_m or item.sub_menu_f) and data.sub_menu_on >= base.sub_menu_on.BUTTON1 and data.sub_menu_on <= base.sub_menu_on.BUTTON3 then
+    buttons[data.sub_menu_on] = item.widget:set_menu(item.sub_menu_m or item.sub_menu_f,data.sub_menu_on)
   end
+
+  -- Scrool up
   if not buttons[4] then
     buttons[#buttons+1] = button({},4,function()
       data:scroll_up()
     end)
   end
+
+  -- Scroll down
   if not buttons[5] then
     buttons[#buttons+1] = button({},5,function()
       data:scroll_down()
     end)
   end
   item.widget:buttons( util.table.join(unpack(buttons)))
+end
+
+local function setup_item(data,item,args)
+  -- Add widgets
+  data._internal.layout:add(create_item(item,data,args))
+  item.widget:connect_signal("mouse::enter", function() item.selected = true end)
+  item.widget:connect_signal("mouse::leave", function() item.selected = false end)
+
+  -- Setup buttons
+  setup_buttons(data,item,args)
 end
 
 local function new(args)
@@ -207,6 +189,7 @@ local function new(args)
     args.internal.setup_item     = args.internal.setup_item     or setup_item
 --     args.style = args.style or arrow_style
     args.item_style = item_style
+    args.sub_menu_on = base.sub_menu_on.BUTTON1
     local ret = base(args)
     ret:connect_signal("clear::menu",function(_,vis)
       ret._internal.layout:reset()

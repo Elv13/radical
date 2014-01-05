@@ -341,9 +341,9 @@ local function new(args)
     if internal.has_changed and data.style then
       data.style(data,{arrow_x=20,margin=internal.margin})
     end
-    if not internal.parent_geometry and data._internal.set_position then
+--     if not internal.parent_geometry and data._internal.set_position then
       internal.set_position(data)
-    end
+--     end
     if internal.set_visible then
       internal:set_visible(value)
     end

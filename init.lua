@@ -28,6 +28,8 @@ local function set_menu(self,menu,button)
   for k, v in pairs(bt) do
     current[type(k) == "number" and (#current+1) or k] = v
   end
+  self._menu = menu
+  return bt
 end
 
 -- Do some monkey patching to extend all wibox.widget

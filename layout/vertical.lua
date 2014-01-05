@@ -44,13 +44,13 @@ end
 
 function module:setup_key_hooks(data)
   data:add_key_hook({}, "Up"      , "press", up    )
-  data:add_key_hook({}, "&"       , "press", up    )
+  data:add_key_hook({}, "&"       , "press", up    ) -- Xephyr bug
   data:add_key_hook({}, "Down"    , "press", down  )
-  data:add_key_hook({}, "KP_Enter", "press", down  )
+  data:add_key_hook({}, "KP_Enter", "press", down  ) -- Xephyr bug
   data:add_key_hook({}, "Left"    , "press", left  )
-  data:add_key_hook({}, "\""      , "press", left  )
+  data:add_key_hook({}, "\""      , "press", left  ) -- Xephyr bug
   data:add_key_hook({}, "Right"   , "press", right )
-  data:add_key_hook({}, "#"       , "press", right )
+  data:add_key_hook({}, "#"       , "press", right ) -- Xephyr bug
 end
 
 --Get preferred item geometry

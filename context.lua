@@ -37,6 +37,7 @@ local function get_direction(data)
 end
 
 local function set_position(self)
+  if not self.visible then return end
   local ret,parent = {x=self.wibox.x,y=self.wibox.y},self.parent_geometry
   local prefx,prefy = self._internal.private_data.x,self._internal.private_data.y
   local src_geo = capi.screen[capi.mouse.screen].geometry
@@ -164,9 +165,7 @@ local function setup_drawable(data)
   end
 end
 
-local function setup_item(data,item,args)
-  local f = (data._internal.layout.setup_item) or (layout.vertical.setup_item)
-  f(data._internal.layout,data,item,args)
+local function setup_buttons(data,item,args)
   local buttons = {}
   for i=1,10 do
     if args["button"..i] then
@@ -203,6 +202,17 @@ local function setup_item(data,item,args)
     end)
   end
   item.widget:buttons( util.table.join(unpack(buttons)))
+end
+
+local function setup_item(data,item,args)
+  -- Layout
+  local f = (data._internal.layout.setup_item) or (layout.vertical.setup_item)
+  f(data._internal.layout,data,item,args)
+
+  -- Buttons
+  setup_buttons(data,item,args)
+
+  -- Tooltip
   item.widget:set_tooltip(item.tooltip)
 end
 

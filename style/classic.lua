@@ -1,5 +1,6 @@
 local setmetatable = setmetatable
 local base = require( "radical.base" )
+local color     = require( "gears.color"      )
 
 local module = {
   margins = {
@@ -15,6 +16,7 @@ local function draw(data)
   if data.wibox then
     data.wibox.border_width = 1
     data.wibox.border_color = data.border_color
+    data.wibox:set_bg(color(data.bg))
   end
 end
 
