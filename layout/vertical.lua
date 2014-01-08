@@ -184,7 +184,7 @@ function module:setup_item(data,item,args)
   item.widget = wibox.widget.background()
   cache_pixmap(item)
 
-  data.item_style(data,item,false,false)
+  data.item_style(data,item,{})
   item.widget:set_fg(item._private_data.fg)
   item._internal.has_changed = true
 

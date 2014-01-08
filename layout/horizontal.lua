@@ -56,7 +56,7 @@ end
 function module:setup_item(data,item,args)
     --Create the background
   item.widget = wibox.widget.background()
-  data.item_style(data,item,false,false)
+  data.item_style(data,item,{})
   item.widget:set_fg(item._private_data.fg)
 
   --Event handling

@@ -1,5 +1,6 @@
 local setmetatable = setmetatable
 local math = math
+local base = require( "radical.base" )
 local color     = require( "gears.color"      )
 local cairo     = require( "lgi"              ).cairo
 local print = print
@@ -31,7 +32,9 @@ local function gen(item_height,bg_color,border_color)
   return cairo.Pattern.create_for_surface(img)
 end
 
-local function draw(data,item,is_focussed,is_pressed)
+local function draw(data,item,args)
+  local args,flags = args or {},{}
+  for _,v in pairs(args) do flags[v] = true end
   local ih = data.item_height
   if not focussed or not focussed[ih] then
     if not focussed then
@@ -42,7 +45,7 @@ local function draw(data,item,is_focussed,is_pressed)
     default [ih] = gen(ih,data.bg,bc)
   end
 
-  if is_focussed or (item._tmp_menu) then
+  if flags[base.item_flags.SELECTED] or (item._tmp_menu) then
     item.widget:set_bg(focussed[ih])
   else
       item.widget:set_bg(default[ih])
