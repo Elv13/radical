@@ -43,7 +43,7 @@ The most simple kind of menus, contexts one, can be created like this:
     
     -- To add the menu to a widget:
     local mytextbox = wibox.widget.textbox()
-    mytextbox:set_menu(m,3) -- 3 = right mouse button, 1 = left mouse button
+    mytextbox:set_menu(menu,3) -- 3 = right mouse button, 1 = left mouse button
 ```
 
 In this example, a simple 3 item menu is created with a dynamically generated

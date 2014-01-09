@@ -11,7 +11,8 @@ end
 
 local function set_menu(self,menu,button)
   if not menu then return end
-  local b,current,bt = button or 1,self:buttons(),aw_button({},b,function(geo)
+  local b = button or 1
+  local current,bt = self:buttons(),aw_button({},b,function(geo)
     local m =  menu
     if type(menu) == "function" then
       if self._tmp_menu and self._tmp_menu.visible then
