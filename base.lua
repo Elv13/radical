@@ -163,11 +163,24 @@ local function add_item(data,args)
   for i=1,10 do
     item["button"..i] = args["button"..i]
   end
-  
+
   if data.max_items ~= nil and data.rowcount >= data.max_items then-- and (data._start_at or 0)
     item._hidden = true
   end
 
+  -- Use _internal to avoid the radical.object trigger
+  data._internal.visible_item_count = (data._internal.visible_item_count or 0) + 1
+  item._internal.f_key = data._internal.visible_item_count
+
+  -- Need to be done before painting
+  data._internal.items[#data._internal.items+1] = {}
+  data._internal.items[#data._internal.items][1] = item
+  data._internal.setup_item(data,item,args)
+  if args.selected == true then
+    item.selected = true
+  end
+
+  -- Setters
   set_map.selected = function(value)
     private_data.selected = value
     if value == false then
@@ -190,14 +203,6 @@ local function add_item(data,args)
     data._current_item = item
   end
 
-  data._internal.items[#data._internal.items+1] = {}
-  data._internal.items[#data._internal.items][1] = item
-  data._internal.setup_item(data,item,args)
-  if args.selected == true then
-    item.selected = true
-  end
-  data._internal.visible_item_count = (data._internal.visible_item_count or 0) + 1
-  item.f_key = data._internal.visible_item_count
   return item
 end
 

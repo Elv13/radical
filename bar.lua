@@ -93,7 +93,6 @@ local function create_item(item,data,args)
   vertical:setup_fkey(item,data)
   if data.fkeys_prefix == true then
     layout:add(fkey(data,item))
-    m:set_left  ( 0 )
   end
 
   -- Icon
