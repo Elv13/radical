@@ -13,8 +13,8 @@ local module = {
   margins = {
     TOP    = 2,
     BOTTOM = 2,
-    RIGHT  = 10,
-    LEFT   = 10
+    RIGHT  = 20,
+    LEFT   = 3
   }
 }
 

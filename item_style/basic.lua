@@ -14,7 +14,7 @@ local module = {
 
 local function draw(data,item,args)
   local args,flags = args or {},{}
-  for _,v in pairs(args) do print("ici",v);flags[v] = true end
+  for _,v in pairs(args) do flags[v] = true end
 
   if flags[base.item_flags.SELECTED] or (item._tmp_menu) then
     item.widget:set_bg(args.color or data.bg_focus)

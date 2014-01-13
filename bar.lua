@@ -9,7 +9,7 @@ local util       = require( "awful.util"                   )
 local fkey       = require( "radical.widgets.fkey"         )
 local button     = require( "awful.button"                 )
 local checkbox   = require( "radical.widgets.checkbox"     )
-local item_style = require( "radical.item_style.arrow_alt" )
+local item_style = require( "radical.item_style.arrow_prefix" )
 local vertical   = require( "radical.layout.vertical"      )
 
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
@@ -129,6 +129,7 @@ local function create_item(item,data,args)
   align._item = item
   align._data = data
   align.fit   = align_fit
+  item._internal.align = align
 
   -- Tooltip
   item.widget:set_tooltip(item.tooltip)
