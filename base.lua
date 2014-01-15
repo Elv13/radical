@@ -252,7 +252,6 @@ local function add_embeded_menu(data,menu)
 end
 
 local function add_key_binding(data,mod,key,func)
-  print("\n\n\nCAT",mod,key,func)
   capi.root.keys(util.table.join(capi.root.keys(),aw_key(mod or {}, key, func and func() or function ()
       print("bob")
       data.visible = not data.visible
@@ -420,7 +419,7 @@ local function new(args)
     end
   end
 
-  function data:remove_key_hook(key)
+  function data:remove_key_hook(key) --TODO broken?
       for k,v in pairs(internal.filter_hooks or {}) do
           if k.key == key then
               internal.filter_hooks[k] = nil
