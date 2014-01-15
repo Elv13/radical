@@ -4,9 +4,10 @@ local type,string  = type,string
 local print,unpack = print, unpack
 local beautiful    = require( "beautiful"          )
 local util         = require( "awful.util"         )
+local aw_key       = require( "awful.key"          )
 local object       = require( "radical.object"     )
 
-local capi = { mouse = mouse, screen = screen , keygrabber = keygrabber }
+local capi = { mouse = mouse, screen = screen , keygrabber = keygrabber, root=root, }
 
 local module = {
   arrow_type = {
@@ -250,6 +251,14 @@ local function add_embeded_menu(data,menu)
   menu._embeded_parent = data
 end
 
+local function add_key_binding(data,mod,key,func)
+  print("\n\n\nCAT",mod,key,func)
+  capi.root.keys(util.table.join(capi.root.keys(),aw_key(mod or {}, key, func and func() or function ()
+      print("bob")
+      data.visible = not data.visible
+  end)))
+end
+
 
 ---------------------------------MENU HANDLING----------------------------------
 local function new(args)
@@ -326,7 +335,7 @@ local function new(args)
     autogen_signals = true,
   })
   internal.get_map,internal.set_map,internal.private_data = get_map,set_map,private_data
-  data.add_item,data.add_widget,data.add_embeded_menu,data._internal = add_item,add_widget,add_embeded_menu,internal
+  data.add_item,data.add_widget,data.add_embeded_menu,data._internal,data.add_key_binding = add_item,add_widget,add_embeded_menu,internal,add_key_binding
   set_map.parent_geometry = function(value)
     private_data.parent_geometry = value
     if data._internal.get_direction then

@@ -44,6 +44,9 @@ The most simple kind of menus, contexts one, can be created like this:
     -- To add the menu to a widget:
     local mytextbox = wibox.widget.textbox()
     mytextbox:set_menu(menu,3) -- 3 = right mouse button, 1 = left mouse button
+    
+    -- To add a key binding on a "box" menu (and every other types)
+    menu:add_key_binding({"Mod4"},",")
 ```
 
 In this example, a simple 3 item menu is created with a dynamically generated
@@ -53,6 +56,10 @@ them once and passing the submenu object to the "sub_menu" item property.
 
 `:set_menu` can also take a lazy-loading function instead of a
 menu. The second parameter is not mandatory, the default is `1`.
+
+`:add_key_binding` will add a key binding. It can also take a function as 3rd
+parameter. However, it wont correctly place "context" menu as it have no idea
+where you expect them. It work better with "box" menus.
 
 ### Menu types
 
