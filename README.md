@@ -188,7 +188,7 @@ Multiple items can have multiple sets of options.
 | selected       | Select this item                             | boolean           |
 | checkable      | Is the item dual state (a checkbox)          | boolean           |
 | checked        | Is the item checked or not                   | boolean           |
-| underlay       | Text to render at the far-right of the item  | string            |
+| underlay       | Text to render at the far-right of the item  | [array of] string |
 | prefix_widget  | Widget to append at the begenning of the item| widget            |
 | suffix_widget  | Widget to append at the end of the item      | widget            |
 | tooltip        | A tooltip shown on the side or bottom        | string            |
@@ -219,18 +219,19 @@ here is the list:
 
 Radical also use the some of the same theme options as awful.menu, plus some:
 
- * menu_height
- * menu_width
- * menu_border_width
- * menu_border_color
- * border_width
- * border_color
- * menu_fg_normal
- * menu_bg_focus
- * menu_bg_header
- * menu_bg_alternate
- * menu_bg_normal
- * menu_bg_highlight
- * menu_submenu_icon
- * menu_separator_color
- * menu_submenu_icon
+|            Name              |              Description               |          Type           |
+| ---------------------------- | -------------------------------------  | ----------------------  |
+| menu_height                  | Menu height                            | String/Gradient/Pattern |
+| menu_width                   | Menu default/minimum width             | Number                  |
+| menu_border_width            | Border width                           | Number                  |
+| menu_border_color            | Border color                           | String/Gradient/Pattern |
+| menu_fg_normal               | Text/Foreground color                  | String/Gradient/Pattern |
+| menu_bg_focus                | Selected item color                    | String/Gradient/Pattern |
+| menu_bg_header               | Header widget background color         | String/Gradient/Pattern |
+| menu_bg_alternate            | Scrollbar and other widget color       | String/Gradient/Pattern |
+| menu_bg_normal               | Default background                     | String/Gradient/Pattern |
+| menu_bg_highlight            | Highlighted item background            | String/Gradient/Pattern |
+| menu_submenu_icon            | Sub menu pixmap (aka >)                | Path/Pattern            |
+| menu_separator_color         | Menu separator color                   | String/Gradient/Pattern |
+| draw_underlay                | Function returning the underlay pixmap | Function                |
+

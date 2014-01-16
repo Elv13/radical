@@ -6,6 +6,7 @@ local checkbox  = require( "radical.widgets.checkbox" )
 local scroll    = require( "radical.widgets.scroll"   )
 local filter    = require( "radical.widgets.filter"   )
 local fkey      = require( "radical.widgets.fkey"     )
+local underlay  = require( "radical.widgets.underlay" )
 local beautiful = require("beautiful"                 )
 local wibox     = require( "wibox"                    )
 local color     = require( "gears.color"              )
@@ -65,9 +66,10 @@ local function item_fit(data,item,...)
 end
 
 -- Like an overlay, but under
-local function paint_underlay(data,item,cr,width,height)
+function module.paint_underlay(data,item,cr,width,height)
   cr:save()
-  cr:set_source_surface(item.underlay,width-item.underlay:get_width()-3)
+  local udl = underlay.draw(item.underlay)
+  cr:set_source_surface(udl,width-udl:get_width()-3)
   cr:paint_with_alpha(data.underlay_alpha)
   cr:restore()
 end
@@ -148,7 +150,7 @@ function module:setup_text(item,data)
 
   text_w.draw = function(self,w, cr, width, height)
     if item.underlay then
-      paint_underlay(data,item,cr,width,height)
+      module.paint_underlay(data,item,cr,width,height)
     end
     wibox.widget.textbox.draw(self,w, cr, width, height)
   end

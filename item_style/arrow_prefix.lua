@@ -12,8 +12,8 @@ local wibox = require("wibox")
 
 local module = {
   margins = {
-    TOP    = 2,
-    BOTTOM = 2,
+    TOP    = 0,
+    BOTTOM = 0,
     RIGHT  = 20,
     LEFT   = 3
   }

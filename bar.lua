@@ -106,6 +106,12 @@ local function create_item(item,data,args)
   -- Text
   local tb = wibox.widget.textbox()
   tb.fit = textbox_fit
+  tb.draw = function(self,w, cr, width, height)
+    if item.underlay then
+      vertical.paint_underlay(data,item,cr,width,height)
+    end
+    wibox.widget.textbox.draw(self,w, cr, width, height)
+  end
   item.widget = bg
   tb:set_text(item.text)
 

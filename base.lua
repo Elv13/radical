@@ -2,10 +2,11 @@ local setmetatable = setmetatable
 local pairs,ipairs = pairs, ipairs
 local type,string  = type,string
 local print,unpack = print, unpack
-local beautiful    = require( "beautiful"          )
-local util         = require( "awful.util"         )
-local aw_key       = require( "awful.key"          )
-local object       = require( "radical.object"     )
+local beautiful    = require( "beautiful"               )
+local util         = require( "awful.util"              )
+local aw_key       = require( "awful.key"               )
+local object       = require( "radical.object"          )
+local vertical     = require( "radical.layout.vertical" )
 
 local capi = { mouse = mouse, screen = screen , keygrabber = keygrabber, root=root, }
 
