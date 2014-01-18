@@ -94,13 +94,18 @@ local function new(args)
       l:add( button_group({client = v, field = "ontop"    , focus = false, checked = function() return v.ontop     end, onclick = function() v.ontop     = not v.ontop     end }))
       l:add( button_group({client = v, field = "close"    , focus = false, checked = function() return false       end, onclick = function() v:kill()                      end }))
 
+      local underlays = {}
+      for k,v in ipairs(v:tags()) do
+        underlays[#underlays+1] = v.name
+      end
+
       l.fit = function (s,w,h) return 5*h,h end
       currentMenu:add_item({
         text          = v.name,
         icon          = module.icon_transform and module.icon_transform(v.icon or module.default_icon) or v.icon or module.default_icon,
         suffix_widget = not auto_release and l or nil,
         selected      = capi.client.focus and capi.client.focus == v,
-        underlay      = v:tags()[1] and v:tags()[1].name,
+        underlay      = underlays,
         checkable     = not auto_release,
         checked       = not auto_release and is_in_tag(t,v) or nil,
         button1       = function()
@@ -108,6 +113,7 @@ local function new(args)
             tag.viewonly(v:tags()[1])
           end
           capi.client.focus = v
+          currentMenu.visible = false
         end,
       }).client = v
     end
