@@ -39,6 +39,8 @@ end
 local function new(widget,text, args)
   local args,data = args or  {},{}
 
+  data.text = text
+
   local function hide_tooltip()
     if data.wibox then
       data.wibox.visible = false
@@ -57,7 +59,7 @@ local function new(widget,text, args)
     if not data.wibox then
       local vertical,textw = (args.direction == "left") or (args.direction == "right"),wibox.widget.textbox()
       textw.align = "center"
-      textw:set_markup("<b>".. text .."</b>")
+      textw:set_markup("<b>".. data.text .."</b>")
       local w,extents = wibox({position="free"}),textw._layout:get_pixel_extents()
       extents.width = extents.width + 60
       w.visible = false
@@ -127,7 +129,6 @@ local function new(widget,text, args)
         data.drawable:connect_signal("mouse::leave",hide_tooltip)
       end
     end
-    data.text = text
   end
   widget:connect_signal("mouse::enter"  , function(widget,geometry) data:showToolTip( true  , {parent=geometry}) end)
   widget:connect_signal("mouse::leave"  , hide_tooltip)

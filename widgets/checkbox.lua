@@ -23,7 +23,7 @@ local function init()
     cr2:paint()
     cr:set_operator(cairo.Operator.SOURCE)
     cr2:set_operator(cairo.Operator.SOURCE)
-    local sp = 2.5
+    local sp = size*0.15
     local rs = size - (2*sp)
     cr:set_source(color(beautiful.fg_normal))
     cr2:set_source(color(beautiful.fg_normal))
