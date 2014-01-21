@@ -178,9 +178,6 @@ local function add_item(data,args)
   data._internal.items[#data._internal.items+1] = {}
   data._internal.items[#data._internal.items][1] = item
   data._internal.setup_item(data,item,args)
-  if args.selected == true then
-    item.selected = true
-  end
 
   -- Setters
   set_map.selected = function(value)
@@ -203,6 +200,9 @@ local function add_item(data,args)
     end
     data.item_style(data,item,{module.item_flags.SELECTED})
     data._current_item = item
+  end
+  if args.selected == true then
+    item.selected = true
   end
 
   return item
@@ -399,8 +399,20 @@ local function new(args)
     end
   end
 
-  get_map.previous_item = function() return (internal.items[(data.current_index or 0)-1] or internal.items[data.rowcount])[1] end
-  get_map.next_item     = function() return ((internal.items[(data.current_index or 0)+1]or{})[1] or internal.items[1][1]) end
+  get_map.previous_item = function()
+    local candidate,idx = internal.items[(data.current_index or 0)-1],(data.current_index or 0)-1
+    while candidate and (candidate[1]._hidden or candidate[1]._filter_out) and idx > 0 do
+      candidate,idx = internal.items[idx - 1],idx-1
+    end
+    return (candidate or internal.items[data.rowcount])[1]
+  end
+  get_map.next_item     = function()
+    local candidate,idx = internal.items[(data.current_index or 0)+1],(data.current_index or 0)+1
+    while candidate and (candidate[1]._hidden or candidate[1]._filter_out) and idx <= data.rowcount do
+      candidate,idx = internal.items[idx + 1],idx+1
+    end
+    return (candidate or internal.items[1])[1]
+  end
 
   --Repaint when appearance properties change
   for k,v in ipairs({"bg","fg","border_color","border_width","item_height","width","arrow_type"}) do
