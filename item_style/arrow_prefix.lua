@@ -1,38 +1,47 @@
 local setmetatable = setmetatable
-local print = print
-local debug=debug
-local ipairs =  ipairs
-local math = math
-local base      = require( "radical.base"     )
-local beautiful = require("beautiful")
-local color = require("gears.color")
-local cairo = require("lgi").cairo
-local wibox = require("wibox")
--- local arrow_alt = require("radical.item_style.arrow_alt")
+local base      = require( "radical.base"               )
+local beautiful = require("beautiful"                   )
+local color     = require("gears.color"                 )
+local cairo     = require("lgi"                         ).cairo
+local wibox     = require("wibox"                       )
+local arrow_alt = require("radical.item_style.arrow_alt")
 
 local module = {
   margins = {
     TOP    = 0,
     BOTTOM = 0,
-    RIGHT  = 20,
-    LEFT   = 3
+    RIGHT  = 0,
+    LEFT   = 0
   }
 }
 
 local function prefix_draw(self, w, cr, width, height)
-  print("Hello",width,height,self)
   cr:save()
-  cr:set_source_rgba(1,0,0,1)
-  cr:rectangle(0,0,width+30,height)
+  cr:set_source(color(beautiful.icon_grad or beautiful.fg_normal))
+  cr:rectangle(0,0,width-height/2-2-height/6,height)
   cr:fill()
+  cr:set_source_surface(arrow_alt.get_beg_arrow({width=height/2+2,height=height,bg_color=beautiful.icon_grad or beautiful.fg_normal}),width-height/2-2 - height/6,0)
+  cr:paint()
   cr:restore()
   self._draw(self, w, cr, width, height)
 end
 
 local function prefix_fit(box,w,h)
   local width,height = box._fit(box,w,h)
-  print("in fit",width,width+30,box)
-  return width + 30,height
+  return width + h/2 + h/6,height
+end
+
+local function suffix_draw(self, w, cr, width, height)
+  cr:save()
+  cr:set_source_surface(arrow_alt.get_end_arrow({width=height/2+2,height=height,bg_color=beautiful.icon_grad or beautiful.fg_normal}),width-height/2-2,0)
+  cr:paint()
+  cr:restore()
+  self._draw(self, w, cr, width, height)
+end
+
+local function suffix_fit(box,w,h)
+  local width,height = box._fit(box,w,h)
+  return width + h/2 + h/6,height
 end
 
 local function draw(data,item,args)
@@ -41,11 +50,18 @@ local function draw(data,item,args)
 
   if not item._internal.align._setup then
     item._internal.align._setup = true
+
+    -- Replace prefix function
     item._internal.align.first._fit = item._internal.align.first.fit
     item._internal.align.first._draw = item._internal.align.first.draw
     item._internal.align.first.fit = prefix_fit
     item._internal.align.first.draw = prefix_draw
---     item._internal.align.first:emit_signal("widget::updated")
+
+    -- Replace suffix function
+    item._internal.align.third._fit = item._internal.align.third.fit
+    item._internal.align.third._draw = item._internal.align.third.draw
+    item._internal.align.third.fit = suffix_fit
+    item._internal.align.third.draw = suffix_draw
   end
 
   if flags[base.item_flags.SELECTED] or (item._tmp_menu) then
