@@ -244,6 +244,12 @@ function module:setup_item(data,item,args)
   local icon = module:setup_icon(item,data)
   l:add(icon)
 
+  -- Checkbox
+  local ck = module:setup_checked(item,data)
+  if ck then
+    lr:add(ck)
+  end
+
   if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
     local subArrow  = wibox.widget.imagebox() --TODO, make global
     subArrow.fit = function(box, w, h) return subArrow._image:get_width(),item.height end
@@ -253,12 +259,6 @@ function module:setup_item(data,item,args)
       args.y = data.height-h-data.margins.top
       return wibox.widget.background.fit(box,w,h)
     end
-  end
-
-  -- Checkbox
-  local ck = module:setup_checked(item,data)
-  if ck then
-    lr:add(ck)
   end
 
   -- Suffix

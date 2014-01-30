@@ -56,7 +56,7 @@ end
 
 local function execute_sub_menu(data,item)
   if (item._private_data.sub_menu_f  or item._private_data.sub_menu_m) then
-    local sub_menu = item._private_data.sub_menu_m or item._private_data.sub_menu_f()
+    local sub_menu = item._private_data.sub_menu_m or item._private_data.sub_menu_f(data,item)
     if sub_menu and sub_menu.rowcount > 0 then
       sub_menu.arrow_type = module.arrow_type.NONE
       sub_menu.parent_item = item
