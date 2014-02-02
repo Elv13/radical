@@ -5,6 +5,7 @@ local util      = require( "awful.util"       )
 local button    = require( "awful.button"     )
 local checkbox  = require( "radical.widgets.checkbox" )
 local wibox     = require( "wibox" )
+local item_layout = require("radical.item_layout.icon")
 
 local module = {}
 
@@ -48,17 +49,7 @@ function module:setup_key_hooks(data)
   data:add_key_hook({}, "#"       , "press", right )
 end
 
-local function icon_fit(data,...)
-  local w,h = wibox.widget.imagebox.fit(...)
-  return w,data.icon_size or h
-end
-
-function module:setup_item(data,item,args)
-    --Create the background
-  item.widget = wibox.widget.background()
-  data.item_style(data,item,{})
-  item.widget:set_fg(item._private_data.fg)
-
+local function setup_event(data,item,args)
   --Event handling
   item.widget:connect_signal("mouse::enter", function() item.selected = true end)
   item.widget:connect_signal("mouse::leave", function() item.selected = false end)
@@ -90,86 +81,20 @@ function module:setup_item(data,item,args)
     data.style(data)
   end)
   item.widget:buttons( util.table.join(unpack(buttons)))
+end
 
-  --Create the main item layout
-  local l,la,lr = wibox.layout.fixed.vertical(),wibox.layout.align.vertical(),wibox.layout.fixed.horizontal()
-  local m = wibox.layout.margin(la)
-  m:set_margins (0)
-  m:set_left  ( data.item_style.margins.LEFT   )
-  m:set_right ( data.item_style.margins.RIGHT  )
-  m:set_top   ( data.item_style.margins.TOP    )
-  m:set_bottom( data.item_style.margins.BOTTOM )
-  local text_w = wibox.widget.textbox()
-  text_w:set_align("center")
-  item._private_data._fit = wibox.widget.background.fit
-  m.fit = function(...)
-      if item.visible == false or item._filter_out == true then
-        return 0,0
-      end
-      return data._internal.layout.item_fit(data,item,...)
-  end
+function module:setup_item(data,item,args)
+  local bg = item_layout(item,data,args)
 
-  if data.fkeys_prefix == true then
-    local pref = wibox.widget.textbox()
-    pref.draw = function(self,w, cr, width, height)
-      cr:set_source(color(beautiful.fg_normal))
-      cr:paint()
-      wibox.widget.textbox.draw(self,w, cr, width, height)
-    end
-    l:add(pref)
-    m:set_left  ( 0 )
-  end
-
-  if args.prefix_widget then
-    l:add(args.prefix_widget)
-  end
-
-  
-  local icon_flex = wibox.layout.align.horizontal()
-  local icon = wibox.widget.imagebox()
-  icon.fit = function(...) return icon_fit(data,...) end
-  if args.icon then
-    icon:set_image(args.icon)
-  end
-  icon_flex:set_middle(icon)
-  l:add(icon_flex)
-  l:add(text_w)
-  if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
-    local subArrow  = wibox.widget.imagebox() --TODO, make global
-    subArrow.fit = function(box, w, h) return subArrow._image:get_width(),item.height end
-    subArrow:set_image( beautiful.menu_submenu_icon   )
-    lr:add(subArrow)
-    item.widget.fit = function(box,w,h,...)
-      args.y = data.height-h-data.margins.top
-      return wibox.widget.background.fit(box,w,h,...)
-    end
-  end
-  if item.checkable then
-    item._internal.get_map.checked = function()
-      if type(item._private_data.checked) == "function" then
-        return item._private_data.checked()
-      else
-        return item._private_data.checked
-      end
-    end
-    local ck = wibox.widget.imagebox()
-    ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
-    lr:add(ck)
-    item._internal.set_map.checked = function (value)
-      item._private_data.checked = value
-      ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
-    end
-  end
-  if args.suffix_widget then
-    lr:add(args.suffix_widget)
-  end
-  la:set_top(l)
-  la:set_bottom(lr)
-  item.widget:set_widget(m)
+  -- Set size
   local fit_w,fit_h = data._internal.layout:fit()
   data.width = fit_w
   data.height = fit_h
   data.style(data)
+  local text_w = item._internal.text_w
+  local icon_w = item._internal.icon_w
+
+  -- Setup text
   item._internal.set_map.text = function (value)
     if data.disable_markup then
       text_w:set_text(value)
@@ -187,12 +112,17 @@ function module:setup_item(data,item,args)
     end
   end
   item._internal.set_map.icon = function (value)
-    icon:set_image(value)
+    icon_w:set_image(value)
   end
   item._internal.set_map.text(item._private_data.text)
 
   -- Setup tooltip
-  item.widget:set_tooltip(item.tooltip)
+  bg:set_tooltip(item.tooltip)
+
+  -- Set widget
+  item.widget = bg
+  data.item_style(data,item,{})
+  setup_event(data,item,args)
 end
 
 --Get preferred item geometry
