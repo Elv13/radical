@@ -94,7 +94,7 @@ local function draw(data,args)
   --END set_arrow
 
   set_direction(data,direction)
-  data._internal.set_position(data)
+--   data._internal.set_position(data) --TODO DEAD CODE?
 
   local margins = data.margins
   local margin = data._internal.margin
