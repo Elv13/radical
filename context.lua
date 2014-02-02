@@ -46,8 +46,15 @@ local function set_position(self)
       ret={x=parent.x-self.width,y=parent.y+(self.parent_item.y)}
     else
       ret={x=parent.x+parent.width,y=parent.y+(self.parent_item.y)- (parent.show_filter and parent.item_height or 0)}
+
+      --Handle when the menu doesn't fit in the srceen horizontally
+      if ret.x+self.width > src_geo.x + src_geo.width then
+        ret.x = src_geo.x + src_geo.width - self.width - parent.width
+      end
+
+      -- Handle when the menu doesn't fit on the screen vertically
       if ret.y+self.height > src_geo.height then
-        ret.y = ret.y - self.height + self.item_height
+       ret.y = ret.y - self.height + self.item_height
       end
     end
   elseif parent then
@@ -80,6 +87,8 @@ local function set_position(self)
       end
     end
   end
+
+  --Handle when menu doesn't fit horizontally (if not handled earlier)
   if ret.x+self.width > src_geo.x + src_geo.width then
     ret.x = ret.x - (ret.x+self.width - (src_geo.x + src_geo.width))
   elseif ret.x < 0 then

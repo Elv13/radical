@@ -20,13 +20,21 @@ local capi,module = { mouse = mouse , screen = screen , keygrabber = keygrabber 
 local function setup_drawable(data)
   local internal = data._internal
   local get_map,set_map,private_data = internal.get_map,internal.set_map,internal.private_data
-  get_map.visible = function() return true end --Let the parent handle that
+
+  -- An embeded menu can only be visible if the parent is
+  get_map.visible = function() return data._embeded_parent and data._embeded_parent.visible or false end --Let the parent handle that
   set_map.visible = function(v) if data._embeded_parent then data._embeded_parent.visible = v end end
+
+  -- Enumate geometry --BUG this is fake, but better than nothing
+  get_map.width = function() return data._embeded_parent and data._embeded_parent.width end
+  get_map.y = function() return data._embeded_parent and data._embeded_parent.y end
+  get_map.x = function() return data._embeded_parent and data._embeded_parent.x end
   if not data.layout then
     data.layout = layout.vertical
   end
   internal.layout = data.layout(data)
   data.width,data.height = data._internal.layout:fit()
+  data.margins={left=0,right=0,bottom=0,top=0}
 end
 
 local function setup_item(data,item,args)
