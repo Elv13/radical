@@ -129,7 +129,6 @@ function module:setup_item(data,item,args)
   item.widget = wibox.widget.background()
   cache_pixmap(item)
 
-  data.item_style(data,item,{})
   item.widget:set_fg(item._private_data.fg)
   item._internal.has_changed = true
 
@@ -155,10 +154,10 @@ function module:setup_item(data,item,args)
   local l,la,lr = wibox.layout.fixed.horizontal(),wibox.layout.align.horizontal(),wibox.layout.fixed.horizontal()
   local m = wibox.layout.margin(la)
   m:set_margins (0)
-  m:set_left  ( data.item_style.margins.LEFT   )
-  m:set_right ( data.item_style.margins.RIGHT  )
-  m:set_top   ( data.item_style.margins.TOP    )
-  m:set_bottom( data.item_style.margins.BOTTOM )
+  m:set_left  ( (item.item_style or data.item_style).margins.LEFT   )
+  m:set_right ( (item.item_style or data.item_style).margins.RIGHT  )
+  m:set_top   ( (item.item_style or data.item_style).margins.TOP    )
+  m:set_bottom( (item.item_style or data.item_style).margins.BOTTOM )
 
   -- Text
   local text_w = module:setup_text(item,data)
@@ -214,6 +213,8 @@ function module:setup_item(data,item,args)
   la:set_middle(text_w)
   la:set_right(lr)
   item.widget:set_widget(m)
+  item._internal.align = la
+
   local fit_w,fit_h = data._internal.layout:fit()
   data.width = fit_w
   data.height = fit_h
@@ -233,6 +234,10 @@ function module:setup_item(data,item,args)
 
   -- Setup tooltip
   item.widget:set_tooltip(item.tooltip)
+
+  -- Apply item style
+  local item_style = item.item_style or data.item_style
+  item_style(data,item,{})
 end
 
 local function compute_geo(data)

@@ -89,10 +89,10 @@ local function create_item(item,data,args)
   -- Margins
   local m = wibox.layout.margin(la)
   m:set_margins (0)
-  m:set_left  ( data.item_style.margins.LEFT   )
-  m:set_right ( data.item_style.margins.RIGHT  )
-  m:set_top   ( data.item_style.margins.TOP    )
-  m:set_bottom( data.item_style.margins.BOTTOM )
+  m:set_left  ( (item.item_style or data.item_style).margins.LEFT   )
+  m:set_right ( (item.item_style or data.item_style).margins.RIGHT  )
+  m:set_top   ( (item.item_style or data.item_style).margins.TOP    )
+  m:set_bottom( (item.item_style or data.item_style).margins.BOTTOM )
 
   -- Layout (left)
   local layout = wibox.layout.fixed.horizontal()
@@ -153,7 +153,8 @@ local function create_item(item,data,args)
   item.widget:set_tooltip(item.tooltip)
 
   -- Draw
-  data.item_style(data,item,{})
+  local item_style = item.item_style or data.item_style
+  item_style(data,item,{})
   item.widget:set_fg(item._private_data.fg)
 
   return bg

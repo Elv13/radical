@@ -43,17 +43,18 @@ base.make_widget = function(...)
 end
 
 return {
-  layout     = require( "radical.layout"     ),
-  object     = require( "radical.object"     ),
-  base       = require( "radical.base"       ),
-  radial     = require( "radical.radial"     ),
-  context    = require( "radical.context"    ),
-  embed      = require( "radical.embed"      ),
-  box        = require( "radical.box"        ),
-  bar        = require( "radical.bar"        ),
-  style      = require( "radical.style"      ),
-  item_style = require( "radical.item_style" ),
-  widgets    = require( "radical.widgets"    ),
-  tooltip    = tooltip
+  layout      = require( "radical.layout"     ),
+  object      = require( "radical.object"     ),
+  base        = require( "radical.base"       ),
+  radial      = require( "radical.radial"     ),
+  context     = require( "radical.context"    ),
+  embed       = require( "radical.embed"      ),
+  box         = require( "radical.box"        ),
+  bar         = require( "radical.bar"        ),
+  style       = require( "radical.style"      ),
+  item_style  = require( "radical.item_style" ),
+  widgets     = require( "radical.widgets"    ),
+  item_layout = require( "radical.item_layout"),
+  tooltip     = tooltip
 }
 -- kate: space-indent on; indent-width 2; replace-tabs on;

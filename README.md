@@ -99,6 +99,14 @@ On top of each styles, menu can also have different layouts to display items:
 * **Horizontal:** Items are displayed alongside each other
 * **Grid:** Items are displayed as a 2D array
 
+### Item layout
+
+Item layouts are how widgets (icons, label, prefix) are disposed in the item
+
+* **horizontal:** Default layout used by the context style
+* **icon:** Look like a desktop icon, used by horizontal menus
+* **centerred:** Align widgets at the center instead of using all space
+
 ### Using styles and layouts
 
 ```lua
@@ -143,6 +151,7 @@ Multiple items can have multiple sets of options.
 | bg_alternate    | Alternate background color                         | String/gradient/pattern       |
 | bg_highlight    | Highlight background color                         | String/gradient/pattern       |
 | bg_header       | Header (see widgets section) color                 | String/gradient/pattern       |
+| bg_prefix       | Prefix background for item_styles that support it  | String/gradient/pattern       |
 | border_color    | Border color                                       | String/gradient/pattern       |
 | border_width    | Border width                                       | number                        |
 | item_height     | Default height of items                            | number                        |
@@ -191,6 +200,8 @@ Multiple items can have multiple sets of options.
 | underlay       | Text to render at the far-right of the item  | [array of] string |
 | prefix_widget  | Widget to append at the begenning of the item| widget            |
 | suffix_widget  | Widget to append at the end of the item      | widget            |
+| item_style     | Custom item_style for this item              | item_style        |
+| item_layout    | Custom item_layout for this item             | item_layout       |
 | tooltip        | A tooltip shown on the side or bottom        | string            |
 | button1        | Left mouse button action                     | function          |
 | button2        | Mid mouse button action                      | function          |

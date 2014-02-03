@@ -17,10 +17,11 @@ local module = {
 
 local function prefix_draw(self, w, cr, width, height)
   cr:save()
-  cr:set_source(color(beautiful.icon_grad or beautiful.fg_normal))
+  local col = self._item.bg_prefix or beautiful.icon_grad or beautiful.fg_normal
+  cr:set_source(color(col))
   cr:rectangle(0,0,width-height/2-2-height/6,height)
   cr:fill()
-  cr:set_source_surface(arrow_alt.get_beg_arrow({width=height/2+2,height=height,bg_color=beautiful.icon_grad or beautiful.fg_normal}),width-height/2-2 - height/6,0)
+  cr:set_source_surface(arrow_alt.get_beg_arrow({width=height/2+2,height=height,bg_color=col}),width-height/2-2 - height/6,0)
   cr:paint()
   cr:restore()
   self._draw(self, w, cr, width, height)
@@ -33,7 +34,7 @@ end
 
 local function suffix_draw(self, w, cr, width, height)
   cr:save()
-  cr:set_source_surface(arrow_alt.get_end_arrow({width=height/2+2,height=height,bg_color=beautiful.icon_grad or beautiful.fg_normal}),width-height/2-2,0)
+  cr:set_source_surface(arrow_alt.get_end_arrow({width=height/2+2,height=height,bg_color=self._item.bg_prefix or beautiful.icon_grad or beautiful.fg_normal}),width-height/2-2,0)
   cr:paint()
   cr:restore()
   self._draw(self, w, cr, width, height)
@@ -52,12 +53,14 @@ local function draw(data,item,args)
     item._internal.align._setup = true
 
     -- Replace prefix function
+    item._internal.align.first._item = item
     item._internal.align.first._fit = item._internal.align.first.fit
     item._internal.align.first._draw = item._internal.align.first.draw
     item._internal.align.first.fit = prefix_fit
     item._internal.align.first.draw = prefix_draw
 
     -- Replace suffix function
+    item._internal.align.third._item = item
     item._internal.align.third._fit = item._internal.align.third.fit
     item._internal.align.third._draw = item._internal.align.third.draw
     item._internal.align.third.fit = suffix_fit
