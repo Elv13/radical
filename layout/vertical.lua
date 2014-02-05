@@ -63,15 +63,15 @@ end
 local function cache_pixmap(item)
   item._internal.pix_cache = {}
   item.widget._draw = item.widget.draw
-  item.widget.draw = function(self,wibox, cr, width, height)
-    if not wibox.visible or item._hidden then return end
+  item.widget.draw = function(self,w, cr, width, height)
+    if not w.visible or item._hidden then return end
     if item._internal.pix_cache[10*width+7*height+(item.selected and 8888 or 999)] then
       cr:set_source_surface(item._internal.pix_cache[10*width+7*height+(item.selected and 8888 or 999)])
       cr:paint()
     else
       local img5 = cairo.ImageSurface.create(cairo.Format.ARGB32, width, height)
       local cr5 = cairo.Context(img5)
-      item.widget._draw(self,wibox, cr5, width, height)
+      item.widget._draw(self,w, cr5, width, height)
       cr:set_source_surface(img5)
       cr:paint()
       item._internal.pix_cache[10*width+7*height+(item.selected and 8888 or 999)] = img5
@@ -141,7 +141,7 @@ function module:setup_item(data,item,args)
 
   item._private_data._fit = wibox.widget.background.fit
   item._internal.margin_w.fit = function(...)
-    if not data.visible or (item.visible == false or item._filter_out == true or item._hidden == true) then
+    if (item.visible == false or item._filter_out == true or item._hidden == true) then
       return 0,0
     end
     return data._internal.layout.item_fit(data,item,...)
