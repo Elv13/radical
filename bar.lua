@@ -57,6 +57,12 @@ local function setup_drawable(data)
   -- This widget do not use wibox, so setup correct widget interface
   data.fit = internal.margin.fit
   data.draw = internal.margin.draw
+
+  --Swap
+  data:connect_signal("item::swapped",function(_,item1,item2,index1,index2)
+    internal.layout.widgets[index1],internal.layout.widgets[index2] = internal.layout.widgets[index2],internal.layout.widgets[index1]
+    internal.layout:emit_signal("widget::updated")
+  end)
 end
 
 local function setup_buttons(data,item,args)

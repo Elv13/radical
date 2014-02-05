@@ -450,6 +450,28 @@ local function new(args)
     data:emit_signal("clear::menu")
   end
 
+  function data:swap(item1,item2)
+    if not item1 or not item2 and item1 ~= item2 then return end
+    local idx1,idx2
+    for k,v in ipairs(internal.items) do --rows
+      for k2,v2 in ipairs(v) do --columns
+        if item2 == v2 then
+          idx2 = k
+        end
+        if item1 == v2 then
+          idx1 = k
+        end
+      end
+      if idx1 and idx2 then
+        break
+      end
+    end
+    if idx1 and idx2 then
+      internal.items[idx1],internal.items[idx2] = internal.items[idx2],internal.items[idx1]
+      data:emit_signal("item::swapped",item1,item2,idx1,idx2)
+    end
+  end
+
   function data:scroll_up()
     if data.max_items ~= nil and data.rowcount >= data.max_items and (data._start_at or 1) > 1 then
       data._start_at  = (data._start_at or 1) - 1

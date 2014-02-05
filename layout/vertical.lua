@@ -234,6 +234,12 @@ local function new(data)
   real_l.setup_key_hooks = module.setup_key_hooks
   real_l.setup_item = module.setup_item
   data._internal.content_layout = l
+
+  --SWAP
+  data:connect_signal("item::swapped",function(_,item1,item2,index1,index2)
+    real_l.widgets[index1],real_l.widgets[index2] = real_l.widgets[index2],real_l.widgets[index1]
+    real_l:emit_signal("widget::updated")
+  end)
   return real_l
 end
 
