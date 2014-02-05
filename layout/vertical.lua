@@ -1,17 +1,10 @@
 local setmetatable = setmetatable
-local print,pairs  = print,pairs
-local unpack       = unpack
-local util      = require( "awful.util"               )
-local checkbox  = require( "radical.widgets.checkbox" )
+local print,ipairs  = print,ipairs
 local scroll    = require( "radical.widgets.scroll"   )
 local filter    = require( "radical.widgets.filter"   )
-local fkey      = require( "radical.widgets.fkey"     )
-local underlay  = require( "radical.widgets.underlay" )
-local beautiful = require("beautiful"                 )
 local wibox     = require( "wibox"                    )
-local color     = require( "gears.color"              )
 local cairo      = require( "lgi"                     ).cairo
-local item_layout= require( "radical.item_layout.horizontal" )
+local horizontal_item_layout= require( "radical.item_layout.horizontal" )
 
 local module = {}
 
@@ -58,9 +51,8 @@ end
 --Get preferred item geometry
 local function item_fit(data,item,...)
   local w, h = item._internal.cache_w or 1,item._internal.cache_h or 1
-  if item._internal.has_changed and data.visible then
+  if data.visible then
     w, h = item._private_data._fit(...)
-    item._internal.has_changed = false
     item._internal.pix_cache = {} --Clear the pimap cache
   end
   return w, item._private_data.height or h
@@ -88,12 +80,12 @@ local function cache_pixmap(item)
   end
 end
 
-function module:setup_text(item,data)
-  local text_w = wibox.widget.textbox()
+function module:setup_text(item,data,text_w)
+  local text_w = item._internal.text_w
 
   text_w.draw = function(self,w, cr, width, height)
     if item.underlay then
-      item_layout.paint_underlay(data,item,cr,width,height)
+      horizontal_item_layout.paint_underlay(data,item,cr,width,height)
     end
     wibox.widget.textbox.draw(self,w, cr, width, height)
   end
@@ -108,7 +100,7 @@ function module:setup_text(item,data)
     if data.auto_resize then
       local fit_w,fit_h = wibox.widget.textbox.fit(text_w,9999,9999)
       local is_largest = item == data._internal.largest_item_w
-      item._internal.has_changed = true
+      item.widget:emit_signal("widget::updated")
       if not data._internal.largest_item_w_v or data._internal.largest_item_w_v < fit_w then
         data._internal.largest_item_w = item
         data._internal.largest_item_w_v = fit_w
@@ -126,16 +118,13 @@ end
 
 function module:setup_item(data,item,args)
   --Create the background
-  item.widget = wibox.widget.background()
+  local item_layout = item.item_layout or horizontal_item_layout
+  item.widget = item_layout(item,data,args)--wibox.widget.background()
   cache_pixmap(item)
-
-  item.widget:set_fg(item._private_data.fg)
-  item._internal.has_changed = true
 
   --Event handling
   item.widget:connect_signal("mouse::enter", function() item.selected = true end)
   item.widget:connect_signal("mouse::leave", function() item.selected = false end)
-  item.widget:connect_signal("widget::updated", function() item._internal.has_changed = true end)
   data._internal.layout:add(item)
 
   --Be sure to always hide sub menus, even when data.visible is set manually
@@ -150,80 +139,21 @@ function module:setup_item(data,item,args)
     data.style(data)
   end)
 
-  --Create the main item layout
-  local l,la,lr = wibox.layout.fixed.horizontal(),wibox.layout.align.horizontal(),wibox.layout.fixed.horizontal()
-  local m = wibox.layout.margin(la)
-  m:set_margins (0)
-  m:set_left  ( (item.item_style or data.item_style).margins.LEFT   )
-  m:set_right ( (item.item_style or data.item_style).margins.RIGHT  )
-  m:set_top   ( (item.item_style or data.item_style).margins.TOP    )
-  m:set_bottom( (item.item_style or data.item_style).margins.BOTTOM )
-
-  -- Text
-  local text_w = module:setup_text(item,data)
-
-  -- Background
   item._private_data._fit = wibox.widget.background.fit
-  m.fit = function(...)
+  item._internal.margin_w.fit = function(...)
     if not data.visible or (item.visible == false or item._filter_out == true or item._hidden == true) then
       return 0,0
     end
     return data._internal.layout.item_fit(data,item,...)
   end
 
-  -- F keys
-  if data.fkeys_prefix == true then
-    l:add(fkey(data,item))
-    m:set_left  ( 0 )
-  end
+  -- Text need to take as much space as possible, override default
+  module:setup_text(item,data)
 
-  -- Prefix
-  if args.prefix_widget then
-    l:add(args.prefix_widget)
-  end
-
-  -- Icon
-  local icon = item_layout:setup_icon(item,data)
-  l:add(icon)
-
-  -- Checkbox
-  local ck = item_layout:setup_checked(item,data)
-  if ck then
-    lr:add(ck)
-  end
-
-  if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
-    local subArrow  = wibox.widget.imagebox() --TODO, make global
-    subArrow.fit = function(box, w, h) return subArrow._image:get_width(),item.height end
-    subArrow:set_image( beautiful.menu_submenu_icon   )
-    lr:add(subArrow)
-    item.widget.fit = function(box,w,h,...)
-      args.y = data.height-h-data.margins.top
-      return wibox.widget.background.fit(box,w,h)
-    end
-  end
-
-  -- Suffix
-  if args.suffix_widget then
-    lr:add(args.suffix_widget)
-  end
-
-  -- Layout
-  la:set_left(l)
-  la:set_middle(text_w)
-  la:set_right(lr)
-  item.widget:set_widget(m)
-  item._internal.align = la
-
-  local fit_w,fit_h = data._internal.layout:fit()
-  data.width = fit_w
-  data.height = fit_h
-  if data.style then
-    data.style(data)
-  end
-
-  -- F keys
-  item_layout:setup_fkey(item,data)
+  --TODO DEAD CODE?
+--   local fit_w,fit_h = data._internal.layout:fit()
+--   data.width = fit_w
+--   data.height = fit_h
 
   -- Enable scrollbar if necessary
   if data._internal.scroll_w and data.rowcount > data.max_items then
@@ -238,6 +168,8 @@ function module:setup_item(data,item,args)
   -- Apply item style
   local item_style = item.item_style or data.item_style
   item_style(data,item,{})
+
+  item.widget:emit_signal("widget::updated")
 end
 
 local function compute_geo(data)

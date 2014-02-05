@@ -9,7 +9,7 @@ local fkey      = require( "radical.widgets.fkey"         )
 local module = {}
 
 local function create_item(item,data,args)
-    -- Background
+  -- Background
   local bg = wibox.widget.background()
 
   -- Margins
@@ -21,12 +21,17 @@ local function create_item(item,data,args)
   m:set_bottom( data.item_style.margins.BOTTOM )
 
   local text = wibox.widget.textbox()
+  text:set_align("center")
 
   -- Layout
   local align = wibox.layout.align.horizontal()
   align:set_middle( text )
   m:set_widget(align)
   bg:set_widget(m)
+
+  item._internal.text_w = text
+  item._internal.icon_w = nil
+  item._internal.margin_w = m
   return bg
 end
 

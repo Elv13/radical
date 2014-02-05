@@ -3,8 +3,9 @@ local beautiful = require( "beautiful"    )
 local color     = require( "gears.color"  )
 local cairo     = require( "lgi"          ).cairo
 local wibox     = require( "wibox"        )
-local checkbox  = require( "radical.widgets.checkbox" )
-local fkey      = require( "radical.widgets.fkey"         )
+local checkbox  = require( "radical.widgets.checkbox"  )
+local fkey      = require( "radical.widgets.fkey"      )
+local underlay  = require( "radical.widgets.underlay" )
 
 local module = {}
 
@@ -70,6 +71,19 @@ function module:setup_checked(item,data)
   end
 end
 
+-- Create sub_menu arrows
+local sub_arrow = nil
+function module:setup_sub_menu_arrow(item,data)
+  if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
+    if not sub_arrow then
+      sub_arrow = wibox.widget.imagebox() --TODO, make global
+      sub_arrow.fit = function(box, w, h) return sub_arrow._image:get_width(),item.height end
+      sub_arrow:set_image( beautiful.menu_submenu_icon   )
+    end
+    return sub_arrow
+  end
+end
+
 -- Use all the space, let "align_fit" compute the right size
 local function textbox_fit(box,w,h)
   return w,h
@@ -85,6 +99,12 @@ end
 local function create_item(item,data,args)
   -- Background
   local bg = wibox.widget.background()
+
+  --Cache item height
+  bg.fit = function(box,w,h,...)
+    args.y = data.height-h-data.margins.top
+    return wibox.widget.background.fit(box,w,h)
+  end
 
   -- Margins
   local m = wibox.layout.margin(la)
@@ -108,7 +128,8 @@ local function create_item(item,data,args)
   end
 
   -- Icon
-  layout:add(module:setup_icon(item,data))
+  local icon = module:setup_icon(item,data)
+  layout:add(icon)
 
   -- Prefix
   if args.prefix_widget then
@@ -124,13 +145,18 @@ local function create_item(item,data,args)
     end
     wibox.widget.textbox.draw(self,w, cr, width, height)
   end
-  item.widget = bg
   tb:set_text(item.text)
 
   -- Checkbox
   local ck = module:setup_checked(item,data)
   if ck then
     right:add(ck)
+  end
+
+  -- Sub_arrow
+  local ar = module:setup_sub_menu_arrow(item,data)
+  if ar then
+    right:add(ar)
   end
 
   -- Suffix
@@ -149,6 +175,9 @@ local function create_item(item,data,args)
   align.fit   = align_fit
   item._internal.align = align
 
+  -- Set widget
+  item.widget = bg
+
   -- Tooltip
   item.widget:set_tooltip(item.tooltip)
 
@@ -156,6 +185,10 @@ local function create_item(item,data,args)
   local item_style = item.item_style or data.item_style
   item_style(data,item,{})
   item.widget:set_fg(item._private_data.fg)
+
+  item._internal.text_w = tb
+  item._internal.icon_w = icon
+  item._internal.margin_w = m
 
   return bg
 end
