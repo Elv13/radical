@@ -3,7 +3,8 @@ local print,ipairs  = print,ipairs
 local scroll    = require( "radical.widgets.scroll"   )
 local filter    = require( "radical.widgets.filter"   )
 local wibox     = require( "wibox"                    )
-local cairo      = require( "lgi"                     ).cairo
+local cairo     = require( "lgi"                      ).cairo
+local base      = nil
 local horizontal_item_layout= require( "radical.item_layout.horizontal" )
 
 local module = {}
@@ -123,8 +124,10 @@ function module:setup_item(data,item,args)
   cache_pixmap(item)
 
   --Event handling
-  item.widget:connect_signal("mouse::enter", function() item.selected = true end)
-  item.widget:connect_signal("mouse::leave", function() item.selected = false end)
+  if data.select_on == base.event.HOVER then
+    item.widget:connect_signal("mouse::enter", function() item.selected = true end)
+    item.widget:connect_signal("mouse::leave", function() item.selected = false end)
+  end
   data._internal.layout:add(item)
 
   --Be sure to always hide sub menus, even when data.visible is set manually
@@ -202,6 +205,9 @@ local function compute_geo(data)
 end
 
 local function new(data)
+  if not base then
+    base = require( "radical.base" )
+  end
   local l,real_l = wibox.layout.fixed.vertical(),nil
   real_l = wibox.layout.fixed.vertical()
   if data.max_items then

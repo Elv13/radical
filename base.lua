@@ -17,12 +17,14 @@ local module = {
     PRETTY   = 1,
     CENTERED = 2,
   },
-  sub_menu_on ={
+  event      ={
     NEVER    = 0,
     BUTTON1  = 1,
     BUTTON2  = 2,
     BUTTON3  = 3,
     SELECTED = 100,
+    HOVER    = 1000,
+    LEAVE    = 1001,
   },
   item_flags     = {
     SELECTED = 1,
@@ -101,7 +103,7 @@ local function activateKeyboard(data)
       end
 
       if (key == 'Return') and data._current_item and data._current_item.button1 then
-        if data.sub_menu_on == module.sub_menu_on.BUTTON1 then
+        if data.sub_menu_on == module.event.BUTTON1 then
           execute_sub_menu(data,data._current_item)
         else
           data._current_item.button1()
@@ -199,7 +201,7 @@ local function add_item(data,args)
       end
       data._current_item.selected = false
     end
-    if data.sub_menu_on == module.sub_menu_on.SELECTED and data._current_item ~= item then
+    if data.sub_menu_on == module.event.SELECTED and data._current_item ~= item then
       execute_sub_menu(data,item)
     end
     data.item_style(data,item,{module.item_flags.SELECTED})
@@ -315,7 +317,8 @@ local function new(args)
       disable_markup  = args.disable_markup or false,
       x               = args.x or 0,
       y               = args.y or 0,
-      sub_menu_on     = args.sub_menu_on or module.sub_menu_on.SELECTED,
+      sub_menu_on     = args.sub_menu_on or module.event.SELECTED,
+      select_on       = args.select_on or module.event.HOVER,
     },
     get_map = {
       is_menu       = function() return true end,

@@ -180,7 +180,8 @@ Multiple items can have multiple sets of options.
 | disable_markup  | Disable pango markup in items text                 | boolean                       |
 | x               | X position (absolute)                              | number                        |
 | y               | Y position (absolute)                              | number                        |
-| sub_menu_on     | Show submenu on selection or when clicking         | see "sub_menu_on" enum        |
+| sub_menu_on     | Show submenu on selection or when clicking         | see "event" enum              |
+| select_on       | The event used to trigger item selection           | see "event" enum              |
 
 ###Item options
 
@@ -229,8 +230,8 @@ here is the list:
 | remove           | Remove the item                              | the item              |  ---   |
 
 
-Menu also emit many signals, the syntax is usually `PROPERTY_NAME::changed`. The exeptions are 
-`item::moved`, `item::swapped`, `item::removed`
+Menu also emit many signals, the syntax is usually `PROPERTY_NAME::changed`. The
+exeptions are `item::moved`, `item::swapped`, `item::removed`
 
 ###Beautiful options
 

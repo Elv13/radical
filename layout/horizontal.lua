@@ -6,6 +6,7 @@ local button    = require( "awful.button"     )
 local checkbox  = require( "radical.widgets.checkbox" )
 local wibox     = require( "wibox" )
 local item_layout = require("radical.item_layout.icon")
+local base = nil
 
 local module = {}
 
@@ -51,8 +52,10 @@ end
 
 local function setup_event(data,item,args)
   --Event handling
-  item.widget:connect_signal("mouse::enter", function() item.selected = true end)
-  item.widget:connect_signal("mouse::leave", function() item.selected = false end)
+  if data.select_on == base.event.HOVER then
+    item.widget:connect_signal("mouse::enter", function() item.selected = true end)
+    item.widget:connect_signal("mouse::leave", function() item.selected = false end)
+  end
   data._internal.layout:add(item)
   local buttons = {}
   for i=1,10 do
@@ -133,6 +136,9 @@ local function item_fit(data,item,...)
 end
 
 local function new(data)
+  if not base then
+    base = require( "radical.base" )
+  end
   local l = wibox.layout.fixed.horizontal()
   l.fit = function(a1,a2,a3)
     local result,r2 = wibox.layout.fixed.fit(a1,99999,99999)

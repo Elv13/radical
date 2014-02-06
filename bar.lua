@@ -82,7 +82,7 @@ local function setup_buttons(data,item,args)
   end
 
   -- Setup sub_menu
-  if (item.sub_menu_m or item.sub_menu_f) and data.sub_menu_on >= base.sub_menu_on.BUTTON1 and data.sub_menu_on <= base.sub_menu_on.BUTTON3 then
+  if (item.sub_menu_m or item.sub_menu_f) and data.sub_menu_on >= base.event.BUTTON1 and data.sub_menu_on <= base.event.BUTTON3 then
     buttons[data.sub_menu_on] = item.widget:set_menu(item.sub_menu_m or item.sub_menu_f,data.sub_menu_on)
   end
 
@@ -105,8 +105,10 @@ end
 local function setup_item(data,item,args)
   -- Add widgets
   data._internal.layout:add(item_layout(item,data,args))
-  item.widget:connect_signal("mouse::enter", function() item.selected = true end)
-  item.widget:connect_signal("mouse::leave", function() item.selected = false end)
+  if data.select_on == base.event.HOVER then
+    item.widget:connect_signal("mouse::enter", function() item.selected = true end)
+    item.widget:connect_signal("mouse::leave", function() item.selected = false end)
+  end
 
   -- Setup buttons
   setup_buttons(data,item,args)
@@ -121,7 +123,7 @@ local function new(args)
     args.internal.setup_item     = args.internal.setup_item     or setup_item
 --     args.style = args.style or arrow_style
     args.item_style = item_style
-    args.sub_menu_on = base.sub_menu_on.BUTTON1
+    args.sub_menu_on = args.sub_menu_on or base.event.BUTTON1
     local ret = base(args)
     ret:connect_signal("clear::menu",function(_,vis)
       ret._internal.layout:reset()

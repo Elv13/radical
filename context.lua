@@ -183,7 +183,7 @@ local function setup_buttons(data,item,args)
   end
 
   -- Click to open sub_menu
-  if not buttons[1] and data.sub_menu_on == base.sub_menu_on.BUTTON1 then
+  if not buttons[1] and data.sub_menu_on == base.event.BUTTON1 then
     buttons[#buttons+1] = button({},1,function() base._execute_sub_menu(data,item) end)
   end
 
