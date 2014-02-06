@@ -1,4 +1,4 @@
-local setmetatable,unpack = setmetatable,unpack
+local setmetatable,unpack,table = setmetatable,unpack,table
 local base       = require( "radical.base"                 )
 local color      = require( "gears.color"                  )
 local wibox      = require( "wibox"                        )
@@ -58,9 +58,17 @@ local function setup_drawable(data)
   data.fit = internal.margin.fit
   data.draw = internal.margin.draw
 
-  --Swap
+  -- Swap / Move / Remove
   data:connect_signal("item::swapped",function(_,item1,item2,index1,index2)
     internal.layout.widgets[index1],internal.layout.widgets[index2] = internal.layout.widgets[index2],internal.layout.widgets[index1]
+    internal.layout:emit_signal("widget::updated")
+  end)
+  data:connect_signal("item::moved",function(_,item,new_idx,old_idx)
+    table.insert(internal.layout.widgets,new_idx,table.remove(internal.layout.widgets,old_idx))
+    internal.layout:emit_signal("widget::updated")
+  end)
+  data:connect_signal("item::removed",function(_,item,old_idx)
+    table.remove(internal.layout.widgets,old_idx)
     internal.layout:emit_signal("widget::updated")
   end)
 end

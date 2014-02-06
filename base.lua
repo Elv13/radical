@@ -2,6 +2,7 @@ local setmetatable = setmetatable
 local pairs,ipairs = pairs, ipairs
 local type,string  = type,string
 local print,unpack = print, unpack
+local table        = table
 local beautiful    = require( "beautiful"               )
 local util         = require( "awful.util"              )
 local aw_key       = require( "awful.key"               )
@@ -469,6 +470,42 @@ local function new(args)
     if idx1 and idx2 then
       internal.items[idx1],internal.items[idx2] = internal.items[idx2],internal.items[idx1]
       data:emit_signal("item::swapped",item1,item2,idx1,idx2)
+    end
+  end
+
+  function data:move(item,idx)
+    local idx1 = nil
+    for k,v in ipairs(internal.items) do --rows
+      if item == v[1] then
+        idx1 = k
+        break
+      end
+    end
+    if idx1 then
+--       if idx < idx1 then
+--         idx = idx + 1
+--       end
+      if idx1 > #internal.items + 1 then
+        idx1 = #internal.items + 1
+      end
+      if idx ~= idx1 then
+        table.insert(internal.items,idx1,table.remove(internal.items,idx))
+        data:emit_signal("item::moved",item,idx,idx1)
+      end
+    end
+  end
+
+  function data:remove(item)
+    local idx1 = nil
+    for k,v in ipairs(internal.items) do --rows
+      if item == v[1] then
+        idx1 = k
+        break
+      end
+    end
+    if idx1 then
+      table.remove(internal.items,idx1)
+      data:emit_signal("item::removed",item,idx1)
     end
   end
 

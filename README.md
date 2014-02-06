@@ -224,7 +224,13 @@ here is the list:
 | clear            | Remove all items                             |           ---         |  ---   |
 | scroll_down      | If the menu is cropped, scroll down          |           ---         |  ---   |
 | scroll_up        | If the menu is cropped, scroll up            |           ---         |  ---   |
+| swap             | Swap 2 items                                 | both items            |  ---   |
+| move             | Move an item                                 | the item, the new idx |  ---   |
+| remove           | Remove the item                              | the item              |  ---   |
 
+
+Menu also emit many signals, the syntax is usually `PROPERTY_NAME::changed`. The exeptions are 
+`item::moved`, `item::swapped`, `item::removed`
 
 ###Beautiful options
 

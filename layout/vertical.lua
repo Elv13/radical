@@ -150,10 +150,10 @@ function module:setup_item(data,item,args)
   -- Text need to take as much space as possible, override default
   module:setup_text(item,data)
 
-  --TODO DEAD CODE?
---   local fit_w,fit_h = data._internal.layout:fit()
---   data.width = fit_w
---   data.height = fit_h
+  -- Necessary for :set_position()
+  local fit_w,fit_h = data._internal.layout:fit()
+  data.width = fit_w
+  data.height = fit_h
 
   -- Enable scrollbar if necessary
   if data._internal.scroll_w and data.rowcount > data.max_items then
@@ -235,9 +235,17 @@ local function new(data)
   real_l.setup_item = module.setup_item
   data._internal.content_layout = l
 
-  --SWAP
+  --SWAP / MOVE / REMOVE
   data:connect_signal("item::swapped",function(_,item1,item2,index1,index2)
     real_l.widgets[index1],real_l.widgets[index2] = real_l.widgets[index2],real_l.widgets[index1]
+    real_l:emit_signal("widget::updated")
+  end)
+  data:connect_signal("item::moved",function(_,item,new_idx,old_idx)
+    table.insert(real_l.widgets,new_idx,table.remove(real_l.widgets,old_idx))
+    real_l:emit_signal("widget::updated")
+  end)
+  data:connect_signal("item::removed",function(_,item,old_idx)
+    table.remove(real_l.widgets,old_idx)
     real_l:emit_signal("widget::updated")
   end)
   return real_l
