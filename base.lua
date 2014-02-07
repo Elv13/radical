@@ -512,6 +512,11 @@ local function new(args)
     end
   end
 
+  function data:append(item)
+    internal.items[#internal.items + 1] = item
+    data:emit_signal("item::appended",item)
+  end
+
   function data:scroll_up()
     if data.max_items ~= nil and data.rowcount >= data.max_items and (data._start_at or 1) > 1 then
       data._start_at  = (data._start_at or 1) - 1

@@ -42,6 +42,8 @@ base.make_widget = function(...)
   return ret
 end
 
+local bar = require( "radical.bar"        )
+
 return {
   layout      = require( "radical.layout"     ),
   object      = require( "radical.object"     ),
@@ -50,11 +52,12 @@ return {
   context     = require( "radical.context"    ),
   embed       = require( "radical.embed"      ),
   box         = require( "radical.box"        ),
-  bar         = require( "radical.bar"        ),
   style       = require( "radical.style"      ),
   item_style  = require( "radical.item_style" ),
   widgets     = require( "radical.widgets"    ),
   item_layout = require( "radical.item_layout"),
+  bar         = bar,
+  flexbar     = bar.flex,
   tooltip     = tooltip
 }
 -- kate: space-indent on; indent-width 2; replace-tabs on;

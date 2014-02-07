@@ -138,7 +138,7 @@ local function create_item(item,data,args)
 
   -- Text
   local tb = wibox.widget.textbox()
-  tb.fit = textbox_fit
+  tb.fit = data._internal.text_fit or textbox_fit
   tb.draw = function(self,w, cr, width, height)
     if item.underlay then
       module.paint_underlay(data,item,cr,width,height)
@@ -172,7 +172,7 @@ local function create_item(item,data,args)
   m:set_widget    ( align  )
   align._item = item
   align._data = data
-  align.fit   = align_fit
+  align.fit   = data._internal.align_fit or align_fit
   item._internal.align = align
 
   -- Set widget

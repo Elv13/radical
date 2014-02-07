@@ -254,6 +254,11 @@ local function new(data)
     table.remove(real_l.widgets,old_idx)
     real_l:emit_signal("widget::updated")
   end)
+  data:connect_signal("item::appended",function(_,item)
+    real_l.widgets[#real_l.widgets+1] = item.widget
+    real_l:emit_signal("widget::updated")
+  end)
+  data._internal.text_fit = function(self,width,height) return width,height end
   return real_l
 end
 

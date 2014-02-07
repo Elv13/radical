@@ -31,15 +31,15 @@ themselves programatically.
 The most simple kind of menus, contexts one, can be created like this:
 
 ```lua
-    local menu = radical.context({})
-    menu:add_item({text="Screen 1",button1=function() print("Hello World! ") end})
-    menu:add_item({text="Screen 9",icon=beautiful.path.."Icon/layouts/tileleft.png"})
-    menu:add_item({text="Sub Menu",sub_menu = function()
-        local smenu = radical.context({})
-        smenu:add_item({text="item 1"})
-        smenu:add_item({text="item 2"})
+    local menu = radical.context{}
+    menu:add_item {text="Screen 1",button1=function() print("Hello World! ") end}
+    menu:add_item {text="Screen 9",icon=beautiful.path.."Icon/layouts/tileleft.png"}
+    menu:add_item {text="Sub Menu",sub_menu = function()
+        local smenu = radical.context{}
+        smenu:add_item{text="item 1"}
+        smenu:add_item{text="item 2"}
         return smenu
-    end})
+    end}
     
     -- To add the menu to a widget:
     local mytextbox = wibox.widget.textbox()
@@ -112,10 +112,10 @@ Item layouts are how widgets (icons, label, prefix) are disposed in the item
 ```lua
     local radical = require("radical")
     
-    local m = radical.context({
+    local m = radical.context {
         style      = radical.style.classic      ,
         item_style = radical.item_style.classic ,
-        layout     = radical.layout.vertical    })
+        layout     = radical.layout.vertical    }
     
 ```
 
@@ -228,10 +228,11 @@ here is the list:
 | swap             | Swap 2 items                                 | both items            |  ---   |
 | move             | Move an item                                 | the item, the new idx |  ---   |
 | remove           | Remove the item                              | the item              |  ---   |
+| append           | Append an existing (but unused) item         | the item              |  ---   |
 
 
 Menu also emit many signals, the syntax is usually `PROPERTY_NAME::changed`. The
-exeptions are `item::moved`, `item::swapped`, `item::removed`
+exeptions are `item::moved`, `item::swapped`, `item::removed`, `item::appended`
 
 ###Beautiful options
 

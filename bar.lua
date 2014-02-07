@@ -42,7 +42,7 @@ local function setup_drawable(data)
   internal.margin._data = data
   internal.margin.draw = bg_draw
 
-  internal.layout = wibox.layout.fixed.horizontal()
+  internal.layout = internal.layout_func or wibox.layout.fixed.horizontal()
   internal.margin:set_widget(internal.layout)
 
   --Getters
@@ -69,6 +69,10 @@ local function setup_drawable(data)
   end)
   data:connect_signal("item::removed",function(_,item,old_idx)
     table.remove(internal.layout.widgets,old_idx)
+    internal.layout:emit_signal("widget::updated")
+  end)
+  data:connect_signal("item::appended",function(_,item)
+    internal.layout.widgets[#internal.layout.widgets+1] = item.widget
     internal.layout:emit_signal("widget::updated")
   end)
 end
@@ -132,6 +136,15 @@ local function new(args)
       item.widget:emit_signal("widget::updated")
     end)
     return ret
+end
+
+function module.flex(args)
+  local args = args or {}
+  args.internal = args.internal or {}
+  args.internal.layout_func = wibox.layout.flex.horizontal()
+  local data = new(args)
+  data._internal.text_fit = function(self,width,height) return width,height end
+  return data
 end
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
