@@ -125,7 +125,6 @@ local function new(args)
     args.internal.set_position   = args.internal.set_position   or set_position
     args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
     args.internal.setup_item     = args.internal.setup_item     or setup_item
---     args.style = args.style or arrow_style
     args.item_style = item_style
     args.sub_menu_on = args.sub_menu_on or base.event.BUTTON1
     local ret = base(args)

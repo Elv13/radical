@@ -455,6 +455,7 @@ local function new(args)
   end
 
   function data:swap(item1,item2)
+    if not item1 or not item2 then return end
     if not item1 or not item2 and item1 ~= item2 then return end
     local idx1,idx2
     for k,v in ipairs(internal.items) do --rows
@@ -477,6 +478,7 @@ local function new(args)
   end
 
   function data:move(item,idx)
+    if not item or not idx then return end
     local idx1 = nil
     for k,v in ipairs(internal.items) do --rows
       if item == v[1] then
@@ -499,6 +501,7 @@ local function new(args)
   end
 
   function data:remove(item)
+    if not item then return end
     local idx1 = nil
     for k,v in ipairs(internal.items) do --rows
       if item == v[1] then
@@ -513,6 +516,7 @@ local function new(args)
   end
 
   function data:append(item)
+    if not item then return end
     internal.items[#internal.items + 1] = item
     data:emit_signal("item::appended",item)
   end

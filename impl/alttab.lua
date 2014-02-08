@@ -113,6 +113,7 @@ local function new(args)
             tag.viewonly(v:tags()[1])
           end
           capi.client.focus = v
+          v:raise()
           currentMenu.visible = false
         end,
       }).client = v
