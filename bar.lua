@@ -69,10 +69,11 @@ local function setup_drawable(data)
   end)
   data:connect_signal("item::removed",function(_,item,old_idx)
     table.remove(internal.layout.widgets,old_idx)
+    item.widget:disconnect_signal("widget::updated", internal.layout._emit_updated)
     internal.layout:emit_signal("widget::updated")
   end)
   data:connect_signal("item::appended",function(_,item)
-    internal.layout.widgets[#internal.layout.widgets+1] = item.widget
+    internal.layout:add(item.widget)
     internal.layout:emit_signal("widget::updated")
   end)
 end

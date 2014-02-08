@@ -40,107 +40,108 @@ local function unmanage_callback(c)
   end
 end
 
+-- Reload <float> <ontop> and <sticky> labels
+local function reload_underlay(c)
+  local cache = instances[c.screen].cache
+  local udl,item = {},cache[c]
+  if item then
+    if c.ontop then
+      udl[#udl+1] = "ontop"
+    end
+    if client.floating.get(c) then
+      udl[#udl+1] = "float"
+    end
+    if c.sticky then
+      udl[#udl+1] = "sticky"
+    end
+    item.underlay = udl
+    item.widget:emit_signal("widget::updated")
+  end
+end
+
+local function create_client_item(c,screen)
+  local cache = instances[screen].cache
+  local menu = instances[screen].menu
+  -- If it already exist, don't waste time creating a copy
+  if cache[c] then
+    return menu:append(cache[c])
+  end
+
+  -- Too bad, let's create a new one
+  cache[c] = menu:add_item{text=c.name,icon=c.icon,button1=function()
+    capi.client.focus = c
+    c:raise()
+  end}
+  return cache[c]
+end
+
+local function add_client(c,screen)
+  if not (c.skip_taskbar or c.hidden or c.type == "splash" or c.type == "dock" or c.type == "desktop") and c.screen == screen then
+    local ret = create_client_item(c,screen)
+    reload_underlay(c)
+    if c.focus == c then
+      ret.selected = true
+    end
+  end
+end
+
+-- Unselect the old focussed client
+local function unfocus(c)
+  local cache = instances[c.screen].cache
+  local item = cache[c]
+  if item and item.selected then
+    item.selected = false
+  end
+end
+
+-- Select the newly focussed client
+local function focus(c)
+  local cache = instances[c.screen].cache
+  local item = cache[c]
+  if item then
+    item.selected = true
+  end
+end
+
 local function new(screen)
   local cache,menu = setmetatable({}, { __mode = 'k' }),radical.flexbar{select_on=radical.base.event.NEVER,fg=beautiful.fg_normal,bg_focus=beautiful.taglist_bg_image_selected2}
 
-  function create_client_item(c)
-    -- If it already exist, don't waste time creating a copy
-    if cache[c] then
-      return menu:append(cache[c])
-    end
-
-    -- Too bad, let's create a new one
-    cache[c] = menu:add_item{text=c.name,icon=c.icon,button1=function()
-      capi.client.focus = c
-      c:raise()
-    end}
-    return cache[c]
-  end
-
-  function add_client(c)
-    if not (c.skip_taskbar or c.hidden or c.type == "splash" or c.type == "dock" or c.type == "desktop") and c.screen == screen then
-      local ret = create_client_item(c)
-      reload_underlay(c)
-      if c.focus == c then
-        ret.selected = true
-      end
-    end
-  end
-
   -- Clear the menu and repopulate it
-  function load_clients(t)
+  local function load_clients(t)
     if not t then return end
     if t.selected and tag.getscreen(t) == screen then
       menu:clear()
       for k, c in ipairs(t:clients()) do
         if not c.sticky then
-          add_client(c)
+          add_client(c,screen)
         end
       end
       for c,_ in pairs(sticky) do
-        add_client(c)
+        add_client(c,screen)
       end
-    end
-  end
-
-  -- Unselect the old focussed client
-  function unfocus(c)
-    local item = cache[c]
-    if item and item.selected then
-      item.selected = false
-    end
-  end
-
-  -- Select the newly focussed client
-  function focus(c)
-    local item = cache[c]
-    if item then
-      item.selected = true
-    end
-  end
-
-  -- Reload <float> <ontop> and <sticky> labels
-  function reload_underlay(c)
-    local udl,item = {},cache[c]
-    if item then
-      if c.ontop then
-        udl[#udl+1] = "ontop"
-      end
-      if client.floating.get(c) then
-        udl[#udl+1] = "float"
-      end
-      if c.sticky then
-        udl[#udl+1] = "sticky"
-      end
-      item.underlay = udl
-      item.widget:emit_signal("widget::updated")
     end
   end
 
   -- Add and remove clients from the tasklist
-  function tagged(c,t)
-    if t.selected and tag.getscreen(t) == screen and not c.sticky then
-       add_client(c)
+  local function tagged(c,t)
+    if t.selected and not c.sticky and tag.getscreen(t) == screen then
+      add_client(c,screen)
     end
   end
-  function untagged(c,t)
+  local function untagged(c,t)
+    local item = cache[c]
     if t.selected and tag.getscreen(t) == screen then
-      menu:remove(cache[c])
+      menu:remove(item)
     end
   end
 
   -- Connect to a bunch of signals
   tag.attached_connect_signal(screen, "property::selected" , load_clients)
   tag.attached_connect_signal(screen, "property::activated", load_clients)
-  capi.client.connect_signal("focus"             , focus                 )
-  capi.client.connect_signal("unfocus"           , unfocus               )
-  capi.client.connect_signal("tagged"            , tagged                )
-  capi.client.connect_signal("untagged"          , untagged              )
-  capi.client.connect_signal("property::sticky"  , reload_underlay       )
-  capi.client.connect_signal("property::ontop"   , reload_underlay       )
-  capi.client.connect_signal("property::floating", reload_underlay       )
+  capi.client.connect_signal("tagged"            , tagged            )
+  capi.client.connect_signal("untagged"          , untagged          )
 
-  instances[#instances+1] = {menu = menu, cache = cache }
+  instances[screen] = {menu = menu, cache = cache }
 
   load_clients(tag.selected(screen))
 
@@ -148,9 +149,14 @@ local function new(screen)
 end
 
 -- Global callbacks
-capi.client.connect_signal("property::sticky", sticky_callback  )
-capi.client.connect_signal("property::urgent", urgent_callback  )
-capi.client.connect_signal("unmanage"        , unmanage_callback)
+capi.client.connect_signal("property::sticky"  , sticky_callback   )
+capi.client.connect_signal("property::urgent"  , urgent_callback   )
+capi.client.connect_signal("unmanage"          , unmanage_callback )
+capi.client.connect_signal("focus"             , focus             )
+capi.client.connect_signal("unfocus"           , unfocus           )
+capi.client.connect_signal("property::sticky"  , reload_underlay   )
+capi.client.connect_signal("property::ontop"   , reload_underlay   )
+capi.client.connect_signal("property::floating", reload_underlay   )
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;
