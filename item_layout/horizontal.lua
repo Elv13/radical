@@ -154,6 +154,14 @@ local function create_item(item,data,args)
     wibox.widget.textbox.draw(self,w, cr, width, height)
   end
   tb:set_text(item.text)
+  item._internal.set_map.text = function (value)
+    if data.disable_markup then
+      tb:set_text(value)
+    else
+      tb:set_markup(value)
+    end
+    item._private_data.text = value
+  end
 
   -- Checkbox
   local ck = module:setup_checked(item,data)

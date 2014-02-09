@@ -59,6 +59,16 @@ local function reload_underlay(c)
   end
 end
 
+-- Reload title and icon
+local function reload_content(c,b,a)
+  local cache = instances[c.screen].cache
+  local item = cache[c]
+  if item then
+    item.text = c.name
+    item.icon = c.icon
+  end
+end
+
 local function create_client_item(c,screen)
   local cache = instances[screen].cache
   local menu = instances[screen].menu
@@ -107,7 +117,8 @@ local function new(screen)
   local cache,menu = setmetatable({}, { __mode = 'k' }),radical.flexbar {
     select_on=radical.base.event.NEVER,
     fg       = beautiful.fg_normal,
-    bg_focus = beautiful.taglist_bg_image_selected2 or beautiful.bg_focus
+    bg_focus = beautiful.taglist_bg_image_selected2 or beautiful.bg_focus,
+    bg_hover   = beautiful.menu_bg_focus
   }
 
   -- Clear the menu and repopulate it
@@ -161,6 +172,8 @@ capi.client.connect_signal("unfocus"           , unfocus           )
 capi.client.connect_signal("property::sticky"  , reload_underlay   )
 capi.client.connect_signal("property::ontop"   , reload_underlay   )
 capi.client.connect_signal("property::floating", reload_underlay   )
+capi.client.connect_signal("property::name"    , reload_content    )
+capi.client.connect_signal("property::icon"    , reload_content    )
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;

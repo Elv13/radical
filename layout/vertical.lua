@@ -98,6 +98,7 @@ function module:setup_text(item,data,text_w)
     else
       text_w:set_markup(value)
     end
+    item._private_data.text = value
     if data.auto_resize then
       local fit_w,fit_h = wibox.widget.textbox.fit(text_w,9999,9999)
       local is_largest = item == data._internal.largest_item_w
