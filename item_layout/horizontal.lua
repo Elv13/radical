@@ -71,6 +71,14 @@ function module:setup_checked(item,data)
   end
 end
 
+-- Setup hover
+function module:setup_hover(item,data)
+  item._internal.set_map.hover = function(value)
+    local item_style = item.item_style or data.item_style
+    item_style(data,item,{value and 2--[[HOVER]] or nil,item.selected and 1 or nil})
+  end
+end
+
 -- Create sub_menu arrows
 local sub_arrow = nil
 function module:setup_sub_menu_arrow(item,data)
@@ -152,6 +160,9 @@ local function create_item(item,data,args)
   if ck then
     right:add(ck)
   end
+
+  -- Hover
+  module:setup_hover(item,data)
 
   -- Sub_arrow
   local ar = module:setup_sub_menu_arrow(item,data)

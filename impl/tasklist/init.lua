@@ -104,7 +104,11 @@ local function focus(c)
 end
 
 local function new(screen)
-  local cache,menu = setmetatable({}, { __mode = 'k' }),radical.flexbar{select_on=radical.base.event.NEVER,fg=beautiful.fg_normal,bg_focus=beautiful.taglist_bg_image_selected2}
+  local cache,menu = setmetatable({}, { __mode = 'k' }),radical.flexbar {
+    select_on=radical.base.event.NEVER,
+    fg       = beautiful.fg_normal,
+    bg_focus = beautiful.taglist_bg_image_selected2 or beautiful.bg_focus
+  }
 
   -- Clear the menu and repopulate it
   local function load_clients(t)

@@ -27,11 +27,26 @@ local module = {
     LEAVE    = 1001,
   },
   item_flags     = {
-    SELECTED = 1,
-    HOVERED  = 2,
-    PRESSED  = 3,
-    URGENT   = 4,
-    USED     = 5,
+    NONE     = 0,
+    SELECTED = 1, -- Single item selected
+    HOVERED  = 2, -- Mouse hover
+    PRESSED  = 3, -- Mouse pressed
+    URGENT   = 4, -- Need attention
+    USED     = 5, -- Common flag
+    DISABLED = 6, -- Cannot be interacted with
+    CHECKED  = 7, -- When checkbox isn't enough
+
+    -- Implementation defined flags
+    USR1     = 101,
+    USR2     = 102,
+    USR3     = 103,
+    USR4     = 104,
+    USR5     = 105,
+    USR6     = 106,
+    USR7     = 107,
+    USR8     = 108,
+    USR9     = 109,
+    USR10    = 110,
   }
 }
 
@@ -284,6 +299,8 @@ local function new(args)
       bg_highlight    = args.bg_highlight or beautiful.menu_bg_highlight or beautiful.bg_highlight or beautiful.bg_normal,
       bg_header       = args.bg_header    or beautiful.menu_bg_header or beautiful.fg_normal,
       bg_prefix       = args.bg_prefix    or nil,
+      bg_hover        = args.bg_hover     or nil,
+      fg_hover        = args.fg_hover     or nil,
       border_color    = args.border_color or beautiful.menu_border_color or beautiful.border_color or "#333333",
       border_width    = args.border_width or beautiful.menu_border_width or beautiful.border_width or 3,
       separator_color = args.separator_color or beautiful.menu_separator_color or args.border_color or beautiful.menu_border_color or beautiful.border_color or "#333333",

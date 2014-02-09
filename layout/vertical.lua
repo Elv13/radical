@@ -127,6 +127,9 @@ function module:setup_item(data,item,args)
   if data.select_on == base.event.HOVER then
     item.widget:connect_signal("mouse::enter", function() item.selected = true end)
     item.widget:connect_signal("mouse::leave", function() item.selected = false end)
+  else
+    item.widget:connect_signal("mouse::enter", function() item.hover = true end)
+    item.widget:connect_signal("mouse::leave", function() item.hover = false end)
   end
   data._internal.layout:add(item)
 

@@ -148,6 +148,8 @@ Multiple items can have multiple sets of options.
 | fg              | Foreground (text) color                            | String/gradient/pattern       |
 | bg_focus        | Background of focussed items                       | String/gradient/pattern       |
 | fg_focus        | Foreground of focussed items                       | String/gradient/pattern       |
+| bg_hover        | Background of hoverred items                       | String/gradient/pattern       |
+| fg_hover        | Foreground of hoverred items                       | String/gradient/pattern       |
 | bg_alternate    | Alternate background color                         | String/gradient/pattern       |
 | bg_highlight    | Highlight background color                         | String/gradient/pattern       |
 | bg_header       | Header (see widgets section) color                 | String/gradient/pattern       |

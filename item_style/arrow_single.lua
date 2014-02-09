@@ -40,6 +40,10 @@ local function draw(data,item,args)
 
   if flags[base.item_flags.SELECTED] or (item._tmp_menu) then
     item.widget:set_bg(args.color or data.bg_focus)
+  elseif #flags > 0 then
+    if flags[base.item_flags.HOVERED] then
+      item.widget:set_bg(args.color or data.bg_hover)
+    end
   else
     item.widget:set_bg(args.color or nil)
   end

@@ -113,6 +113,9 @@ local function setup_item(data,item,args)
   if data.select_on == base.event.HOVER then
     item.widget:connect_signal("mouse::enter", function() item.selected = true end)
     item.widget:connect_signal("mouse::leave", function() item.selected = false end)
+  else
+    item.widget:connect_signal("mouse::enter", function() item.hover = true end)
+    item.widget:connect_signal("mouse::leave", function() item.hover = false end)
   end
 
   -- Setup buttons
@@ -126,7 +129,7 @@ local function new(args)
     args.internal.set_position   = args.internal.set_position   or set_position
     args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
     args.internal.setup_item     = args.internal.setup_item     or setup_item
-    args.item_style = item_style
+    args.item_style = args.item_style or item_style
     args.sub_menu_on = args.sub_menu_on or base.event.BUTTON1
     local ret = base(args)
     ret:connect_signal("clear::menu",function(_,vis)
