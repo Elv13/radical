@@ -118,7 +118,8 @@ local function new(screen)
     select_on=radical.base.event.NEVER,
     fg       = beautiful.fg_normal,
     bg_focus = beautiful.taglist_bg_image_selected2 or beautiful.bg_focus,
-    bg_hover   = beautiful.menu_bg_focus
+    bg_hover   = beautiful.menu_bg_focus,
+    disable_markup = true
   }
 
   -- Clear the menu and repopulate it

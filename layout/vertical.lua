@@ -119,6 +119,9 @@ function module:setup_text(item,data,text_w)
 end
 
 function module:setup_item(data,item,args)
+  if not base then
+    base = require( "radical.base" )
+  end
   --Create the background
   local item_layout = item.item_layout or horizontal_item_layout
   item.widget = item_layout(item,data,args)--wibox.widget.background()

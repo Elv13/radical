@@ -534,7 +534,7 @@ local function new(args)
 
   function data:append(item)
     if not item then return end
-    internal.items[#internal.items + 1] = item
+    internal.items[#internal.items + 1] = {item}
     data:emit_signal("item::appended",item)
   end
 

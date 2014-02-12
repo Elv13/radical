@@ -51,7 +51,15 @@ local function track_used(c,t)
   end
 end
 
-local function tag_added(t)
+local function tag_activated(t)
+  local act = t.activated
+  if not act and cache[t] then
+    instances[cache[t]._internal.screen]:remove(cache[t])
+    cache[t] = nil
+  end
+end
+
+local function tag_added(t,b)
   if t then
     local s = tag.getscreen(t)
     if not cache[t] then
@@ -62,6 +70,32 @@ local function tag_added(t)
       cache[t]._internal.screen = s
     end
   end
+end
+
+local is_init = false
+local function init()
+  if is_init then return end
+
+  -- Global signals
+  capi.client.connect_signal("tagged", track_used)
+  capi.client.connect_signal("untagged", track_used)
+  capi.client.connect_signal("unmanage", track_used)
+  capi.tag.connect_signal("property::activated",tag_activated)
+  capi.tag.connect_signal("property::screen", tag_added)
+
+  -- Property bindings
+  capi.tag.connect_signal("property::name", function(t)
+    local item = cache[t]
+    if item then
+      item.text = t.name
+    end
+  end)
+  capi.tag.connect_signal("property::icon", function(t)
+    local item = cache[t]
+    if item then
+      item.icon = tag.geticon(t)
+    end
+  end)
 end
 
 local function new(s)
@@ -80,21 +114,15 @@ local function new(s)
   end
 
   -- Per screen signals
-  tag.attached_connect_signal(screen, "property::selected", tag_added)
---   tag.attached_connect_signal(screen, "property::icon", ut)
+--   tag.attached_connect_signal(s, "property::selected", tag_added)
 --   tag.attached_connect_signal(screen, "property::hide", ut)
---   tag.attached_connect_signal(screen, "property::name", ut)
-  tag.attached_connect_signal(screen, "property::activated", tag_added)
-  tag.attached_connect_signal(screen, "property::screen", tag_added)
-  tag.attached_connect_signal(screen, "property::index", tag_added)
+--   tag.attached_connect_signal(s, "property::activated", tag_added)
+--   tag.attached_connect_signal(s, "property::index", tag_added)
 
+  init()
   return instances[s]
 end
 
--- Global signals
-capi.client.connect_signal("tagged", track_used)
-capi.client.connect_signal("untagged", track_used)
-capi.client.connect_signal("unmanage", track_used)
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;
