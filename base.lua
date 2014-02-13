@@ -27,14 +27,17 @@ local module = {
     LEAVE    = 1001,
   },
   item_flags     = {
-    NONE     = 0,
-    SELECTED = 1, -- Single item selected
-    HOVERED  = 2, -- Mouse hover
-    PRESSED  = 3, -- Mouse pressed
-    URGENT   = 4, -- Need attention
-    USED     = 5, -- Common flag
-    DISABLED = 6, -- Cannot be interacted with
-    CHECKED  = 7, -- When checkbox isn't enough
+    NONE      = 0 ,
+    SELECTED  = 1 , -- Single item selected [[FOCUS]]
+    HOVERED   = 2 , -- Mouse hover
+    PRESSED   = 3 , -- Mouse pressed
+    URGENT    = 4 , -- Need attention
+    USED      = 5 , -- Common flag
+    DISABLED  = 6 , -- Cannot be interacted with
+    CHECKED   = 7 , -- When checkbox isn't enough
+    ALTERNATE = 8 ,
+    HIGHLIGHT = 9 ,
+    HEADER    = 10,
 
     -- Implementation defined flags
     USR1     = 101,
@@ -167,7 +170,8 @@ local function add_item(data,args)
       tooltip     = args.tooltip     or nil                                                                 ,
       item_style  = args.item_style  or nil                                                                 ,
       item_layout = args.item_layout or nil                                                                 ,
-      selected    = false,
+      selected    = false                                                                                   ,
+      overlay     = args.overlay     or data.overlay or nil                                                 ,
     },
     force_private = {
       visible = true,
@@ -336,6 +340,7 @@ local function new(args)
       y               = args.y or 0,
       sub_menu_on     = args.sub_menu_on or module.event.SELECTED,
       select_on       = args.select_on or module.event.HOVER,
+      overlay         = args.overlay or nil,
     },
     get_map = {
       is_menu       = function() return true end,

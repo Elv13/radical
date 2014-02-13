@@ -28,12 +28,14 @@ local state = {
 local cache = setmetatable({}, { __mode = 'k' })
 
 local function create_item(t,s)
-  local item = instances[s]:add_item { text = t.name, icon = tag.geticon(t), button1 = function()
+  local menu = instances[s]
+  if not menu then return end
+  local item = menu:add_item { text = t.name, icon = tag.geticon(t), button1 = function()
     tag.viewonly(t)
   end}
   item._internal.set_map.used = function(value)
-    local item_style = item.item_style or instances[s].item_style
-    item_style(instances[s],item,{value and radical.base.item_flags.USED or nil,item.selected and 1 or nil})
+    local item_style = item.item_style or menu.item_style
+    item_style(menu,item,{value and radical.base.item_flags.USED or nil,item.selected and 1 or nil})
   end
   item._internal.screen = s
   cache[t] = item
@@ -96,6 +98,7 @@ local function init()
       item.icon = tag.geticon(t)
     end
   end)
+  is_init = true
 end
 
 local function new(s)

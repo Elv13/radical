@@ -196,9 +196,16 @@ local function create_item(item,data,args)
 
   -- Set widget
   item.widget = bg
+  bg._item    = item
 
   -- Tooltip
   item.widget:set_tooltip(item.tooltip)
+
+  -- Overlay
+  item._internal.set_map.overlay = function(value)
+    item._private_data.overlay = value
+    item.widget:emit_signal("widget::updated")
+  end
 
   -- Draw
   local item_style = item.item_style or data.item_style

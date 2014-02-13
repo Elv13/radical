@@ -28,6 +28,10 @@ local function suffix_draw(self, w, cr, width, height)
   cr:close_path()
   cr:clip()
   wibox.widget.background.draw(self, w, cr, width, height)
+  local overlay = self._item and self._item.overlay
+  if overlay then
+    overlay(self._item._menu,self._item,cr,width,height)
+  end
   cr:restore()
 end
 

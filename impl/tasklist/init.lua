@@ -119,7 +119,10 @@ local function new(screen)
     fg       = beautiful.fg_normal,
     bg_focus = beautiful.taglist_bg_image_selected2 or beautiful.bg_focus,
     bg_hover   = beautiful.menu_bg_focus,
-    disable_markup = true
+    disable_markup = true,
+    overlay = function(data,item,cd,w,h)
+      print("foo!")
+    end
   }
 
   -- Clear the menu and repopulate it

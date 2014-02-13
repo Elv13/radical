@@ -184,6 +184,7 @@ Multiple items can have multiple sets of options.
 | y               | Y position (absolute)                              | number                        |
 | sub_menu_on     | Show submenu on selection or when clicking         | see "event" enum              |
 | select_on       | The event used to trigger item selection           | see "event" enum              |
+| overlay         | A layer on top of the item                         | function(data,item,cr,w,h)    |
 
 ###Item options
 
@@ -211,6 +212,7 @@ Multiple items can have multiple sets of options.
 | button3        | Right mouse button action                    | function          |
 | button4        | Scroll up action                             | function          |
 | button5        | Scroll down action                           | function          |
+| overlay        | See menu.overlay                             | function          |
 
 ###Common methods
 
