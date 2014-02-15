@@ -45,6 +45,7 @@ end
 local function track_used(c,t)
   if t then
     local item = cache[t] or create_item(t,tag.getscreen(t))
+    if not item then return end -- Yes, it happen if the screen is still nil
     item.used = #t:clients()
   else
     for _,t2 in ipairs(c:tags()) do

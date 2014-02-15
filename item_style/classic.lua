@@ -27,10 +27,25 @@ local function gen(item_height,bg_color,border_color)
   return cairo.Pattern.create_for_surface(img)
 end
 
+local function widget_draw(self, w, cr, width, height)
+  self:_draw2(w, cr, width, height)
+  local overlay = self._item and self._item.overlay
+  if overlay then
+    overlay(self._item._menu,self._item,cr,width,height)
+  end
+end
+
 local function draw(data,item,args)
   local args,flags = args or {},{}
   local col = args.color
   for _,v in pairs(args) do flags[v] = true end
+
+  if not item.widget._overlay_init then
+    item.widget._draw2 = item.widget.draw
+    item.widget.draw = widget_draw
+    item.widget._overlay_init = true
+  end
+
   local ih = data.item_height
   if not focussed or not focussed[ih] then
     if not focussed then

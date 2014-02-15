@@ -12,9 +12,24 @@ local module = {
   }
 }
 
+local function widget_draw(self, w, cr, width, height)
+  self:_draw(w, cr, width, height)
+  local overlay = self._item and self._item.overlay
+  if overlay then
+    overlay(self._item._menu,self._item,cr,width,height)
+  end
+end
+
 local function draw(data,item,args)
   local args,flags = args or {},{}
   for _,v in pairs(args) do flags[v] = true end
+
+  if not item.widget._overlay_init then
+    item.widget._draw = item.widget.draw
+    item.widget.draw = widget_draw
+    item.widget._overlay_init = true
+  end
+
 
   if flags[base.item_flags.SELECTED] or (item._tmp_menu) then
     item.widget:set_bg(args.color or data.bg_focus)

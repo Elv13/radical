@@ -7,10 +7,12 @@
 ---------------------------------------------------------------------------
 
 local capi = {client = client}
+local rawset = rawset
 local radical   = require( "radical"      )
 local tag       = require( "awful.tag"    )
 local beautiful = require( "beautiful"    )
 local client    = require( "awful.client" )
+local wibox     = require( "wibox"        )
 
 local sticky,urgent,instances,module = {},{},{},{}
 
@@ -164,7 +166,29 @@ local function new(screen)
 
   load_clients(tag.selected(screen))
 
-  return menu
+  -- Try to make awesome think radical.bar is a real widget
+  -- Use "menu._internal.layout" directly in :add to avoid
+  -- the proxy overhead, for now it doesn't event work on 3.5.2
+--   rawset(menu,"fit",function(self,...)
+--     return menu._internal.layout.fit(menu._internal.layout,...)
+--   end)
+--   rawset(menu,"draw",function(self,...)
+--     return menu._internal.layout.draw(menu._internal.layout,...)
+--   end)
+--   rawset(menu,"add_signal",function(self,...)
+--     return menu._internal.layout.add_signal(menu._internal.layout,...)
+--   end)
+--   rawset(menu,"disconnect_signal",function(a,...)
+--     return menu._internal.layout.disconnect_signal(menu._internal.layout,...)
+--   end)
+--   rawset(menu,"connect_signal",function(a,...)
+--     return menu._internal.layout.disconnect_signal(menu._internal.layout,...)
+--   end)
+--   rawset(menu,"emit_signal",function(a,...)
+--     return menu._internal.layout.emit_signal(menu._internal.layout,...)
+--   end)
+
+  return menu,menu._internal.layout
 end
 
 -- Global callbacks

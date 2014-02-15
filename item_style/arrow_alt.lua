@@ -81,6 +81,10 @@ local function draw_real(self, w, cr, width, height)
   cr:paint()
   cr:restore()
   self.widget:draw(w, cr, width, height)
+  local overlay = self._item and self._item.overlay
+  if overlay then
+    overlay(self._item._menu,self._item,cr,width,height)
+  end
 end
 
 local function get_prev(data,item)
