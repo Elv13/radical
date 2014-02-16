@@ -95,6 +95,20 @@ local function create_item(item,data,args)
 
   item._internal.text_w = text_w
   item._internal.icon_w = icon
+
+  bg:connect_signal("button::press",function(b,t,s,id,e)
+    data:emit_signal("button::press",data,item,id)
+  end)
+  bg:connect_signal("button::release",function(b,t)
+    data:emit_signal("button::release",data,item,id)
+  end)
+  bg:connect_signal("mouse::enter",function(b,t)
+    data:emit_signal("mouse::enter",data,item)
+  end)
+  bg:connect_signal("mouse::leave",function(b,t)
+    data:emit_signal("mouse::leave",data,item)
+  end)
+
   return bg
 end
 

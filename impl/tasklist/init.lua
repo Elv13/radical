@@ -123,7 +123,7 @@ local function new(screen)
     bg_hover   = beautiful.menu_bg_focus,
     disable_markup = true,
     overlay = function(data,item,cd,w,h)
-      print("foo!")
+--       print("foo!")
     end
   }
 

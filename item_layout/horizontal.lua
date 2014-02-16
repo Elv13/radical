@@ -216,6 +216,19 @@ local function create_item(item,data,args)
   item._internal.icon_w = icon
   item._internal.margin_w = m
 
+  bg:connect_signal("button::press",function(b,t,s,id,e)
+    data:emit_signal("button::press",item,id)
+  end)
+  bg:connect_signal("button::release",function(b,t)
+    data:emit_signal("button::release",item,id)
+  end)
+  bg:connect_signal("mouse::enter",function(b,t)
+    data:emit_signal("mouse::enter",item)
+  end)
+  bg:connect_signal("mouse::leave",function(b,t)
+    data:emit_signal("mouse::leave",item)
+  end)
+
   return bg
 end
 

@@ -235,8 +235,27 @@ here is the list:
 | append           | Append an existing (but unused) item         | the item              |  ---   |
 
 
-Menu also emit many signals, the syntax is usually `PROPERTY_NAME::changed`. The
-exeptions are `item::moved`, `item::swapped`, `item::removed`, `item::appended`
+Menu also emit many signals, the syntax is usually `PROPERTY_NAME::changed`.
+Some others are `item::moved`, `item::swapped`, `item::removed`, `item::appended`
+
+Most item_layout also repackage the default widget signals. It usually does the
+same as using the `buttonX` menu attributes, but is preferrable in some scenarios
+
+|       Name        |                Description         |      Arguments      |
+| ----------------- | ---------------------------------- | ------------------- |
+| button::press     | A button press                     | menu,item,button_id |
+| button::release   | A button release                   | menu,item,button_id |
+| mouse::enter      | When the mouse enter               | menu,item           |
+| mouse::leave      | When the mouse leave               | menu,item           |
+
+An example of how to use them:
+
+```lua
+    local menubar = radical.bar{}
+    menubar:connect_signal("button::press",function(data,item,button)
+        print("Foo!",item.text,button,data.rowcount)
+    end)
+```
 
 ###Beautiful options
 
