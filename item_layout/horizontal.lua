@@ -92,6 +92,31 @@ function module:setup_sub_menu_arrow(item,data)
   end
 end
 
+-- Proxy all events to the parent
+function module.setup_event(data,item,widget)
+  local widget = widget or item.widget
+  widget:connect_signal("button::press",function(_,__,___,id,mod)
+    local mods_invert = {}
+    for k,v in ipairs(mod) do
+      mods_invert[v] = i
+    end
+    data:emit_signal("button::press",item,id,mods_invert)
+  end)
+  widget:connect_signal("button::release",function(_,__,___,id,mod)
+    local mods_invert = {}
+    for k,v in ipairs(mod) do
+      mods_invert[v] = i
+    end
+    data:emit_signal("button::release",item,id,mods_invert)
+  end)
+  widget:connect_signal("mouse::enter",function(b,t)
+    data:emit_signal("mouse::enter",item)
+  end)
+  widget:connect_signal("mouse::leave",function(b,t)
+    data:emit_signal("mouse::leave",item)
+  end)
+end
+
 -- Use all the space, let "align_fit" compute the right size
 local function textbox_fit(box,w,h)
   return w,h
@@ -216,18 +241,8 @@ local function create_item(item,data,args)
   item._internal.icon_w = icon
   item._internal.margin_w = m
 
-  bg:connect_signal("button::press",function(b,t,s,id,e)
-    data:emit_signal("button::press",item,id)
-  end)
-  bg:connect_signal("button::release",function(b,t)
-    data:emit_signal("button::release",item,id)
-  end)
-  bg:connect_signal("mouse::enter",function(b,t)
-    data:emit_signal("mouse::enter",item)
-  end)
-  bg:connect_signal("mouse::leave",function(b,t)
-    data:emit_signal("mouse::leave",item)
-  end)
+  -- Setup events
+  module.setup_event(data,item)
 
   return bg
 end

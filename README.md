@@ -241,12 +241,16 @@ Some others are `item::moved`, `item::swapped`, `item::removed`, `item::appended
 Most item_layout also repackage the default widget signals. It usually does the
 same as using the `buttonX` menu attributes, but is preferrable in some scenarios
 
-|       Name        |                Description         |      Arguments      |
-| ----------------- | ---------------------------------- | ------------------- |
-| button::press     | A button press                     | menu,item,button_id |
-| button::release   | A button release                   | menu,item,button_id |
-| mouse::enter      | When the mouse enter               | menu,item           |
-| mouse::leave      | When the mouse leave               | menu,item           |
+|       Name        |           Description         |         Arguments        |
+| ----------------- | ----------------------------- | ------------------------ |
+| button::press     | A button press                | menu,item,button_id,mods |
+| button::release   | A button release              | menu,item,button_id,mods |
+| mouse::enter      | When the mouse enter          | menu,item                |
+| mouse::leave      | When the mouse leave          | menu,item                |
+
+`mods` is an array with the applied modifier as **key**. If the value is `nil`,
+then the modifier is not present. Usual modifiers are `Control`, `Shift`, `mod1`
+(Alt) and `mod4`.
 
 An example of how to use them:
 

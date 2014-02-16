@@ -1,10 +1,11 @@
 local setmetatable = setmetatable
-local beautiful = require( "beautiful"    )
-local color     = require( "gears.color"  )
-local cairo     = require( "lgi"          ).cairo
-local wibox     = require( "wibox"        )
-local checkbox  = require( "radical.widgets.checkbox" )
-local fkey      = require( "radical.widgets.fkey"         )
+local beautiful  = require( "beautiful"    )
+local color      = require( "gears.color"  )
+local cairo      = require( "lgi"          ).cairo
+local wibox      = require( "wibox"        )
+local checkbox   = require( "radical.widgets.checkbox" )
+local fkey       = require( "radical.widgets.fkey"         )
+local horizontal = require( "radical.item_layout.horizontal" )
 
 local module = {}
 
@@ -33,18 +34,9 @@ local function create_item(item,data,args)
   item._internal.icon_w = nil
   item._internal.margin_w = m
 
-  bg:connect_signal("button::press",function(b,t,s,id,e)
-    data:emit_signal("button::press",data,item,id)
-  end)
-  bg:connect_signal("button::release",function(b,t)
-    data:emit_signal("button::release",data,item,id)
-  end)
-  bg:connect_signal("mouse::enter",function(b,t)
-    data:emit_signal("mouse::enter",data,item)
-  end)
-  bg:connect_signal("mouse::leave",function(b,t)
-    data:emit_signal("mouse::leave",data,item)
-  end)
+  -- Setup events
+  horizontal.setup_event(data,item,bg)
+
   return bg
 end
 
