@@ -16,6 +16,39 @@ local wibox     = require( "wibox"        )
 
 local sticky,urgent,instances,module = {},{},{},{}
 
+-- Default button implementation
+module.buttons = {
+  [1] = function (c)
+    if c == client.focus then
+      c.minimized = true
+    else
+      -- Without this, the following
+      -- :isvisible() makes no sense
+      c.minimized = false
+      if not c:isvisible() then
+          tag.viewonly(c:tags()[1])
+      end
+      -- This will also un-minimize
+      -- the client, if needed
+      client.focus = c
+      c:raise()
+    end
+  end,
+  [3] = function(c)
+    customMenu.clientMenu.client = c
+    local menu = customMenu.clientMenu.menu()
+    menu.visible = true
+  end,
+  [4] = function ()
+    client.focus.byidx(1)
+    if client.focus then client.focus:raise() end
+  end,
+  [5] = function ()
+    client.focus.byidx(-1)
+    if client.focus then client.focus:raise() end
+  end
+}
+
 local function sticky_callback(c)
   local val = c.sticky
   sticky[c] = val and true or nil
@@ -80,11 +113,10 @@ local function create_client_item(c,screen)
   end
 
   -- Too bad, let's create a new one
-  cache[c] = menu:add_item{text=c.name,icon=c.icon,button1=function()
-    capi.client.focus = c
-    c:raise()
-  end}
-  return cache[c]
+  local item = menu:add_item{text=c.name,icon=c.icon}
+  item.client = c
+  cache[c] = item
+  return item
 end
 
 local function add_client(c,screen)
@@ -187,6 +219,12 @@ local function new(screen)
 --   rawset(menu,"emit_signal",function(a,...)
 --     return menu._internal.layout.emit_signal(menu._internal.layout,...)
 --   end)
+  
+  menu:connect_signal("button::press",function(menu,item,button_id,mod)
+    if module.buttons and module.buttons[button_id] then
+      module.buttons[button_id](item.client,menu,item,button_id,mod)
+    end
+  end)
 
   return menu,menu._internal.layout
 end

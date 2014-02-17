@@ -32,7 +32,7 @@ The most simple kind of menus, contexts one, can be created like this:
 
 ```lua
     local menu = radical.context{}
-    menu:add_item {text="Screen 1",button1=function() print("Hello World! ") end}
+    menu:add_item {text="Screen 1",button1=function(_menu,item,mods) print("Hello World! ") end}
     menu:add_item {text="Screen 9",icon=beautiful.path.."Icon/layouts/tileleft.png"}
     menu:add_item {text="Sub Menu",sub_menu = function()
         local smenu = radical.context{}

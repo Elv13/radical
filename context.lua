@@ -212,7 +212,7 @@ local function setup_buttons(data,item,args)
 
   item:connect_signal("button::press",function(_m,_i,button_id,mods)
     if #mods == 0 and buttons[button_id] then
-      buttons[button_id]()
+      buttons[button_id](_m,_i,mods)
     end
   end)
 end
