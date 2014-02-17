@@ -10,7 +10,6 @@ local beautiful = require( "beautiful"        )
 local cairo     = require( "lgi"              ).cairo
 local awful     = require( "awful"            )
 local util      = require( "awful.util"       )
-local button    = require( "awful.button"     )
 local layout    = require( "radical.layout"   )
 local checkbox  = require( "radical.widgets.checkbox" )
 local arrow_style = require( "radical.style.arrow" )
@@ -178,39 +177,44 @@ local function setup_buttons(data,item,args)
   local buttons = {}
   for i=1,10 do
     if args["button"..i] then
-      buttons[#buttons+1] = button({},i,args["button"..i])
+      buttons[i] = args["button"..i]
     end
   end
 
   -- Click to open sub_menu
   if not buttons[1] and data.sub_menu_on == base.event.BUTTON1 then
-    buttons[#buttons+1] = button({},1,function() base._execute_sub_menu(data,item) end)
+    buttons[1] = function() base._execute_sub_menu(data,item) end
   end
 
   --Hide on right click
   if not buttons[3] then
-    buttons[#buttons+1] = button({},3,function()
+    buttons[3] = function()
       data.visible = false
       if data.parent_geometry and data.parent_geometry.is_menu then
         data.parent_geometry.visible = false
       end
-    end)
+    end
   end
 
   -- Scroll up
   if not buttons[4] then
-    buttons[#buttons+1] = button({},4,function()
+    buttons[4] = function()
       data:scroll_up()
-    end)
+    end
   end
 
   -- Scroll down
   if not buttons[5] then
-    buttons[#buttons+1] = button({},5,function()
+    buttons[5] = function()
       data:scroll_down()
-    end)
+    end
   end
-  item.widget:buttons( util.table.join(unpack(buttons)))
+
+  item:connect_signal("button::press",function(_m,_i,button_id,mods)
+    if #mods == 0 and buttons[button_id] then
+      buttons[button_id]()
+    end
+  end)
 end
 
 local function setup_item(data,item,args)

@@ -95,12 +95,15 @@ end
 -- Proxy all events to the parent
 function module.setup_event(data,item,widget)
   local widget = widget or item.widget
+
+  -- Setup data signals
   widget:connect_signal("button::press",function(_,__,___,id,mod)
     local mods_invert = {}
     for k,v in ipairs(mod) do
       mods_invert[v] = i
     end
     data:emit_signal("button::press",item,id,mods_invert)
+    item:emit_signal("button::press",item,id,mods_invert)
   end)
   widget:connect_signal("button::release",function(_,__,___,id,mod)
     local mods_invert = {}
@@ -108,12 +111,15 @@ function module.setup_event(data,item,widget)
       mods_invert[v] = i
     end
     data:emit_signal("button::release",item,id,mods_invert)
+    item:emit_signal("button::release",item,id,mods_invert)
   end)
   widget:connect_signal("mouse::enter",function(b,t)
     data:emit_signal("mouse::enter",item)
+    item:emit_signal("mouse::enter",item)
   end)
   widget:connect_signal("mouse::leave",function(b,t)
     data:emit_signal("mouse::leave",item)
+    item:emit_signal("mouse::leave",item)
   end)
 end
 
