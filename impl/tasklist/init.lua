@@ -13,6 +13,7 @@ local tag       = require( "awful.tag"    )
 local beautiful = require( "beautiful"    )
 local client    = require( "awful.client" )
 local wibox     = require( "wibox"        )
+local client_menu =  require("radical.impl.tasklist.client_menu")
 
 local sticky,urgent,instances,module = {},{},{},{}
 
@@ -35,9 +36,9 @@ module.buttons = {
     end
   end,
   [3] = function(c)
-    customMenu.clientMenu.client = c
-    local menu = customMenu.clientMenu.menu()
-    menu.visible = true
+    client_menu.client = c
+    local menu = client_menu()
+    menu.visible = not menu.visible
   end,
   [4] = function ()
     client.focus.byidx(1)
