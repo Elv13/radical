@@ -113,6 +113,7 @@ local function setup_drawable(data)
   internal.margin:set_widget(internal.layout)
   internal.w:set_widget(internal.margin)
   internal.w:set_fg(data.fg)
+  internal.w.opacity = data.opacity
 
   --Getters
   get_map.wibox     = function() return internal.w end

@@ -185,6 +185,7 @@ Multiple items can have multiple sets of options.
 | sub_menu_on     | Show submenu on selection or when clicking         | see "event" enum              |
 | select_on       | The event used to trigger item selection           | see "event" enum              |
 | overlay         | A layer on top of the item                         | function(data,item,cr,w,h)    |
+| opacity         | Make this menu translucent (require a compositor)  | number (0 to 1)               |
 
 ###Item options
 
@@ -289,5 +290,6 @@ Radical also use the some of the same theme options as awful.menu, plus some:
 | menu_bg_highlight            | Highlighted item background            | String/Gradient/Pattern |
 | menu_submenu_icon            | Sub menu pixmap (aka >)                | Path/Pattern            |
 | menu_separator_color         | Menu separator color                   | String/Gradient/Pattern |
+| menu_opacity                 | Use your favorite compositor           | Number (0=0%, 1=100%)   |
 | draw_underlay                | Function returning the underlay pixmap | Function                |
 
