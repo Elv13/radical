@@ -11,7 +11,7 @@ local rawset = rawset
 local radical   = require( "radical"      )
 local tag       = require( "awful.tag"    )
 local beautiful = require( "beautiful"    )
-local client    = require( "awful.client" )
+local client = require( "awful.client" )
 local wibox     = require( "wibox"        )
 local client_menu =  require("radical.impl.tasklist.client_menu")
 
@@ -20,7 +20,7 @@ local sticky,urgent,instances,module = {},{},{},{}
 -- Default button implementation
 module.buttons = {
   [1] = function (c)
-    if c == client.focus then
+    if c == capi.client.focus then
       c.minimized = true
     else
       -- Without this, the following
@@ -31,7 +31,7 @@ module.buttons = {
       end
       -- This will also un-minimize
       -- the client, if needed
-      client.focus = c
+      capi.client.focus = c
       c:raise()
     end
   end,
@@ -46,7 +46,7 @@ module.buttons = {
   end,
   [5] = function ()
     client.focus.byidx(-1)
-    if client.focus then client.focus:raise() end
+    if capi.client.focus then client.focus:raise() end
   end
 }
 

@@ -48,11 +48,11 @@ local function set_position(self)
 
       --Handle when the menu doesn't fit in the srceen horizontally
       if ret.x+self.width > src_geo.x + src_geo.width then
-        ret.x = src_geo.x + src_geo.width - self.width - parent.width
+        ret.x = parent.x - self.width
       end
 
       -- Handle when the menu doesn't fit on the screen vertically
-      if ret.y+self.height > src_geo.height then
+      if ret.y+self.height > src_geo.y + src_geo.height then
        ret.y = ret.y - self.height + self.item_height
       end
     end
