@@ -74,7 +74,8 @@ end
 local function new(args)
   local t,auto_release = tag.selected(capi.client.focus and capi.client.focus.screen or capi.mouse.screen),args.auto_release
   local currentMenu = menu({filter = true, show_filter=true, autodiscard = true,
-    disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[capi.client.focus and capi.client.focus.screen or capi.mouse.screen]).geometry.width)/2)})
+    disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[capi.client.focus and capi.client.focus.screen or capi.mouse.screen]).geometry.width)/2),
+    icon_transformation = beautiful.alttab_icon_transformation})
 
 
   currentMenu:add_key_hook({}, "Tab", "press", select_next)
@@ -102,7 +103,7 @@ local function new(args)
       l.fit = function (s,w,h) return 5*h,h end
       currentMenu:add_item({
         text          = v.name,
-        icon          = module.icon_transform and module.icon_transform(v.icon or module.default_icon) or v.icon or module.default_icon,
+        icon          = v.icon or module.default_icon,
         suffix_widget = not auto_release and l or nil,
         selected      = capi.client.focus and capi.client.focus == v,
         underlay      = underlays,

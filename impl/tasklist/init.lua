@@ -157,7 +157,8 @@ local function new(screen)
     disable_markup = true,
     overlay = function(data,item,cd,w,h)
 --       print("foo!")
-    end
+    end,
+    icon_transformation = beautiful.tasklist_icon_transformation
   }
 
   -- Clear the menu and repopulate it

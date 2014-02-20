@@ -142,50 +142,51 @@ Multiple items can have multiple sets of options.
 
 ### Menu options
 
-|      Name       | Description                                        | Type                          |
-| --------------- | -------------------------------------------------- | ----------------------------- |
-| bg              | Background color                                   | String/gradient/pattern       |
-| fg              | Foreground (text) color                            | String/gradient/pattern       |
-| bg_focus        | Background of focussed items                       | String/gradient/pattern       |
-| fg_focus        | Foreground of focussed items                       | String/gradient/pattern       |
-| bg_hover        | Background of hoverred items                       | String/gradient/pattern       |
-| fg_hover        | Foreground of hoverred items                       | String/gradient/pattern       |
-| bg_alternate    | Alternate background color                         | String/gradient/pattern       |
-| bg_highlight    | Highlight background color                         | String/gradient/pattern       |
-| bg_header       | Header (see widgets section) color                 | String/gradient/pattern       |
-| bg_prefix       | Prefix background for item_styles that support it  | String/gradient/pattern       |
-| border_color    | Border color                                       | String/gradient/pattern       |
-| border_width    | Border width                                       | number                        |
-| item_height     | Default height of items                            | number                        |
-| item_width      | Default width of items                             | number                        |
-| width           | Original width                                     | number                        |
-| default_width   | Default menu width                                 | number                        |
-| icon_size       | Icon size                                          | number                        |
-| auto_resize     | Resize menu if items are too large                 | boolean                       |
-| parent_geometry | Set the menu parent                                | geometry array                |
-| arrow_type      | Set the arrow type when use arrow style            | see "arrow_type" enum         |
-| visible         | Show or hide the menu                              | boolean                       |
-| direction       | The direction from which the arrow will point      | "left","right","top","bottom" |
-| row             | Number of row (in grid layout)                     | number                        |
-| column          | Number of columns (in grid layout)                 | number                        |
-| layout          | The menu layout (default:vertical)                 | see "Menu layouts" section    |
-| style           | The menu style (default:arrow)                     | see "Menu style"              |
-| item_style      | The item style (default:basic)                     | see "Item style"              |
-| filter          | Filter the menu when the user type                 | boolean                       |
-| show_filter     | Show a filter widget at the bottom                 | boolean                       |
-| filter_string   | Default filter string                              | string                        |
-| fkeys_prefix    | Display F1-F12 indicators for easy navigation      | boolean                       |
-| underlay_alpha  | Underlay (see item options) opacity                | 0-1                           |
-| filter_prefix   | Text to be shown at begenning of the filter string | string                        |
-| max_items       | Maximum number of items before showing scrollbar   | number                        |
-| enable_keyboard | Enable or disable keyboard navigation / hooks      | boolean                       |
-| disable_markup  | Disable pango markup in items text                 | boolean                       |
-| x               | X position (absolute)                              | number                        |
-| y               | Y position (absolute)                              | number                        |
-| sub_menu_on     | Show submenu on selection or when clicking         | see "event" enum              |
-| select_on       | The event used to trigger item selection           | see "event" enum              |
-| overlay         | A layer on top of the item                         | function(data,item,cr,w,h)    |
-| opacity         | Make this menu translucent (require a compositor)  | number (0 to 1)               |
+|         Name        | Description                                        | Type                          |
+| ------------------- | -------------------------------------------------- | ----------------------------- |
+| bg                  | Background color                                   | String/gradient/pattern       |
+| fg                  | Foreground (text) color                            | String/gradient/pattern       |
+| bg_focus            | Background of focussed items                       | String/gradient/pattern       |
+| fg_focus            | Foreground of focussed items                       | String/gradient/pattern       |
+| bg_hover            | Background of hoverred items                       | String/gradient/pattern       |
+| fg_hover            | Foreground of hoverred items                       | String/gradient/pattern       |
+| bg_alternate        | Alternate background color                         | String/gradient/pattern       |
+| bg_highlight        | Highlight background color                         | String/gradient/pattern       |
+| bg_header           | Header (see widgets section) color                 | String/gradient/pattern       |
+| bg_prefix           | Prefix background for item_styles that support it  | String/gradient/pattern       |
+| border_color        | Border color                                       | String/gradient/pattern       |
+| border_width        | Border width                                       | number                        |
+| item_height         | Default height of items                            | number                        |
+| item_width          | Default width of items                             | number                        |
+| width               | Original width                                     | number                        |
+| default_width       | Default menu width                                 | number                        |
+| icon_size           | Icon size                                          | number                        |
+| auto_resize         | Resize menu if items are too large                 | boolean                       |
+| parent_geometry     | Set the menu parent                                | geometry array                |
+| arrow_type          | Set the arrow type when use arrow style            | see "arrow_type" enum         |
+| visible             | Show or hide the menu                              | boolean                       |
+| direction           | The direction from which the arrow will point      | "left","right","top","bottom" |
+| row                 | Number of row (in grid layout)                     | number                        |
+| column              | Number of columns (in grid layout)                 | number                        |
+| layout              | The menu layout (default:vertical)                 | see "Menu layouts" section    |
+| style               | The menu style (default:arrow)                     | see "Menu style"              |
+| item_style          | The item style (default:basic)                     | see "Item style"              |
+| filter              | Filter the menu when the user type                 | boolean                       |
+| show_filter         | Show a filter widget at the bottom                 | boolean                       |
+| filter_string       | Default filter string                              | string                        |
+| fkeys_prefix        | Display F1-F12 indicators for easy navigation      | boolean                       |
+| underlay_alpha      | Underlay (see item options) opacity                | 0-1                           |
+| filter_prefix       | Text to be shown at begenning of the filter string | string                        |
+| max_items           | Maximum number of items before showing scrollbar   | number                        |
+| enable_keyboard     | Enable or disable keyboard navigation / hooks      | boolean                       |
+| disable_markup      | Disable pango markup in items text                 | boolean                       |
+| x                   | X position (absolute)                              | number                        |
+| y                   | Y position (absolute)                              | number                        |
+| sub_menu_on         | Show submenu on selection or when clicking         | see "event" enum              |
+| select_on           | The event used to trigger item selection           | see "event" enum              |
+| overlay             | A layer on top of the item                         | function(data,item,cr,w,h)    |
+| opacity             | Make this menu translucent (require a compositor)  | number (0 to 1)               |
+| icon_transformation | Hijack the icon drawing function                   | function(icon,data,item)      |
 
 ###Item options
 
@@ -241,6 +242,14 @@ here is the list:
 Menu also emit many signals, the syntax is usually `PROPERTY_NAME::changed`.
 Some others are `item::moved`, `item::swapped`, `item::removed`, `item::appended`
 
+Here is an example of how to catch an "opacity" change:
+
+```lua
+    mymenu:connect_signal("opacity::changed",function(value)
+        -- Do something
+    end)
+```
+
 Most item_layout also repackage the default widget signals. It usually does the
 same as using the `buttonX` menu attributes, but is preferrable in some scenarios
 like when a modifier is applied.
@@ -276,20 +285,26 @@ An example of how to use them:
 
 Radical also use the some of the same theme options as awful.menu, plus some:
 
-|            Name              |              Description               |          Type           |
-| ---------------------------- | -------------------------------------  | ----------------------  |
-| menu_height                  | Menu height                            | String/Gradient/Pattern |
-| menu_width                   | Menu default/minimum width             | Number                  |
-| menu_border_width            | Border width                           | Number                  |
-| menu_border_color            | Border color                           | String/Gradient/Pattern |
-| menu_fg_normal               | Text/Foreground color                  | String/Gradient/Pattern |
-| menu_bg_focus                | Selected item color                    | String/Gradient/Pattern |
-| menu_bg_header               | Header widget background color         | String/Gradient/Pattern |
-| menu_bg_alternate            | Scrollbar and other widget color       | String/Gradient/Pattern |
-| menu_bg_normal               | Default background                     | String/Gradient/Pattern |
-| menu_bg_highlight            | Highlighted item background            | String/Gradient/Pattern |
-| menu_submenu_icon            | Sub menu pixmap (aka >)                | Path/Pattern            |
-| menu_separator_color         | Menu separator color                   | String/Gradient/Pattern |
-| menu_opacity                 | Use your favorite compositor           | Number (0=0%, 1=100%)   |
-| draw_underlay                | Function returning the underlay pixmap | Function                |
+|            Name              |              Description               |            Type           |
+| ---------------------------- | -------------------------------------  | ------------------------- |
+| menu_height                  | Menu height                            | String/Gradient/Pattern   |
+| menu_width                   | Menu default/minimum width             | Number                    |
+| menu_border_width            | Border width                           | Number                    |
+| menu_border_color            | Border color                           | String/Gradient/Pattern   |
+| menu_fg_normal               | Text/Foreground color                  | String/Gradient/Pattern   |
+| menu_bg_focus                | Selected item color                    | String/Gradient/Pattern   |
+| menu_bg_header               | Header widget background color         | String/Gradient/Pattern   |
+| menu_bg_alternate            | Scrollbar and other widget color       | String/Gradient/Pattern   |
+| menu_bg_normal               | Default background                     | String/Gradient/Pattern   |
+| menu_bg_highlight            | Highlighted item background            | String/Gradient/Pattern   |
+| menu_submenu_icon            | Sub menu pixmap (aka >)                | Path/Pattern              |
+| menu_separator_color         | Menu separator color                   | String/Gradient/Pattern   |
+| menu_opacity                 | Use your favorite compositor           | Number (0=0%, 1=100%)     |
+| menu_draw_underlay           | Function returning the underlay pixmap | function(array,width)     |
+| menu_icon_transformation     | The function used to draw the icon     | function(image,data,item) |
+
+Styling can also be done using the icon_transformation option. This feature
+allow masks such as desaturation, tinting, invert or some matrix to be applied
+on the pixmap before it is being drawn. This function take the path/surface as
+only parameter and return the transformed surface.
 

@@ -33,6 +33,14 @@ function module.paint_underlay(data,item,cr,width,height)
   cr:restore()
 end
 
+-- Apply icon transformation
+function module.set_icon(self,image)
+  if self._data.icon_transformation then
+    image = self._data.icon_transformation(image,self._data,self._item)
+  end
+  wibox.widget.imagebox.set_image(self,image)
+end
+
 -- Setup the item icon
 function module:setup_icon(item,data)
   local icon = wibox.widget.imagebox()
@@ -40,6 +48,9 @@ function module:setup_icon(item,data)
     local w,h = wibox.widget.imagebox.fit(...)
     return w+3,h
   end
+  icon._data = data
+  icon._item = item
+  icon.set_image = module.set_icon
   if item.icon then
     icon:set_image(item.icon)
   end

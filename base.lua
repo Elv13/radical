@@ -342,6 +342,7 @@ local function new(args)
       select_on       = args.select_on or module.event.HOVER,
       overlay         = args.overlay or nil,
       opacity         = args.opacity or beautiful.menu_opacity or 1,
+      icon_transformation = args.icon_transformation or nil,
     },
     get_map = {
       is_menu       = function() return true end,

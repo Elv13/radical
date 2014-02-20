@@ -55,6 +55,8 @@ local function create_item(item,data,args)
   local icon_flex = wibox.layout.align.horizontal()
   local icon = wibox.widget.imagebox()
   icon.fit = function(...) return icon_fit(data,...) end
+  icon._data = data
+  icon.set_image = horizontal.set_icon
   if args.icon then
     icon:set_image(args.icon)
   end
