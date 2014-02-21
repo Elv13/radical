@@ -54,8 +54,7 @@ local function widget_draw(self, w, cr, width, height)
 end
 
 local function draw(data,item,args)
-  local args,flags = args or {},{}
-  for _,v in pairs(args) do flags[v] = true end
+  local args = args or {}
 
   if not item.widget._overlay_init then
     item.widget._drawprefix = item.widget.draw
@@ -81,9 +80,11 @@ local function draw(data,item,args)
     item._internal.align.third.draw = suffix_draw
   end
 
-  if flags[base.item_flags.SELECTED] or (item._tmp_menu) then
+  local state = item.state or {}
+
+  if state[base.item_flags.SELECTED] or (item._tmp_menu) then
     item.widget:set_bg(args.color or data.bg_focus)
-  elseif flags[base.item_flags.HOVERED] then
+  elseif state[base.item_flags.HOVERED] then
     item.widget:set_bg(args.color or data.bg_hover)
   else
     item.widget:set_bg(args.color or nil)

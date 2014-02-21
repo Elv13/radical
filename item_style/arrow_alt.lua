@@ -102,8 +102,7 @@ local function get_prev(data,item)
 end
 
 local function draw(data,item,args)
-  local args,flags = args or {},{}
-  for _,v in pairs(args) do flags[v] = true end
+  local args = args or {}
   if item.widget.draw ~= draw_real then
     item.widget.draw = draw_real
     item.widget:emit_signal("widget::updated")
@@ -115,8 +114,10 @@ local function draw(data,item,args)
   local prev_color = item.widget.next_color
   item.widget.next_color = hcode[next_idx]
 
+  local state = item.state or {}
+
   local prev_item = get_prev(data,item)
-  if flags[base.item_flags.SELECTED] or (item._tmp_menu) then
+  if state[base.item_flags.SELECTED] or (item._tmp_menu) then
     if prev_item and prev_item.widget.next_color ~= (args.color or data.bg_focus) then
       prev_item.widget.next_color = args.color or data.bg_focus
       prev_item.widget:emit_signal("widget::updated")

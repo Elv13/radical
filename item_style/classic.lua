@@ -36,9 +36,8 @@ local function widget_draw(self, w, cr, width, height)
 end
 
 local function draw(data,item,args)
-  local args,flags = args or {},{}
+  local args = args or {}
   local col = args.color
-  for _,v in pairs(args) do flags[v] = true end
 
   if not item.widget._overlay_init then
     item.widget._draw2 = item.widget.draw
@@ -60,7 +59,9 @@ local function draw(data,item,args)
     alt[col][ih] = gen(ih,color(col),bc)
   end
 
-  if flags[base.item_flags.SELECTED] or (item._tmp_menu) then
+  local state = item.state or {}
+
+  if state[base.item_flags.SELECTED] or (item._tmp_menu) then
     item.widget:set_bg(focussed[ih])
   elseif col then
     item.widget:set_bg(alt[col][ih])

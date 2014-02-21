@@ -86,6 +86,7 @@ end
 function module:setup_hover(item,data)
   item._internal.set_map.hover = function(value)
     local item_style = item.item_style or data.item_style
+    item.state[2] = value and true or nil
     item_style(data,item,{value and 2--[[HOVER]] or nil,item.selected and 1 or nil})
   end
 end

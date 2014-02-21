@@ -41,8 +41,7 @@ local function widget_draw(self, w, cr, width, height)
 end
 
 local function draw(data,item,args)
-  local args,flags = args or {},{}
-  for _,v in pairs(args) do flags[v] = true end
+  local args = args or {}
 
   if not item.widget._overlay_init then
     item.widget._drawrounded = item.widget.draw
@@ -60,7 +59,9 @@ local function draw(data,item,args)
     default [ih] = gen(ih,data.bg,bc)
   end
 
-  if flags[base.item_flags.SELECTED] or (item._tmp_menu) then
+  local state = item.state or {}
+
+  if state[base.item_flags.SELECTED] or (item._tmp_menu) then
     item.widget:set_bg(focussed[ih])
   else
       item.widget:set_bg(default[ih])

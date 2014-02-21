@@ -21,8 +21,7 @@ local function widget_draw23(self, w, cr, width, height)
 end
 
 local function draw(data,item,args)
-  local args,flags = args or {},{}
-  for _,v in pairs(args) do flags[v] = true end
+  local args = args or {}
 
   if not item.widget._overlay_init and not item.widget._draw then
     item.widget.__drawbasic = item.widget.draw
@@ -30,8 +29,9 @@ local function draw(data,item,args)
     item.widget._overlay_init = true
   end
 
+  local state = item.state or {}
 
-  if flags[base.item_flags.SELECTED] or (item._tmp_menu) then
+  if state[base.item_flags.SELECTED] or (item._tmp_menu) then
     item.widget:set_bg(args.color or data.bg_focus)
   else
     item.widget:set_bg(args.color or nil)

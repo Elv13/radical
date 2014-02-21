@@ -37,14 +37,15 @@ end
 
 
 local function draw(data,item,args)
-  local args,flags = args or {},{}
-  for _,v in pairs(args) do flags[v] = true end
+  local args = args or {}
 
   item.widget.draw = suffix_draw
 
-  if flags[base.item_flags.SELECTED] or (item._tmp_menu) then
+  local state = item.state or {}
+
+  if state[base.item_flags.SELECTED] or (item._tmp_menu) then
     item.widget:set_bg(args.color or data.bg_focus)
-  elseif flags[base.item_flags.HOVERED] then
+  elseif state[base.item_flags.HOVERED] then
     item.widget:set_bg(args.color or data.bg_hover)
   else
     item.widget:set_bg(args.color or nil)

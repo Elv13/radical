@@ -172,6 +172,7 @@ local function add_item(data,args)
       item_layout = args.item_layout or nil                                                                 ,
       selected    = false                                                                                   ,
       overlay     = args.overlay     or data.overlay or nil                                                 ,
+      state       = {}                                                                                      ,
     },
     force_private = {
       visible = true,
@@ -211,19 +212,22 @@ local function add_item(data,args)
       data.item_style(data,item,{})
       return
     end
-    if data._current_item and data._current_item ~= item then
-      if data._current_item._tmp_menu then
-        data._current_item._tmp_menu.visible = false
-        data._current_item._tmp_menu = nil
+    local current_item = data._current_item
+    if current_item and current_item ~= item then
+      current_item.state[module.item_flags.SELECTED] = nil
+      if current_item._tmp_menu then
+        current_item._tmp_menu.visible = false
+        current_item._tmp_menu = nil
         data._tmp_menu = nil
-        data.item_style(data,data._current_item,{})
       end
-      data._current_item.selected = false
+      data.item_style(data,current_item,{})
+      current_item.selected = false
     end
-    if data.sub_menu_on == module.event.SELECTED and data._current_item ~= item then
+    if data.sub_menu_on == module.event.SELECTED and current_item ~= item then
       execute_sub_menu(data,item)
     end
-    data.item_style(data,item,{module.item_flags.SELECTED})
+    item.state[module.item_flags.SELECTED] = true
+    data.item_style(data,item,{})
     data._current_item = item
   end
   if args.selected == true then
