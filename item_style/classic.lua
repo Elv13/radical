@@ -60,8 +60,10 @@ local function draw(data,item,args)
   end
 
   local state = item.state or {}
+--   local current_state = state._current_key or nil --TODO
+--   local state_name = base.colors_by_id[current_state]
 
-  if state[base.item_flags.SELECTED] or (item._tmp_menu) then
+  if current_state  == base.item_flags.SELECTED or (item._tmp_menu) then
     item.widget:set_bg(focussed[ih])
   elseif col then
     item.widget:set_bg(alt[col][ih])

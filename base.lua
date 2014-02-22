@@ -27,13 +27,13 @@ local module = {
     LEAVE    = 1001,
   },
   item_flags     = {
-    NONE      = 0 ,
-    SELECTED  = 1 , -- Single item selected [[FOCUS]]
-    HOVERED   = 2 , -- Mouse hover
-    PRESSED   = 3 , -- Mouse pressed
-    URGENT    = 4 , -- Need attention
-    USED      = 5 , -- Common flag
-    DISABLED  = 6 , -- Cannot be interacted with
+    NONE      = 999999 ,
+    DISABLED  = 1 , -- Cannot be interacted with
+    URGENT    = 2 , -- Need attention
+    SELECTED  = 3 , -- Single item selected [[FOCUS]]
+    PRESSED   = 4 , -- Mouse pressed
+    HOVERED   = 5 , -- Mouse hover
+    USED      = 6 , -- Common flag
     CHECKED   = 7 , -- When checkbox isn't enough
     ALTERNATE = 8 ,
     HIGHLIGHT = 9 ,
@@ -50,8 +50,69 @@ local module = {
     USR8     = 108,
     USR9     = 109,
     USR10    = 110,
-  }
+  },
+  colors_by_id = {}
 }
+
+
+-- Do some magic to cache the highest state
+local function return_data(tab, key)
+  return tab._real_table[key]
+end
+local function change_data(tab, key,value)
+  if not value and key == rawget(tab,"_current_key") then
+    -- Loop the array to find a new current_key
+    local win = math.huge
+    for k,v in pairs(tab._real_table) do
+      if k < win and k ~= key then
+        win = k
+      end
+    end
+    rawset(tab,"_current_key",win ~= math.huge and win or nil)
+  elseif value and (rawget(tab,"_current_key") or math.huge) > key then
+    rawset(tab,"_current_key",key)
+  end
+  tab._real_table[key] = value
+end
+local function init_state()
+  local mt = {__newindex = change_data,__index=return_data}
+  return setmetatable({_real_table={}},mt)
+end
+
+-- Util to help match colors to states
+local theme_colors = {}
+local function register_color(state_id,name,beautiful_name,allow_fallback)
+  theme_colors[name] = {id=state_id,beautiful_name=beautiful_name,fallback=allow_fallback}
+  module.colors_by_id[state_id] = name
+end
+local function setup_colors(data,args)
+  local priv = data._internal.private_data
+  for k,v in pairs(theme_colors) do
+      priv["fg_"..k] = args["fg_"..k] or beautiful["menu_fg_"..v.beautiful_name] or beautiful["fg_"..v.beautiful_name] or (v.fallback and "#ff0000")
+      priv["bg_"..k] = args["bg_"..k] or beautiful["menu_bg_"..v.beautiful_name] or beautiful["bg_"..v.beautiful_name] or (v.fallback and "#00ff00")
+  end
+end
+register_color(module.item_flags.DISABLED  , "disabled"  , "disabled"  , true )
+register_color(module.item_flags.URGENT    , "urgent"    , "urgent"    , true )
+register_color(module.item_flags.SELECTED  , "focus"     , "focus"     , true )
+register_color(module.item_flags.PRESSED   , "pressed"   , "pressed"   , true )
+register_color(module.item_flags.HOVERED   , "hover"     , "hover"     , true )
+register_color(module.item_flags.USED      , "used"      , "used"      , true )
+register_color(module.item_flags.CHECKED   , "checked"   , "checked"   , true )
+register_color(module.item_flags.ALTERNATE , "alternate" , "alternate" , true )
+register_color(module.item_flags.HIGHLIGHT , "highlight" , "highlight" , true )
+--     register_color(item_flags.HEADER    , ""
+--     register_color(item_flags.USR1      , ""
+--     register_color(item_flags.USR2      , ""
+--     register_color(item_flags.USR3      , ""
+--     register_color(item_flags.USR4      , ""
+--     register_color(item_flags.USR5      , ""
+--     register_color(item_flags.USR6      , ""
+--     register_color(item_flags.USR7      , ""
+--     register_color(item_flags.USR8      , ""
+--     register_color(item_flags.USR9      , ""
+--     register_color(item_flags.USR10     , ""
+
 
 local function filter(data)
   if not data.filter == false then
@@ -172,7 +233,7 @@ local function add_item(data,args)
       item_layout = args.item_layout or nil                                                                 ,
       selected    = false                                                                                   ,
       overlay     = args.overlay     or data.overlay or nil                                                 ,
-      state       = {}                                                                                      ,
+      state       = init_state()                                                                            ,
     },
     force_private = {
       visible = true,
@@ -301,14 +362,14 @@ local function new(args)
       -- Default settings
       bg              = args.bg or beautiful.menu_bg_normal or beautiful.bg_normal or "#000000",
       fg              = args.fg or beautiful.menu_fg_normal or beautiful.fg_normal or "#ffffff",
-      bg_focus        = args.bg_focus or beautiful.menu_bg_focus or beautiful.bg_focus or "#ffffff",
-      fg_focus        = args.fg_focus or beautiful.menu_fg_focus or beautiful.fg_focus or "#000000",
-      bg_alternate    = args.bg_alternate or beautiful.menu_bg_alternate or beautiful.bg_alternate or beautiful.bg_normal,
-      bg_highlight    = args.bg_highlight or beautiful.menu_bg_highlight or beautiful.bg_highlight or beautiful.bg_normal,
+--       bg_focus        = args.bg_focus or beautiful.menu_bg_focus or beautiful.bg_focus or "#ffffff",
+--       fg_focus        = args.fg_focus or beautiful.menu_fg_focus or beautiful.fg_focus or "#000000",
+--       bg_alternate    = args.bg_alternate or beautiful.menu_bg_alternate or beautiful.bg_alternate or beautiful.bg_normal,
+--       bg_highlight    = args.bg_highlight or beautiful.menu_bg_highlight or beautiful.bg_highlight or beautiful.bg_normal,
       bg_header       = args.bg_header    or beautiful.menu_bg_header or beautiful.fg_normal,
       bg_prefix       = args.bg_prefix    or nil,
-      bg_hover        = args.bg_hover     or nil,
-      fg_hover        = args.fg_hover     or nil,
+--       bg_hover        = args.bg_hover     or nil,
+--       fg_hover        = args.fg_hover     or nil,
       border_color    = args.border_color or beautiful.menu_border_color or beautiful.border_color or "#333333",
       border_width    = args.border_width or beautiful.menu_border_width or beautiful.border_width or 3,
       separator_color = args.separator_color or beautiful.menu_separator_color or args.border_color or beautiful.menu_border_color or beautiful.border_color or "#333333",
@@ -372,6 +433,7 @@ local function new(args)
   })
   internal.get_map,internal.set_map,internal.private_data = get_map,set_map,private_data
   data.add_item,data.add_widget,data.add_embeded_menu,data._internal,data.add_key_binding = add_item,add_widget,add_embeded_menu,internal,add_key_binding
+  setup_colors(data,args)
   set_map.parent_geometry = function(value)
     private_data.parent_geometry = value
     if data._internal.get_direction then

@@ -42,11 +42,12 @@ local function draw(data,item,args)
   item.widget.draw = suffix_draw
 
   local state = item.state or {}
-
-  if state[base.item_flags.SELECTED] or (item._tmp_menu) then
-    item.widget:set_bg(args.color or data.bg_focus)
-  elseif state[base.item_flags.HOVERED] then
-    item.widget:set_bg(args.color or data.bg_hover)
+  local current_state = state._current_key or nil
+  local state_name = base.colors_by_id[current_state]
+  if current_state == base.item_flags.SELECTED or (item._tmp_menu) then
+    item.widget:set_bg(args.color or item.bg_focus or data.bg_focus)
+  elseif state_name then
+    item.widget:set_bg(args.color or item["bg_"..state_name] or data["bg_"..state_name])
   else
     item.widget:set_bg(args.color or nil)
   end

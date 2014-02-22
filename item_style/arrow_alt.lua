@@ -115,14 +115,18 @@ local function draw(data,item,args)
   item.widget.next_color = hcode[next_idx]
 
   local state = item.state or {}
+  local current_state = state._current_key or nil
+  local state_name = base.colors_by_id[current_state]
 
   local prev_item = get_prev(data,item)
-  if state[base.item_flags.SELECTED] or (item._tmp_menu) then
+  if current_state == base.item_flags.SELECTED or (item._tmp_menu) then
     if prev_item and prev_item.widget.next_color ~= (args.color or data.bg_focus) then
       prev_item.widget.next_color = args.color or data.bg_focus
       prev_item.widget:emit_signal("widget::updated")
     end
     item.widget:set_bg(args.color or data.bg_focus)
+  elseif state_name then --TODO untested, most likely broken
+    item.widget:set_bg(args.color or item["bg_"..state_name] or data["bg_"..state_name])
   else
     if prev_item and prev_item.widget.next_color ~= hcode[color_idx] then
       prev_item.widget.next_color = hcode[color_idx]
