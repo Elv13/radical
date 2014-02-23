@@ -5,7 +5,7 @@ local filter    = require( "radical.widgets.filter"   )
 local wibox     = require( "wibox"                    )
 local cairo     = require( "lgi"                      ).cairo
 local base      = nil
-local horizontal_item_layout= require( "radical.item_layout.horizontal" )
+local horizontal_item_layout= require( "radical.item.layout.horizontal" )
 
 local module = {}
 

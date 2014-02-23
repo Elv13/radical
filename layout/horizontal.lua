@@ -5,7 +5,7 @@ local util      = require( "awful.util"       )
 local button    = require( "awful.button"     )
 local checkbox  = require( "radical.widgets.checkbox" )
 local wibox     = require( "wibox" )
-local item_layout = require("radical.item_layout.icon")
+local item_layout = require("radical.item.layout.icon")
 local base = nil
 
 local module = {}

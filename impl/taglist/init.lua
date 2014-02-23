@@ -107,7 +107,7 @@ local function new(s)
     select_on  = radical.base.event.NEVER,
     fg         = beautiful.fg_normal,
     bg_focus   = beautiful.taglist_bg_image_selected2 or beautiful.bg_focus,
-    item_style = radical.item_style.arrow_prefix,
+    item_style = radical.item.style.arrow_prefix,
     bg_hover   = beautiful.menu_bg_focus
   }
 

@@ -114,7 +114,7 @@ Item layouts are how widgets (icons, label, prefix) are disposed in the item
     
     local m = radical.context {
         style      = radical.style.classic      ,
-        item_style = radical.item_style.classic ,
+        item_style = radical.item.style.classic ,
         layout     = radical.layout.vertical    }
     
 ```

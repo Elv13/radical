@@ -4,7 +4,7 @@ local beautiful = require("beautiful"                   )
 local color     = require("gears.color"                 )
 local cairo     = require("lgi"                         ).cairo
 local wibox     = require("wibox"                       )
-local arrow_alt = require("radical.item_style.arrow_alt")
+local arrow_alt = require("radical.item.style.arrow_alt")
 
 local module = {
   margins = {

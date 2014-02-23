@@ -13,6 +13,7 @@ local util      = require( "awful.util"       )
 local layout    = require( "radical.layout"   )
 local checkbox  = require( "radical.widgets.checkbox" )
 local arrow_style = require( "radical.style.arrow" )
+local item_mod  = require("radical.item")
 
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
 
@@ -184,7 +185,7 @@ local function setup_buttons(data,item,args)
 
   -- Click to open sub_menu
   if not buttons[1] and data.sub_menu_on == base.event.BUTTON1 then
-    buttons[1] = function() base._execute_sub_menu(data,item) end
+    buttons[1] = function() item_mod.execute_sub_menu(data,item) end
   end
 
   --Hide on right click

@@ -8,6 +8,8 @@ local util         = require( "awful.util"              )
 local aw_key       = require( "awful.key"               )
 local object       = require( "radical.object"          )
 local vertical     = require( "radical.layout.vertical" )
+local theme        = require( "radical.theme"           )
+local item_mod     = require( "radical.item"            )
 
 local capi = { mouse = mouse, screen = screen , keygrabber = keygrabber, root=root, }
 
@@ -51,56 +53,18 @@ local module = {
     USR9     = 109,
     USR10    = 110,
   },
-  colors_by_id = {}
+  colors_by_id = theme.colors_by_id
 }
 
-
--- Do some magic to cache the highest state
-local function return_data(tab, key)
-  return tab._real_table[key]
-end
-local function change_data(tab, key,value)
-  if not value and key == rawget(tab,"_current_key") then
-    -- Loop the array to find a new current_key
-    local win = math.huge
-    for k,v in pairs(tab._real_table) do
-      if k < win and k ~= key then
-        win = k
-      end
-    end
-    rawset(tab,"_current_key",win ~= math.huge and win or nil)
-  elseif value and (rawget(tab,"_current_key") or math.huge) > key then
-    rawset(tab,"_current_key",key)
-  end
-  tab._real_table[key] = value
-end
-local function init_state()
-  local mt = {__newindex = change_data,__index=return_data}
-  return setmetatable({_real_table={}},mt)
-end
-
--- Util to help match colors to states
-local theme_colors = {}
-local function register_color(state_id,name,beautiful_name,allow_fallback)
-  theme_colors[name] = {id=state_id,beautiful_name=beautiful_name,fallback=allow_fallback}
-  module.colors_by_id[state_id] = name
-end
-local function setup_colors(data,args)
-  local priv = data._internal.private_data
-  for k,v in pairs(theme_colors) do
-      priv["fg_"..k] = args["fg_"..k] or beautiful["menu_fg_"..v.beautiful_name] or beautiful["fg_"..v.beautiful_name] or (v.fallback and "#ff0000")
-      priv["bg_"..k] = args["bg_"..k] or beautiful["menu_bg_"..v.beautiful_name] or beautiful["bg_"..v.beautiful_name] or (v.fallback and "#00ff00")
-  end
-end
-register_color(module.item_flags.DISABLED  , "disabled"  , "disabled"  , true )
-register_color(module.item_flags.URGENT    , "urgent"    , "urgent"    , true )
-register_color(module.item_flags.SELECTED  , "focus"     , "focus"     , true )
-register_color(module.item_flags.PRESSED   , "pressed"   , "pressed"   , true )
-register_color(module.item_flags.HOVERED   , "hover"     , "hover"     , true )
-register_color(module.item_flags.USED      , "used"      , "used"      , true )
-register_color(module.item_flags.CHECKED   , "checked"   , "checked"   , true )
-register_color(module.item_flags.ALTERNATE , "alternate" , "alternate" , true )
-register_color(module.item_flags.HIGHLIGHT , "highlight" , "highlight" , true )
+theme.register_color(module.item_flags.DISABLED  , "disabled"  , "disabled"  , true )
+theme.register_color(module.item_flags.URGENT    , "urgent"    , "urgent"    , true )
+theme.register_color(module.item_flags.SELECTED  , "focus"     , "focus"     , true )
+theme.register_color(module.item_flags.PRESSED   , "pressed"   , "pressed"   , true )
+theme.register_color(module.item_flags.HOVERED   , "hover"     , "hover"     , true )
+theme.register_color(module.item_flags.USED      , "used"      , "used"      , true )
+theme.register_color(module.item_flags.CHECKED   , "checked"   , "checked"   , true )
+theme.register_color(module.item_flags.ALTERNATE , "alternate" , "alternate" , true )
+theme.register_color(module.item_flags.HIGHLIGHT , "highlight" , "highlight" , true )
 --     register_color(item_flags.HEADER    , ""
 --     register_color(item_flags.USR1      , ""
 --     register_color(item_flags.USR2      , ""
@@ -136,21 +100,6 @@ local function filter(data)
   end
 end
 
-local function execute_sub_menu(data,item)
-  if (item._private_data.sub_menu_f  or item._private_data.sub_menu_m) then
-    local sub_menu = item._private_data.sub_menu_m or item._private_data.sub_menu_f(data,item)
-    if sub_menu and sub_menu.rowcount > 0 then
-      sub_menu.arrow_type = module.arrow_type.NONE
-      sub_menu.parent_item = item
-      sub_menu.parent_geometry = data
-      sub_menu.visible = true
-      item._tmp_menu = sub_menu
-      data._tmp_menu = sub_menu
-    end
-  end
-end
-module._execute_sub_menu = execute_sub_menu
-
 ------------------------------------KEYBOARD HANDLING-----------------------------------
 local function activateKeyboard(data)
   if not data then return end
@@ -183,7 +132,7 @@ local function activateKeyboard(data)
 
       if (key == 'Return') and data._current_item and data._current_item.button1 then
         if data.sub_menu_on == module.event.BUTTON1 then
-          execute_sub_menu(data,data._current_item)
+          item_mod.execute_sub_menu(data,data._current_item)
         else
           data._current_item.button1()
           data.visible = false
@@ -209,88 +158,8 @@ end
 
 ---------------------------------ITEM HANDLING----------------------------------
 local function add_item(data,args)
-  local args = args or {}
-  local item,set_map,get_map,private_data = object({
-    private_data  = {
-      text        = args.text        or ""                                                                  ,
-      height      = args.height      or beautiful.menu_height or 30                                         ,
-      width       = args.width       or nil                                                                 ,
-      icon        = args.icon        or nil                                                                 ,
-      prefix      = args.prefix      or ""                                                                  ,
-      suffix      = args.suffix      or ""                                                                  ,
-      bg          = args.bg          or nil                                                                 ,
-      fg          = args.fg          or data.fg       or beautiful.menu_fg_normal or beautiful.fg_normal    ,
-      fg_focus    = args.fg_focus    or data.fg_focus or beautiful.menu_fg_focus  or beautiful.fg_focus     ,
-      bg_focus    = args.bg_focus    or data.bg_focus or beautiful.menu_bg_focus  or beautiful.bg_focus     ,
-      bg_prefix   = args.bg_prefix   or data.bg_prefix                                                      ,
-      sub_menu_m  = (args.sub_menu   and type(args.sub_menu) == "table" and args.sub_menu.is_menu) and args.sub_menu or nil,
-      sub_menu_f  = (args.sub_menu   and type(args.sub_menu) == "function") and args.sub_menu or nil        ,
-      checkable   = args.checkable   or (args.checked ~= nil) or false                                      ,
-      checked     = args.checked     or false                                                               ,
-      underlay    = args.underlay    or nil                                                                 ,
-      tooltip     = args.tooltip     or nil                                                                 ,
-      item_style  = args.item_style  or nil                                                                 ,
-      item_layout = args.item_layout or nil                                                                 ,
-      selected    = false                                                                                   ,
-      overlay     = args.overlay     or data.overlay or nil                                                 ,
-      state       = init_state()                                                                            ,
-    },
-    force_private = {
-      visible = true,
-      selected = true,
-    },
-    get_map = {
-      y = function() return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height end, --Hack around missing :fit call for last item
-    },
-    autogen_getmap  = true,
-    autogen_setmap  = true,
-    autogen_signals = true,
-  })
-  item._private_data = private_data
-  item._internal = {get_map=get_map,set_map=set_map}
-
-  for i=1,10 do
-    item["button"..i] = args["button"..i]
-  end
-
-  if data.max_items ~= nil and data.rowcount >= data.max_items then-- and (data._start_at or 0)
-    item._hidden = true
-  end
-
-  -- Use _internal to avoid the radical.object trigger
-  data._internal.visible_item_count = (data._internal.visible_item_count or 0) + 1
-  item._internal.f_key = data._internal.visible_item_count
-
-  -- Need to be done before painting
-  data._internal.items[#data._internal.items+1] = {}
-  data._internal.items[#data._internal.items][1] = item
+  local item = item_mod(data,args)
   data._internal.setup_item(data,item,args)
-
-  -- Setters
-  set_map.selected = function(value)
-    private_data.selected = value
-    if value == false then
-      data.item_style(data,item,{})
-      return
-    end
-    local current_item = data._current_item
-    if current_item and current_item ~= item then
-      current_item.state[module.item_flags.SELECTED] = nil
-      if current_item._tmp_menu then
-        current_item._tmp_menu.visible = false
-        current_item._tmp_menu = nil
-        data._tmp_menu = nil
-      end
-      data.item_style(data,current_item,{})
-      current_item.selected = false
-    end
-    if data.sub_menu_on == module.event.SELECTED and current_item ~= item then
-      execute_sub_menu(data,item)
-    end
-    item.state[module.item_flags.SELECTED] = true
-    data.item_style(data,item,{})
-    data._current_item = item
-  end
   if args.selected == true then
     item.selected = true
   end
@@ -389,7 +258,7 @@ local function new(args)
       layout          = args.layout or nil,
       screen          = args.screen or nil,
       style           = args.style  or nil,
-      item_style      = args.item_style or require("radical.item_style.basic"),
+      item_style      = args.item_style or require("radical.item.style.basic"),
       filter          = args.filter ~= false,
       show_filter     = args.show_filter or false,
       filter_string   = args.filter_string or "",
@@ -433,7 +302,7 @@ local function new(args)
   })
   internal.get_map,internal.set_map,internal.private_data = get_map,set_map,private_data
   data.add_item,data.add_widget,data.add_embeded_menu,data._internal,data.add_key_binding = add_item,add_widget,add_embeded_menu,internal,add_key_binding
-  setup_colors(data,args)
+  theme.setup_colors(data,args)
   set_map.parent_geometry = function(value)
     private_data.parent_geometry = value
     if data._internal.get_direction then

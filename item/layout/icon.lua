@@ -5,7 +5,7 @@ local cairo      = require( "lgi"          ).cairo
 local wibox      = require( "wibox"        )
 local checkbox   = require( "radical.widgets.checkbox" )
 local fkey       = require( "radical.widgets.fkey"         )
-local horizontal = require( "radical.item_layout.horizontal" )
+local horizontal = require( "radical.item.layout.horizontal" )
 
 local module = {}
 

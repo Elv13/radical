@@ -9,9 +9,9 @@ local util       = require( "awful.util"                   )
 local fkey       = require( "radical.widgets.fkey"         )
 local button     = require( "awful.button"                 )
 local checkbox   = require( "radical.widgets.checkbox"     )
-local item_style = require( "radical.item_style.arrow_single" )
+local item_style = require( "radical.item.style.arrow_single" )
 local vertical   = require( "radical.layout.vertical"      )
-local item_layout= require( "radical.item_layout.horizontal" )
+local item_layout= require( "radical.item.layout.horizontal" )
 
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
 

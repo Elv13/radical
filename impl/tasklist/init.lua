@@ -65,6 +65,10 @@ end
 local function urgent_callback(c)
   local val = c.urgent
   urgent[c] = val and true or nil
+  local item = instances[c.screen].cache[c]
+  if item then
+    item.state[radical.base.item_flags.URGENT] = val or nil
+  end
 end
 
 local function unmanage_callback(c)
