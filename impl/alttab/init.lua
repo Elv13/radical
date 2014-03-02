@@ -72,6 +72,11 @@ local function is_in_tag(t,c)
 end
 
 local function new(args)
+  local histo = get_history(--[[screen]])
+  if #histo == o then
+    return
+  end
+  
   local t,auto_release = tag.selected(capi.client.focus and capi.client.focus.screen or capi.mouse.screen),args.auto_release
   local currentMenu = menu({filter = true, show_filter=true, autodiscard = true,
     disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[capi.client.focus and capi.client.focus.screen or capi.mouse.screen]).geometry.width)/2),
@@ -87,7 +92,7 @@ local function new(args)
 
 
   if module.titlebar_path then
-    for k,v2 in ipairs(get_history(--[[screen]])) do
+    for k,v2 in ipairs(histo) do
       local l,v = wibox.layout.fixed.horizontal(),v2[2]
       l:add( button_group({client = v, field = "floating" , focus = false, checked = function() return v.floating  end, onclick = function() v.floating  = not v.floating  end }))
       l:add( button_group({client = v, field = "maximized", focus = false, checked = function() return v.maximized end, onclick = function() v.maximized = not v.maximized end }))

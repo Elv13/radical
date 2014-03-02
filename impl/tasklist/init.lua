@@ -104,7 +104,7 @@ local function reload_content(c,b,a)
   local cache = instances[c.screen].cache
   local item = cache[c]
   if item then
-    item.text = c.name
+    item.text = c.name or "N/A"
     item.icon = c.icon
   end
 end
@@ -156,7 +156,8 @@ local function new(screen)
   local cache,menu = setmetatable({}, { __mode = 'k' }),radical.flexbar {
     select_on=radical.base.event.NEVER,
     fg       = beautiful.fg_normal,
-    bg_focus = beautiful.taglist_bg_image_selected2 or beautiful.bg_focus,
+    bg_focus = beautiful.taglist_bg_image_selected2,
+    bg_urgent = beautiful.taglist_bg_image_urgent2,
     bg_hover   = beautiful.menu_bg_focus,
     disable_markup = true,
     overlay = function(data,item,cd,w,h)

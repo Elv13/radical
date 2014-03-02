@@ -10,35 +10,71 @@ local capi = {tag=tag,client=client,screen=screen}
 local radical   = require( "radical"      )
 local tag       = require( "awful.tag"    )
 local beautiful = require( "beautiful"    )
+local color     = require( "gears.color"  )
 local client    = require( "awful.client" )
+local wibox     = require( "wibox"        )
+local awful     = require( "awful"        )
 
 
 local module,instances = {},{}
-
-local state = {
-  INNACTIVE = 0,
-  ACTIVE    = 1, --[aka: EMPTY]
-  USED      = 2,
-  SELECTED  = 3,
-  URGENT    = 4,
-}
 
 -- The cache can be global, this is unsupported by Radical, but for now it
 -- doesn't cause too many issues. This make it easier to track state
 local cache = setmetatable({}, { __mode = 'k' })
 
+
+module.buttons = { [1] = awful.tag.viewonly,
+                      [2] = awful.tag.viewtoggle,
+                      [3] = function(q,w,e,r)
+                              print("hello",q,q._item,q.item)
+                              local menu = customMenu.tagOption.getMenu()
+                              menu.visible = true
+                            end,
+                      [4] = function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end,
+                      [5] = function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end,
+                    }
+--                     awful.button({ modkey }, 1, awful.client.movetotag),
+--                     awful.button({ modkey }, 3, awful.client.toggletag),
+
+
+
+local function index_draw(self,w, cr, width, height)
+  cr:save()
+  cr:set_source(color(beautiful.bg_normal))
+  local d = wibox.widget.textbox._draw or wibox.widget.textbox.draw
+  d(self,wibox, cr, width, height)
+  cr:restore()
+end
+
 local function create_item(t,s)
   local menu = instances[s]
   if not menu then return end
-  local item = menu:add_item { text = t.name, icon = tag.geticon(t), button1 = function()
-    tag.viewonly(t)
-  end}
-  item._internal.set_map.used = function(value)
-    local item_style = item.item_style or menu.item_style
-    item_style(menu,item,{value and radical.base.item_flags.USED or nil,item.selected and 1 or nil})
-  end
+  local w = wibox.layout.fixed.horizontal()
+  local icon =  tag.geticon(t)
+  local ib = wibox.widget.imagebox()
+  ib:set_image(icon)
+  w:add(ib)
+  local tw = wibox.widget.textbox()
+  tw.draw = index_draw
+--   tw:set_fg("#000000")
+  tw:set_markup(" <b>"..(menu.rowcount+1).."</b> ")
+  w:add(tw)
+  local item = menu:add_item { text = t.name, prefix_widget = w}
+  item:connect_signal("index::changed",function(_,value)
+    tw:set_markup(" <b>"..(item.index).."</b> ")
+  end)
+
+  menu:connect_signal("button::press",function(menu,item,button_id,mod)
+    if module.buttons and module.buttons[button_id] then
+      module.buttons[button_id](item.client,menu,item,button_id,mod)
+    end
+  end)
+
   item._internal.screen = s
+--   item.state[radical.base.item_flags.USED    ] = #t:clients() > 0
+  item.state[radical.base.item_flags.SELECTED] = t.selected or nil
   cache[t] = item
+  item.tag = t
   return item
 end
 
@@ -46,17 +82,13 @@ local function track_used(c,t)
   if t then
     local item = cache[t] or create_item(t,tag.getscreen(t))
     if not item then return end -- Yes, it happen if the screen is still nil
-    item.used = #t:clients()
-  else
-    for _,t2 in ipairs(c:tags()) do
-      cache[t2].used = #t2:clients()
-    end
+    item.state[radical.base.item_flags.USED] = #t:clients() > 0
+    item.state[radical.base.item_flags.CHANGED] = not t.selected
   end
 end
 
 local function tag_activated(t)
-  local act = t.activated
-  if not act and cache[t] then
+  if not t.activated and cache[t] then
     instances[cache[t]._internal.screen]:remove(cache[t])
     cache[t] = nil
   end
@@ -75,6 +107,36 @@ local function tag_added(t,b)
   end
 end
 
+local function select(t)
+  local s = t.selected
+  local item = cache[t] or create_item(t,tag.getscreen(t))
+  if item then
+    item.state[radical.base.item_flags.SELECTED] = s or nil
+    if s then
+      item.state[radical.base.item_flags.CHANGED] = nil
+      item.state[radical.base.item_flags.URGENT] = nil
+    end
+  end
+end
+
+capi.tag.add_signal("property::urgent")
+local function urgent_callback(c)
+    local modif = c.urgent == true and 1 or -1
+    for k,t in ipairs(c:tags()) do
+        local current = (awful.tag.getproperty(t,"urgent") or 0)
+        local item = cache[t] or create_item(t,tag.getscreen(t))
+        if current + modif < 0 then
+            awful.tag.setproperty(t,"urgent",0)
+            item.state[radical.base.item_flags.URGENT] = nil
+        else
+            awful.tag.setproperty(t,"urgent",current + modif)
+            if not t.selected then
+              item.state[radical.base.item_flags.URGENT] = true
+            end
+        end
+    end
+end
+
 local is_init = false
 local function init()
   if is_init then return end
@@ -83,6 +145,7 @@ local function init()
   capi.client.connect_signal("tagged", track_used)
   capi.client.connect_signal("untagged", track_used)
   capi.client.connect_signal("unmanage", track_used)
+  capi.client.connect_signal("property::urgent"  , urgent_callback   )
   capi.tag.connect_signal("property::activated",tag_activated)
   capi.tag.connect_signal("property::screen", tag_added)
 
@@ -106,9 +169,13 @@ local function new(s)
   instances[s] = radical.bar {
     select_on  = radical.base.event.NEVER,
     fg         = beautiful.fg_normal,
-    bg_focus   = beautiful.taglist_bg_image_selected2 or beautiful.bg_focus,
+    bg_focus   = beautiful.taglist_bg_image_selected2,
     item_style = radical.item.style.arrow_prefix,
-    bg_hover   = beautiful.menu_bg_focus
+    bg_hover   = beautiful.menu_bg_focus,
+    bg_used    = beautiful.taglist_bg_image_used2,
+    bg_urgent  = beautiful.taglist_bg_image_urgent2,
+    bg_changed = beautiful.taglist_bg_image_changed,
+--     fkeys_prefix = true,
   }
 
 
@@ -120,12 +187,19 @@ local function new(s)
   -- Per screen signals
 --   tag.attached_connect_signal(s, "property::selected", tag_added)
 --   tag.attached_connect_signal(screen, "property::hide", ut)
---   tag.attached_connect_signal(s, "property::activated", tag_added)
 --   tag.attached_connect_signal(s, "property::index", tag_added)
+
+  instances[s]:connect_signal("button::press",function(m,item,button_id,mod)
+    if module.buttons and module.buttons[button_id] then
+      module.buttons[button_id](item.tag,m,item,button_id,mod)
+    end
+  end)
 
   init()
   return instances[s]
 end
+
+capi.tag.connect_signal("property::selected" , select)
 
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
