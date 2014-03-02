@@ -36,7 +36,7 @@ local function suffix_draw(self, w, cr, width, height)
 end
 
 
-local function draw(data,item,args)
+local function draw(item,args)
   local args = args or {}
 
   item.widget.draw = suffix_draw
@@ -45,11 +45,14 @@ local function draw(data,item,args)
   local current_state = state._current_key or nil
   local state_name = base.colors_by_id[current_state]
   if current_state == base.item_flags.SELECTED or (item._tmp_menu) then
-    item.widget:set_bg(args.color or item.bg_focus or data.bg_focus)
+    item.widget:set_bg(args.color or item.bg_focus)
+    item.widget:set_fg(item.fg_focus)
   elseif state_name then
-    item.widget:set_bg(args.color or item["bg_"..state_name] or data["bg_"..state_name])
+    item.widget:set_bg(args.color or item["bg_"..state_name])
+    item.widget:set_fg(              item["fg_"..state_name])
   else
     item.widget:set_bg(args.color or nil)
+--     item.widget:set_fg(item["fg"])
   end
 end
 

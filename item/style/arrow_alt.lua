@@ -29,6 +29,7 @@ module.get_end_arrow = function(args)
     local img = cairo.ImageSurface(cairo.Format.ARGB32, width+(args.padding or 0), height)
     local cr = cairo.Context(img)
     cr:set_source(color(args.bg_color or beautiful.bg_normal))
+    cr:set_antialias(cairo.ANTIALIAS_NONE)
     cr:new_path()
     if (args.direction == "left") then
         cr:move_to(0,width+(args.padding or 0))
@@ -58,6 +59,7 @@ module.get_beg_arrow = function(args)
     local img = cairo.ImageSurface(cairo.Format.ARGB32, width, height)
     local cr = cairo.Context(img)
     cr:set_source(color(args.bg_color or beautiful.fg_normal))
+    cr:set_antialias(cairo.ANTIALIAS_NONE)
     cr:new_path()
     if (args.direction == "left") then
         cr:move_to(0,width)
@@ -101,7 +103,7 @@ local function get_prev(data,item)
   end
 end
 
-local function draw(data,item,args)
+local function draw(item,args)
   local args = args or {}
   if item.widget.draw ~= draw_real then
     item.widget.draw = draw_real
@@ -120,19 +122,22 @@ local function draw(data,item,args)
 
   local prev_item = get_prev(data,item)
   if current_state == base.item_flags.SELECTED or (item._tmp_menu) then
-    if prev_item and prev_item.widget.next_color ~= (args.color or data.bg_focus) then
-      prev_item.widget.next_color = args.color or data.bg_focus
+    if prev_item and prev_item.widget.next_color ~= (args.color) then
+      prev_item.widget.next_color = args.color
       prev_item.widget:emit_signal("widget::updated")
     end
-    item.widget:set_bg(args.color or data.bg_focus)
+    item.widget:set_fg(item["fg_focus"])
+    item.widget:set_bg(args.color)
   elseif state_name then --TODO untested, most likely broken
-    item.widget:set_bg(args.color or item["bg_"..state_name] or data["bg_"..state_name])
+    item.widget:set_bg(args.color or item["bg_"..state_name])
+    item.widget:set_fg(              item["fg_"..state_name])
   else
     if prev_item and prev_item.widget.next_color ~= hcode[color_idx] then
       prev_item.widget.next_color = hcode[color_idx]
       prev_item.widget:emit_signal("widget::updated")
     end
     item.widget:set_bg(args.color or hcode[color_idx])
+    item.widget:set_fg(item["fg_normal"])
   end
 end
 

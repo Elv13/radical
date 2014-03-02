@@ -87,7 +87,7 @@ function module:setup_hover(item,data)
   item._internal.set_map.hover = function(value)
     local item_style = item.item_style or data.item_style
     item.state[5] = value and true or nil
-    item_style(data,item,{})
+    item_style(item,{})
   end
 end
 
@@ -250,17 +250,21 @@ local function create_item(item,data,args)
     item.widget:emit_signal("widget::updated")
   end
 
-  -- Draw
-  local item_style = item.item_style or data.item_style
-  item_style(data,item,{})
-  item.widget:set_fg(item._private_data.fg)
-
   item._internal.text_w = tb
   item._internal.icon_w = icon
   item._internal.margin_w = m
 
+  -- Draw
+  local item_style = item.item_style or data.item_style
+  item_style(item,{})
+  item.widget:set_fg(item._private_data.fg)
+
   -- Setup events
   module.setup_event(data,item)
+
+  if item.buttons then
+    bg:buttons(item.buttons)
+  end
 
   return bg
 end

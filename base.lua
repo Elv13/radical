@@ -35,11 +35,12 @@ local module = {
     SELECTED  = 3 , -- Single item selected [[FOCUS]]
     PRESSED   = 4 , -- Mouse pressed
     HOVERED   = 5 , -- Mouse hover
-    USED      = 6 , -- Common flag
-    CHECKED   = 7 , -- When checkbox isn't enough
-    ALTERNATE = 8 ,
-    HIGHLIGHT = 9 ,
-    HEADER    = 10,
+    CHANGED   = 6 , -- The item changed, need attention
+    USED      = 7 , -- Common flag
+    CHECKED   = 8 , -- When checkbox isn't enough
+    ALTERNATE = 9 ,
+    HIGHLIGHT = 10 ,
+    HEADER    = 11,
 
     -- Implementation defined flags
     USR1     = 101,
@@ -61,6 +62,7 @@ theme.register_color(module.item_flags.URGENT    , "urgent"    , "urgent"    , t
 theme.register_color(module.item_flags.SELECTED  , "focus"     , "focus"     , true )
 theme.register_color(module.item_flags.PRESSED   , "pressed"   , "pressed"   , true )
 theme.register_color(module.item_flags.HOVERED   , "hover"     , "hover"     , true )
+theme.register_color(module.item_flags.CHANGED   , "changed"   , "changed"   , true )
 theme.register_color(module.item_flags.USED      , "used"      , "used"      , true )
 theme.register_color(module.item_flags.CHECKED   , "checked"   , "checked"   , true )
 theme.register_color(module.item_flags.ALTERNATE , "alternate" , "alternate" , true )
@@ -163,7 +165,7 @@ local function add_item(data,args)
   if args.selected == true then
     item.selected = true
   end
-
+  item.index = data.rowcount
   return item
 end
 
@@ -323,7 +325,7 @@ local function new(args)
 --       data._tmp_menu = nil
       data._current_item._tmp_menu = nil
 --       data._current_item.selected = false
-      data.item_style(data,data._current_item,{})
+      data.item_style(data._current_item,{})
     end
     if internal.has_changed and data.style then
       data.style(data,{arrow_x=20,margin=internal.margin})
@@ -432,6 +434,7 @@ local function new(args)
     end
     if idx1 and idx2 then
       internal.items[idx1],internal.items[idx2] = internal.items[idx2],internal.items[idx1]
+      item1.index,item2.index = idx2,idx1
       data:emit_signal("item::swapped",item1,item2,idx1,idx2)
     end
   end
@@ -454,7 +457,11 @@ local function new(args)
       end
       if idx ~= idx1 then
         table.insert(internal.items,idx1,table.remove(internal.items,idx))
+        item.index = idx
         data:emit_signal("item::moved",item,idx,idx1)
+        for i=idx,idx1 do
+          internal.items[i][1].index = i
+        end
       end
     end
   end
@@ -471,6 +478,9 @@ local function new(args)
     if idx1 then
       table.remove(internal.items,idx1)
       data:emit_signal("item::removed",item,idx1)
+      for i=idx1,#internal.items do
+        internal.items[i][1].index = i
+      end
     end
   end
 

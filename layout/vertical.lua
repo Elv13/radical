@@ -177,7 +177,7 @@ function module:setup_item(data,item,args)
 
   -- Apply item style
   local item_style = item.item_style or data.item_style
-  item_style(data,item,{})
+  item_style(item,{})
 
   item.widget:emit_signal("widget::updated")
 end

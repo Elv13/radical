@@ -35,7 +35,7 @@ local function widget_draw(self, w, cr, width, height)
   end
 end
 
-local function draw(data,item,args)
+local function draw(item,args)
   local args = args or {}
   local col = args.color
 
@@ -45,14 +45,14 @@ local function draw(data,item,args)
     item.widget._overlay_init = true
   end
 
-  local ih = data.item_height
+  local ih = item.height
   if not focussed or not focussed[ih] then
     if not focussed then
       focussed,default,alt={},{},{}
     end
-    local bc = data.border_color
-    focussed[ih] = gen(ih,data.bg_focus,bc)
-    default [ih] = gen(ih,data.bg,bc)
+    local bc = item.border_color
+    focussed[ih] = gen(ih,item.bg_focus,bc)
+    default [ih] = gen(ih,item.bg,bc)
   end
   if col and (not alt[col] or not alt[col][ih]) then
     alt[col] = alt[col] or {}
@@ -60,15 +60,18 @@ local function draw(data,item,args)
   end
 
   local state = item.state or {}
---   local current_state = state._current_key or nil --TODO
---   local state_name = base.colors_by_id[current_state]
+  local current_state = state._current_key or nil
+  local state_name = base.colors_by_id[current_state]
 
   if current_state  == base.item_flags.SELECTED or (item._tmp_menu) then
     item.widget:set_bg(focussed[ih])
+    item.widget:set_fg(item["fg_focus"])
   elseif col then
     item.widget:set_bg(alt[col][ih])
+    item.widget:set_fg(item["fg_"..state_name])
   else
     item.widget:set_bg(default[ih])
+--     item.widget:set_fg(item["fg_normal"])
   end
 end
 

@@ -78,15 +78,14 @@ local function new_item(data,args)
   local item,set_map,get_map,private_data = object({
     private_data  = {
       text        = args.text        or ""                                                                  ,
-      height      = args.height      or beautiful.menu_height or 30                                         ,
+      height      = args.height      or data.item_height or beautiful.menu_height or 30                     ,
       width       = args.width       or nil                                                                 ,
       icon        = args.icon        or nil                                                                 ,
       prefix      = args.prefix      or ""                                                                  ,
       suffix      = args.suffix      or ""                                                                  ,
       bg          = args.bg          or nil                                                                 ,
-      fg          = args.fg          or data.fg       or beautiful.menu_fg_normal or beautiful.fg_normal    ,
-      fg_focus    = args.fg_focus    or data.fg_focus or beautiful.menu_fg_focus  or beautiful.fg_focus     ,
-      bg_focus    = args.bg_focus    or data.bg_focus or beautiful.menu_bg_focus  or beautiful.bg_focus     ,
+      fg          = args.fg          or data.fg                                                             , --TODO don't do this
+      border_color= args.border_color or data.border_color                                                  ,
       bg_prefix   = args.bg_prefix   or data.bg_prefix                                                      ,
       sub_menu_m  = (args.sub_menu   and type(args.sub_menu) == "table" and args.sub_menu.is_menu) and args.sub_menu or nil,
       sub_menu_f  = (args.sub_menu   and type(args.sub_menu) == "function") and args.sub_menu or nil        ,
@@ -94,15 +93,15 @@ local function new_item(data,args)
       checked     = args.checked     or false                                                               ,
       underlay    = args.underlay    or nil                                                                 ,
       tooltip     = args.tooltip     or nil                                                                 ,
-      item_style  = args.item_style  or nil                                                                 ,
+      style       = args.style       or data.item_style                                                     ,
       item_layout = args.item_layout or nil                                                                 ,
       selected    = false                                                                                   ,
       overlay     = args.overlay     or data.overlay or nil                                                 ,
-      state       = theme.init_state()                                                                            ,
     },
     force_private = {
       visible = true,
       selected = true,
+      index    = true,
     },
     get_map = {
       y = function() return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height end, --Hack around missing :fit call for last item
@@ -112,7 +111,15 @@ local function new_item(data,args)
     autogen_signals = true,
   })
   item._private_data = private_data
-  item._internal = {get_map=get_map,set_map=set_map}
+  item._internal     = {get_map=get_map,set_map=set_map}
+  theme.setup_item_colors(data,item,args)
+  item.get_bg = function()
+    return data.bg
+  end
+  item.get_fg = function()
+    return data.fg
+  end
+  item.state         = theme.init_state(item)
 
   for i=1,10 do
     item["button"..i] = args["button"..i]
@@ -134,7 +141,7 @@ local function new_item(data,args)
   set_map.selected = function(value)
     private_data.selected = value
     if value == false then
-      data.item_style(data,item,{})
+      data.item_style(item,{})
       return
     end
     local current_item = data._current_item
@@ -145,14 +152,14 @@ local function new_item(data,args)
         current_item._tmp_menu = nil
         data._tmp_menu = nil
       end
-      data.item_style(data,current_item,{})
+      data.item_style(current_item,{})
       current_item.selected = false
     end
     if data.sub_menu_on == module.event.SELECTED and current_item ~= item then
       module.execute_sub_menu(data,item)
     end
     item.state[module.item_flags.SELECTED] = true
-    data.item_style(data,item,{})
+    data.item_style(item,{})
     data._current_item = item
   end
   return item

@@ -5,6 +5,7 @@ local capi = { mouse = mouse, screen = screen }
 
 local function set_position(data)
   local s = data.screen or capi.mouse.screen
+  s = s > capi.screen.count() and 1 or s
   local geom = capi.screen[s].geometry
   data.wibox.x = geom.x + (geom.width/2) - data.width/2
   data.wibox.y = geom.y + (geom.height/2) - data.height/2
@@ -15,8 +16,7 @@ local function new(args)
   args.internal = args.internal or {}
   args.arrow_type = base.arrow_type.NONE
   args.internal.set_position   = args.internal.set_position or set_position
-  local ret = context(args)
-  return ret
+  return context(args)
 end
 
 return setmetatable({}, { __call = function(_, ...) return new(...) end })

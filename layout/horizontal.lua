@@ -124,7 +124,7 @@ function module:setup_item(data,item,args)
 
   -- Set widget
   item.widget = bg
-  data.item_style(data,item,{})
+  data.item_style(item,{})
   setup_event(data,item,args)
 end
 
