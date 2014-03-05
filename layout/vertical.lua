@@ -92,7 +92,7 @@ function module:setup_text(item,data,text_w)
   end
   text_w.fit = function(self,width,height) return width,height end
 
-  item._internal.set_map.text = function (value)
+  item.set_text = function (_,value)
     if data.disable_markup then
       text_w:set_text(value)
     else
@@ -114,7 +114,7 @@ function module:setup_text(item,data,text_w)
   --     end
     end
   end
-  item._internal.set_map.text(item._private_data.text)
+  item:set_text(item._private_data.text)
   return text_w
 end
 

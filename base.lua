@@ -166,6 +166,7 @@ local function add_item(data,args)
     item.selected = true
   end
   item.index = data.rowcount
+  data:emit_signal("item::added",item)
   return item
 end
 
@@ -179,7 +180,7 @@ local function add_widget(data,widget,args)
     return args.width or w,args.height or h
   end
 
-  local item,set_map,get_map,private_data = object({
+  local item,private_data = object({
     private_data = {
       widget = widget,
       selected = false,
@@ -188,15 +189,13 @@ local function add_widget(data,widget,args)
       visible = true,
       selected = true,
     },
-    get_map = {
-      y = function() return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height end, --Hack around missing :fit call for last item
-    },
     autogen_getmap  = true,
     autogen_setmap  = true,
     autogen_signals = true,
   })
   item._private_data = private_data
-  item._internal = {get_map=get_map,set_map=set_map}
+  item._internal = {}
+  item.get_y = function() return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height end --Hack around missing :fit call for last item
 
   data._internal.widgets[#data._internal.widgets+1] = item
   data._internal.items[#data._internal.items+1] = {item}
@@ -228,7 +227,7 @@ local function new(args)
   if not internal.widgets then internal.widgets = {} end
 
   -- All the magic in the universe
-  local data,set_map,get_map,private_data = object({
+  local data,private_data = object({
     private_data = {
       -- Default settings
       bg              = args.bg or beautiful.menu_bg_normal or beautiful.bg_normal or "#000000",
@@ -280,16 +279,6 @@ local function new(args)
       opacity         = args.opacity or beautiful.menu_opacity or 1,
       icon_transformation = args.icon_transformation or nil,
     },
-    get_map = {
-      is_menu       = function() return true end,
-      margin        = function() return {left=0,bottom=0,right=0,left=0} end,
-      items         = function() return internal.items end,
-      rowcount      = function() return #internal.items end,
-      columncount   = function() return (#internal.items > 0) and #(internal.items[1]) or 0  end,
-    },
-    set_map = {
-      auto_resize  = function(val) private_data[""] = val end,
-    },
     force_private = {
       parent  = true,
       visible = true,
@@ -302,10 +291,20 @@ local function new(args)
     autogen_setmap  = true,
     autogen_signals = true,
   })
-  internal.get_map,internal.set_map,internal.private_data = get_map,set_map,private_data
+  internal.private_data = private_data
   data.add_item,data.add_widget,data.add_embeded_menu,data._internal,data.add_key_binding = add_item,add_widget,add_embeded_menu,internal,add_key_binding
   theme.setup_colors(data,args)
-  set_map.parent_geometry = function(value)
+
+  -- Getters
+  data.get_is_menu       = function(_) return true end
+  data.get_margin        = function(_) return {left=0,bottom=0,right=0,left=0} end
+  data.get_items         = function(_) return internal.items end
+  data.get_rowcount      = function(_) return #internal.items end
+  data.get_columncount   = function(_) return (#internal.items > 0) and #(internal.items[1]) or 0  end
+
+  -- Setters
+  data.set_auto_resize  = function(_,val) private_data[""] = val end
+  data.set_parent_geometry = function(_,value)
     private_data.parent_geometry = value
     if data._internal.get_direction then
       data.direction = data._internal.get_direction(data)
@@ -315,7 +314,7 @@ local function new(args)
     end
   end
 
-  set_map.visible = function(value)
+  data.set_visible = function(_,value)
     private_data.visible = value
     if value then
       local fit_w,fit_h = data._internal.layout:fit(9999,9999)
@@ -342,8 +341,8 @@ local function new(args)
       capi.keygrabber.stop()
     end
   end
-  
-  set_map.layout = function(value)
+
+  data.set_layout = function(_,value)
     if value then
       value:setup_key_hooks(data)
     end
@@ -356,7 +355,7 @@ local function new(args)
 --     end
 --   end
 
-  get_map.current_index = function()
+  data.get_current_index = function(_)
     if data._current_item then
       for k,v in ipairs(internal.items) do --rows
         for k2,v2 in ipairs(v) do --columns
@@ -368,14 +367,14 @@ local function new(args)
     end
   end
 
-  get_map.previous_item = function()
+  data.get_previous_item = function(_)
     local candidate,idx = internal.items[(data.current_index or 0)-1],(data.current_index or 0)-1
     while candidate and (candidate[1]._hidden or candidate[1]._filter_out) and idx > 0 do
       candidate,idx = internal.items[idx - 1],idx-1
     end
     return (candidate or internal.items[data.rowcount])[1]
   end
-  get_map.next_item     = function()
+  data.get_next_item     = function(_)
     local candidate,idx = internal.items[(data.current_index or 0)+1],(data.current_index or 0)+1
     while candidate and (candidate[1]._hidden or candidate[1]._filter_out) and idx <= data.rowcount do
       candidate,idx = internal.items[idx + 1],idx+1

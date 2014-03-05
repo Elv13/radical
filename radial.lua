@@ -276,7 +276,7 @@ end
 
 local function setup_drawable(data)
   local internal = data._internal
-  local get_map,set_map,private_data = internal.get_map,internal.set_map,internal.private_data
+  local private_data = internal.private_data
 
   --Init
 --   internal.w = wibox({})
@@ -288,14 +288,14 @@ local function setup_drawable(data)
   internal.margin:set_widget(internal.layout)
 
   --Getters
-  get_map.wibox     = function() return nil end -- Will this break?
-  get_map.x         = function() return 0 end
-  get_map.y         = function() return 0 end
-  get_map.width     = function() return 500 end
-  get_map.height    = function() return 40 end
-  get_map.visible   = function() return private_data.visible end
-  get_map.direction = function() return private_data.direction end
-  get_map.margins   = function()
+  data.get_wibox     = function() return nil end -- Will this break?
+  data.get_x         = function() return 0 end
+  data.get_y         = function() return 0 end
+  data.get_width     = function() return 500 end
+  data.get_height    = function() return 40 end
+  data.get_visible   = function() return private_data.visible end
+  data.get_direction = function() return private_data.direction end
+  data.get_margins   = function()
     local ret = {left=data.border_width,right=data.border_width,top=data.style.margins.TOP,bottom=data.style.margins.BOTTOM}
     if data.arrow_type ~= base.arrow_type.NONE then
       ret[data.direction] = ret[data.direction]+13

@@ -308,3 +308,101 @@ allow masks such as desaturation, tinting, invert or some matrix to be applied
 on the pixmap before it is being drawn. This function take the path/surface as
 only parameter and return the transformed surface.
 
+## Extending Radical
+
+Radical is not designed to be used "as is". Every menus are different. While
+common ones can be created without extending Radical capabilities, more advanced
+one most likely will. Good news, this is what Radical have been designed for.
+The previous generations proved to me that any lack or native extensibility
+will cause the code to bloat when it come to adding a feature. Radical horizontal
+design allow to add more modules and properties without having to touch the "core"
+files.
+
+### Object model
+
+The Radical object model is similar to the Awesome one. Each objects have a set
+of signals developers can listen to to have changes notification. The big
+difference is that Radical object model automatically generate the properties
+themselves. If one desire to add a new one, it is possible to listen to `item::added`
+to apply it on the item or apply it directly on the menu itself depending if the
+property is for the menu or for an item. Here is an example how it work:
+
+```lua
+    local menu = radical.context{}
+    
+    -- Create the setter
+    menu.set_foo = function(m,value)
+        print("Setting value to:",value)
+        m._foo_real = value
+    end
+    
+    -- Create the getter
+    menu.get_foo = function(m)
+        print("Getter called, returning",m._foo_real)
+    end
+    
+    -- The property is now created, this will call the setter:
+    menu.foo = "my foo value"
+    
+    -- This will call the getter:
+    print(menu.foo)
+    
+    -- The signals will be automatically generated
+    data:connect_signal("foo::changed",function(m,value)
+        print("foo changed:",value)
+    end)
+    
+    -- New signals don't need to be registered and can be called right away
+    data:connect_signal("my_new_signal::action_name",function(m,value1,value2,value3)
+        print("Callback",m,value1,value2,value3)
+    end)
+    
+    -- Manually emiting a signal
+    menu:emit_signal("my_new_signal::action_name",value1,value2,value3)
+    
+```
+
+### State model
+
+Radical support multiple states per item at once. The "current state" is the one
+with the smallest ID. A state ID is an integer from -inf to inf. More important
+states, like `urgent` versus `checked` can be implemented by using an
+appropriate ordering. The default set of states is subject to changes, so it
+is wiser to use a completely different range if someone want to replace the
+currents one. Each states can be assigned a background and foreground color
+using the `radical.theme.register_color(id, radical_name, beautiful_name, true )`
+method. Toggling a state can be done using the `item.state[]` meta table:
+
+```lua
+    local my_state_name = 9999 -- <== The ID
+    local menu = radical.context{}
+    local item = menu:add_item{text="text"}
+    
+    -- Activate a state
+    item.state[my_state_name] = true
+    
+    -- Desactivate a state
+    item.state[my_state_name] = nil
+    
+```
+
+Radical will take care of choosing the current state and redraw the item with
+the right background and foreground colors.
+
+### Layout
+
+TODO
+
+### Style
+
+TODO
+
+### Item layout
+
+TODO
+
+### Item style
+
+TODO
+
+

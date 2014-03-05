@@ -75,7 +75,7 @@ end
 
 local function new_item(data,args)
   local args = args or {}
-  local item,set_map,get_map,private_data = object({
+  local item,private_data = object({
     private_data  = {
       text        = args.text        or ""                                                                  ,
       height      = args.height      or data.item_height or beautiful.menu_height or 30                     ,
@@ -103,16 +103,14 @@ local function new_item(data,args)
       selected = true,
       index    = true,
     },
-    get_map = {
-      y = function() return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height end, --Hack around missing :fit call for last item
-    },
     autogen_getmap  = true,
     autogen_setmap  = true,
     autogen_signals = true,
   })
   item._private_data = private_data
-  item._internal     = {get_map=get_map,set_map=set_map}
+  item._internal     = {}
   theme.setup_item_colors(data,item,args)
+  item.get_y = function() return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height end --Hack around missing :fit call for last item
   item.get_bg = function()
     return data.bg
   end
@@ -138,7 +136,7 @@ local function new_item(data,args)
   data._internal.items[#data._internal.items][1] = item
 
   -- Setters
-  set_map.selected = function(value)
+  item.set_selected = function(_,value)
     private_data.selected = value
     if value == false then
       data.item_style(item,{})

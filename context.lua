@@ -100,7 +100,7 @@ end
 
 local function setup_drawable(data)
   local internal = data._internal
-  local get_map,set_map,private_data = internal.get_map,internal.set_map,internal.private_data
+  local private_data = internal.private_data
 
   --Init
   internal.w = wibox({})
@@ -117,14 +117,14 @@ local function setup_drawable(data)
   internal.w.opacity = data.opacity
 
   --Getters
-  get_map.wibox     = function() return internal.w end
-  get_map.x         = function() return internal.w.x end
-  get_map.y         = function() return internal.w.y end
-  get_map.width     = function() return internal.w.width end
-  get_map.height    = function() return internal.w.height end
-  get_map.visible   = function() return private_data.visible end
-  get_map.direction = function() return private_data.direction end
-  get_map.margins   = function()
+  data.get_wibox     = function() return internal.w end
+  data.get_x         = function() return internal.w.x end
+  data.get_y         = function() return internal.w.y end
+  data.get_width     = function() return internal.w.width end
+  data.get_height    = function() return internal.w.height end
+  data.get_visible   = function() return private_data.visible end
+  data.get_direction = function() return private_data.direction end
+  data.get_margins   = function()
     local ret = {left=data.border_width,right=data.border_width,top=data.style.margins.TOP,bottom=data.style.margins.BOTTOM}
     if data.arrow_type ~= base.arrow_type.NONE then
       ret[data.direction] = ret[data.direction]+13
@@ -133,7 +133,7 @@ local function setup_drawable(data)
   end
 
   --Setters
-  set_map.direction = function(value)
+  data.set_direction = function(_,value)
     if private_data.direction ~= value and (value == "top" or value == "bottom" or value == "left" or value == "right") then
       private_data.direction = value
       local fit_w,fit_h = internal.layout:fit()
@@ -141,9 +141,9 @@ local function setup_drawable(data)
       data.width  = fit_w
     end
   end
-  set_map.x      = function(value) internal.w.x      = value end
-  set_map.y      = function(value) internal.w.y      = value end
-  set_map.width  = function(value)
+  data.set_x      = function(_,value) internal.w.x      = value end
+  data.set_y      = function(_,value) internal.w.y      = value end
+  data.set_width  = function(_,value)
     local need_update = internal.w.width == (value + 2*data.border_width)
     local margins = data.margins
     internal.w.width  = value + data.margins.left + data.margins.right
@@ -151,7 +151,7 @@ local function setup_drawable(data)
       data.style(data)
     end
   end
-  set_map.height = function(value)
+  data.set_height = function(_,value)
     local margins = data.margins
     local need_update = (internal.w.height ~= (value + margins.top + margins.bottom))
     local new_height = (value + margins.top + margins.bottom) or 1

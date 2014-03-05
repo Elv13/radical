@@ -74,7 +74,7 @@ local function create_item(item,data,args)
     end
   end
   if item.checkable then
-    item._internal.get_map.checked = function()
+    item.get_checked = function()
       if type(item._private_data.checked) == "function" then
         return item._private_data.checked()
       else
@@ -84,7 +84,7 @@ local function create_item(item,data,args)
     local ck = wibox.widget.imagebox()
     ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
     lr:add(ck)
-    item._internal.set_map.checked = function (value)
+    item.set_checked = function (_,value)
       item._private_data.checked = value
       ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
     end

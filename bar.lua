@@ -35,7 +35,7 @@ end
 
 local function setup_drawable(data)
   local internal = data._internal
-  local get_map,set_map,private_data = internal.get_map,internal.set_map,internal.private_data
+  local private_data = internal.private_data
 
   --Init
   internal.margin = wibox.layout.margin()
@@ -46,13 +46,13 @@ local function setup_drawable(data)
   internal.margin:set_widget(internal.layout)
 
   --Getters
-  get_map.x         = function() return 0                                            end
-  get_map.y         = function() return 0                                            end
-  get_map.width     = function() return internal.margin.fix(internal.margin,9999,99) end
-  get_map.height    = function() return beautiful.default_height                     end
-  get_map.visible   = function() return true                                         end
-  get_map.direction = function() return "left"                                       end
-  get_map.margins   = function() return {left=0,right=0,top=0,bottom=0}              end
+  data.get_x         = function() return 0                                            end
+  data.get_y         = function() return 0                                            end
+  data.get_width     = function() return internal.margin.fix(internal.margin,9999,99) end
+  data.get_height    = function() return beautiful.default_height                     end
+  data.get_visible   = function() return true                                         end
+  data.get_direction = function() return "left"                                       end
+  data.get_margins   = function() return {left=0,right=0,top=0,bottom=0}              end
 
   -- This widget do not use wibox, so setup correct widget interface
   data.fit = internal.margin.fit

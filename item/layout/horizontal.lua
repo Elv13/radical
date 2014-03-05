@@ -12,7 +12,7 @@ local module = {}
 
 -- Add [F1], [F2] ... to items
 function module:setup_fkey(item,data)
-  item._internal.set_map.f_key = function(value)
+  item.set_f_key = function(_,value)
     item._internal.has_changed = true
     item._internal.f_key = value
     data:remove_key_hook("F"..value)
@@ -21,7 +21,7 @@ function module:setup_fkey(item,data)
       data.visible = false
     end)
   end
-  item._internal.get_map.f_key = function() return item._internal.f_key end
+  item.get_f_key = function() return item._internal.f_key end
 end
 
 -- Like an overlay, but under
@@ -55,7 +55,7 @@ function module:setup_icon(item,data)
     icon:set_image(item.icon)
   end
 
-  item._internal.set_map.icon = function (value)
+  item.set_icon = function (_,value)
     icon:set_image(value)
   end
   return icon
@@ -64,7 +64,7 @@ end
 -- Show the checkbox
 function module:setup_checked(item,data)
   if item.checkable then
-    item._internal.get_map.checked = function()
+    item.get_checked = function()
       if type(item._private_data.checked) == "function" then
         return item._private_data.checked()
       else
@@ -73,7 +73,7 @@ function module:setup_checked(item,data)
     end
     local ck = wibox.widget.imagebox()
     ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
-    item._internal.set_map.checked = function (value)
+    item.set_checked = function (_,value)
       item._private_data.checked = value
       ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
       item._internal.has_changed = true
@@ -84,7 +84,7 @@ end
 
 -- Setup hover
 function module:setup_hover(item,data)
-  item._internal.set_map.hover = function(value)
+  item.set_hover = function(_,value)
     local item_style = item.item_style or data.item_style
     item.state[5] = value and true or nil
     item_style(item,{})
@@ -197,7 +197,7 @@ local function create_item(item,data,args)
     wibox.widget.textbox.draw(self,w, cr, width, height)
   end
   tb:set_text(item.text)
-  item._internal.set_map.text = function (value)
+  item.set_text = function (_,value)
     if data.disable_markup then
       tb:set_text(value)
     else
@@ -245,7 +245,7 @@ local function create_item(item,data,args)
   item.widget:set_tooltip(item.tooltip)
 
   -- Overlay
-  item._internal.set_map.overlay = function(value)
+  item.set_overlay = function(_,value)
     item._private_data.overlay = value
     item.widget:emit_signal("widget::updated")
   end
