@@ -207,6 +207,14 @@ local function add_widget(data,widget,args)
   end
 end
 
+local function add_prefix_widget(data,widget,args)
+  data:emit_signal("prefix_widget::added",widget,args)
+end
+
+local function add_suffix_widget(data,widget,args)
+  data:emit_signal("suffix_widget::added",widget,args)
+end
+
 local function add_embeded_menu(data,menu)
   add_widget(data,menu._internal.layout)
   menu._embeded_parent = data
@@ -293,6 +301,7 @@ local function new(args)
   })
   internal.private_data = private_data
   data.add_item,data.add_widget,data.add_embeded_menu,data._internal,data.add_key_binding = add_item,add_widget,add_embeded_menu,internal,add_key_binding
+  data.add_prefix_widget,data.add_suffix_widget=add_prefix_widget,add_suffix_widget
   theme.setup_colors(data,args)
 
   -- Getters

@@ -199,8 +199,10 @@ local function compute_geo(data)
       visblerow = vis
     end
   end
+  local sw,sh = data._internal.suf_l:fit(9999,9999)
+  local pw,ph = data._internal.pref_l:fit(9999,9999)
   if not data._internal.has_widget then
-    return w,(total and total > 0 and total or visblerow*data.item_height) + (data._internal.filter_tb and data.item_height or 0) + (data.max_items and data._internal.scroll_w.visible and (2*data.item_height) or 0)
+    return w,(total and total > 0 and total or visblerow*data.item_height) + ph + sh
   else
     local h = (visblerow-#data._internal.widgets)*data.item_height
     for k,v in ipairs(data._internal.widgets) do
@@ -217,21 +219,24 @@ local function new(data)
   end
   local l,real_l = wibox.layout.fixed.vertical(),nil
   real_l = wibox.layout.fixed.vertical()
+  local pref_l,suf_l = wibox.layout.fixed.vertical(),wibox.layout.fixed.vertical()
+  real_l:add(pref_l)
   if data.max_items then
     data._internal.scroll_w = scroll(data)
-    real_l:add(data._internal.scroll_w["up"])
+    pref_l:add(data._internal.scroll_w["up"])
   end
   real_l:add(l)
+  real_l:add(suf_l)
   if data.show_filter then
     if data.max_items then
-      real_l:add(data._internal.scroll_w["down"])
+      suf_l:add(data._internal.scroll_w["down"])
     end
     local filter_tb = filter(data)
-    real_l:add(filter_tb)
+    suf_l:add(filter_tb)
     data._internal.filter_tb = filter_tb.widget
   else
     if data.max_items then
-      real_l:add(data._internal.scroll_w["down"])
+      suf_l:add(data._internal.scroll_w["down"])
     end
   end
   real_l.fit = function(a1,a2,a3)
@@ -247,23 +252,32 @@ local function new(data)
   real_l.setup_key_hooks = module.setup_key_hooks
   real_l.setup_item = module.setup_item
   data._internal.content_layout = l
+  data._internal.suf_l,data._internal.pref_l=suf_l,pref_l
 
   --SWAP / MOVE / REMOVE
   data:connect_signal("item::swapped",function(_,item1,item2,index1,index2)
-    real_l.widgets[index1],real_l.widgets[index2] = real_l.widgets[index2],real_l.widgets[index1]
-    real_l:emit_signal("widget::updated")
+    l.widgets[index1],l.widgets[index2] = l.widgets[index2],l.widgets[index1]
+    l:emit_signal("widget::updated")
   end)
   data:connect_signal("item::moved",function(_,item,new_idx,old_idx)
-    table.insert(real_l.widgets,new_idx,table.remove(real_l.widgets,old_idx))
-    real_l:emit_signal("widget::updated")
+    table.insert(l.widgets,new_idx,table.remove(l.widgets,old_idx))
+    l:emit_signal("widget::updated")
   end)
   data:connect_signal("item::removed",function(_,item,old_idx)
-    table.remove(real_l.widgets,old_idx)
-    real_l:emit_signal("widget::updated")
+    table.remove(l.widgets,old_idx)
+    l:emit_signal("widget::updated")
   end)
   data:connect_signal("item::appended",function(_,item)
-    real_l.widgets[#real_l.widgets+1] = item.widget
+    l.widgets[#l.widgets+1] = item.widget
+    l:emit_signal("widget::updated")
+  end)
+  data:connect_signal("prefix_widget::added",function(_,widget,args)
+    table.insert(pref_l.widgets,1,widget)
+    pref_l:emit_signal("widget::updated")
     real_l:emit_signal("widget::updated")
+  end)
+  data:connect_signal("suffix_widget::added",function(_,widget,args)
+    suf_l:add(widget)
   end)
   data._internal.text_fit = function(self,width,height) return width,height end
   return real_l
