@@ -160,6 +160,7 @@ local function new(screen)
     bg_urgent = beautiful.taglist_bg_image_urgent2,
     bg_hover   = beautiful.menu_bg_focus,
     disable_markup = true,
+    underlay_style = radical.widgets.underlay.draw_arrow,
     overlay = function(data,item,cd,w,h)
 --       print("foo!")
     end,

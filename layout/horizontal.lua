@@ -155,6 +155,11 @@ local function new(data)
   l.item_fit = item_fit
   l.setup_key_hooks = module.setup_key_hooks
   l.setup_item = module.setup_item
+
+  data:connect_signal("widget::added",function(_,item,widget)
+    wibox.layout.fixed.add(l,item.widget)
+    l:emit_signal("widget::updated")
+  end)
   return l
 end
 

@@ -27,7 +27,7 @@ end
 -- Like an overlay, but under
 function module.paint_underlay(data,item,cr,width,height)
   cr:save()
-  local udl = underlay.draw(item.underlay)
+  local udl = underlay.draw(item.underlay,{style=data.underlay_style,height=height})
   cr:set_source_surface(udl,width-udl:get_width()-3)
   cr:paint_with_alpha(data.underlay_alpha)
   cr:restore()

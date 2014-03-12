@@ -7,4 +7,5 @@ return {
     header   = require( "radical.widgets.header"   ),
     piechart = require( "radical.widgets.piechart" ),
     separator= require( "radical.widgets.separator"),
+    underlay = require( "radical.widgets.underlay" )
 }

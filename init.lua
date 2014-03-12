@@ -1,7 +1,9 @@
 local type = type
 local base      = require( "wibox.widget.base" )
 local tooltip   = require( "radical.tooltip"   )
+local underlay  = require( "radical.widgets.underlay")
 local aw_button = require( "awful.button"      )
+local beautiful = require( "beautiful"         )
 
 -- Define some wibox.widget extensions
 local function set_tooltip(self, text)
@@ -33,12 +35,34 @@ local function set_menu(self,menu,button)
   return bt
 end
 
+local function _underlay_draw(self,w, cr, width, height)
+  cr:save()
+  local udl = underlay.draw(self._underlay,{height=height,style = self._underlay_style})
+  cr:set_source_surface(udl,width-udl:get_width()-3)
+  cr:paint_with_alpha(self._underlay_alpha or beautiful.underlay_alpha or 0.7)
+  cr:restore()
+  self._draw_underlay(self,w, cr, width, height)
+end
+
+local function set_underlay(self,udl,args)
+  local args = args or {}
+  if not self._draw_underlay then
+    self._draw_underlay = self.draw
+    self.draw = _underlay_draw
+  end
+  self._underlay = udl
+  self._underlay_style = args.style
+  self._underlay_alpha = args.alpha
+  self:emit_signal("widget::updated")
+end
+
 -- Do some monkey patching to extend all wibox.widget
 base._make_widget =base.make_widget
 base.make_widget = function(...)
   local ret = base._make_widget(...)
-  ret.set_tooltip = set_tooltip
-  ret.set_menu    = set_menu
+  ret.set_tooltip  = set_tooltip
+  ret.set_menu     = set_menu
+  ret.set_underlay = set_underlay
   return ret
 end
 

@@ -132,6 +132,13 @@ mytextbox:set_tooltip("foo bar")
 
 ```
 
+### "Underlay"
+
+The "underlay" is the opposite of an overlay. Think of it as a background label.
+Radical add this option to all Awesome widget by calling the `set_underlay`
+method. The first argument is the text (or table of string) and the second is
+an array with the `style` and `alpha` keys.
+
 ## Options
 
 Radical offer a (very, very) wide range of options to allow the creation of rich
@@ -304,6 +311,8 @@ Radical also use the some of the same theme options as awful.menu, plus some:
 | menu_opacity                 | Use your favorite compositor           | Number (0=0%, 1=100%)     |
 | menu_draw_underlay           | Function returning the underlay pixmap | function(array,width)     |
 | menu_icon_transformation     | The function used to draw the icon     | function(image,data,item) |
+| underlay_alpha               | Alpha for underlays                    | Number (0 to 1)           |
+
 
 Styling can also be done using the icon_transformation option. This feature
 allow masks such as desaturation, tinting, invert or some matrix to be applied

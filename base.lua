@@ -199,9 +199,9 @@ local function add_widget(data,widget,args)
 
   data._internal.widgets[#data._internal.widgets+1] = item
   data._internal.items[#data._internal.items+1] = {item}
-  data._internal.layout:add(item)
+  data:emit_signal("widget::added",item,widget)
   if data.visible then
-    local fit_w,fit_h = data._internal.layout:fit()
+    local fit_w,fit_h = data._internal.layout:fit(9999,9999)
     data.width = data._internal.width or fit_w
     data.height = fit_h
   end
@@ -274,7 +274,8 @@ local function new(args)
       suffix_widget   = args.suffix_widget or nil,
       prefix_widget   = args.prefix_widget or nil,
       fkeys_prefix    = args.fkeys_prefix or false,
-      underlay_alpha  = args.underlay_alpha or 0.7,
+      underlay_alpha  = args.underlay_alpha or beautiful.underlay_alpha  or 0.7,
+      underlay_style  = args.underlay_style or nil,
       filter_prefix   = args.filter_prefix or "Filter:",
       enable_keyboard = (args.enable_keyboard ~= false),
       max_items       = args.max_items or nil,

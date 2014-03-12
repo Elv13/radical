@@ -28,10 +28,33 @@ local function draw_item(cr,x,y,width,height,padding,args)
   cr:restore()
 end
 
+function module.draw_arrow(cr,x,y,width,height,padding,args)
+  cr:save()
+  cr:rectangle(x,y,width+padding,height+padding)
+  cr:clip()
+  padding=padding/2
+  local mid = (height-2*padding)/2
+  cr:move_to(x+mid      ,padding)
+  cr:line_to(x+width-mid,padding)
+  cr:line_to(x+width         ,mid+padding)
+  cr:line_to(x+width-mid,height-padding)
+  cr:line_to(x+mid      ,height-padding)
+  cr:line_to(x+0             ,mid+padding)
+  cr:line_to(x+mid      ,padding)
+  cr:close_path()
+  cr:set_source(color(args.bg or beautiful.bg_alternate))
+  cr:fill()
+  cr:set_source(color(args.fg or beautiful.bg_normal))
+  cr:set_operator(cairo.Operator.CLEAR)
+  cr:move_to(x+height/2+2,y+padding/2)
+  cr:show_layout(pango_l[height])
+  cr:restore()
+end
+
 function module.draw(text,args)
   local args = args or {}
-  local padding = beautiful.default_height/3
   local height = args.height or (beautiful.menu_height)
+  local padding = height/4--beautiful.default_height/3
 
   -- Get text height
   if not pango_l[height] then
@@ -59,7 +82,8 @@ function module.draw(text,args)
   local x = 0
   for k,v in ipairs(type(text) == "table" and text or {text}) do
     pango_l[height].text = v
-    draw_item(cr,x,0,ret[k],height,padding,args)
+    local draw_f = args.style or draw_item
+    draw_f(cr,x,0,ret[k],height,padding,args)
     x =  x + ret[k]
   end
   return img
