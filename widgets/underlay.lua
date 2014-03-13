@@ -64,6 +64,7 @@ function module.draw(text,args)
     desc:set_family("Verdana")
     desc:set_weight(pango.Weight.BOLD)
     desc:set_size((height-padding*2) * pango.SCALE)
+--     desc:set_variant(pango.Variant.SMALL_CAPS)
     pango_l[height]:set_font_description(desc)
   end
 

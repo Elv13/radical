@@ -5,7 +5,8 @@ local cairo     = require( "lgi"          ).cairo
 local wibox     = require( "wibox"        )
 local checkbox  = require( "radical.widgets.checkbox"  )
 local fkey      = require( "radical.widgets.fkey"      )
-local underlay  = require( "radical.widgets.underlay" )
+local underlay  = require( "radical.widgets.underlay"  )
+local theme     = require( "radical.theme"             )
 
 local module = {}
 
@@ -27,7 +28,10 @@ end
 -- Like an overlay, but under
 function module.paint_underlay(data,item,cr,width,height)
   cr:save()
-  local udl = underlay.draw(item.underlay,{style=data.underlay_style,height=height})
+  local state = item.state or {}
+  local current_state = state._current_key or nil
+  local state_name = theme.colors_by_id[current_state] or ""
+  local udl = underlay.draw(item.underlay,{style=data.underlay_style,height=height,bg=data["underlay_bg_"..state_name]})
   cr:set_source_surface(udl,width-udl:get_width()-3)
   cr:paint_with_alpha(data.underlay_alpha)
   cr:restore()
@@ -86,7 +90,7 @@ end
 function module:setup_hover(item,data)
   item.set_hover = function(_,value)
     local item_style = item.item_style or data.item_style
-    item.state[5] = value and true or nil
+    item.state[-1] = value and true or nil
     item_style(item,{})
   end
 end

@@ -71,7 +71,7 @@ local function draw(item,args)
     item.widget:set_fg(item["fg_"..state_name])
   else
     item.widget:set_bg(default[ih])
---     item.widget:set_fg(item["fg_normal"])
+    item.widget:set_fg(item["fg"])
   end
 end
 

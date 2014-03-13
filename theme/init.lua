@@ -20,9 +20,15 @@ local function change_data(tab, key,value)
       end
     end
     rawset(tab,"_current_key",win ~= math.huge and win or nil)
+    if tab._item._internal.text_w and tab._item._internal.text_w.cache then
+      tab._item._internal.text_w.cache = {}
+    end
     tab._item:style()
   elseif value and (rawget(tab,"_current_key") or math.huge) > key then
     rawset(tab,"_current_key",key)
+    if tab._item._internal.text_w and tab._item._internal.text_w.cache then
+      tab._item._internal.text_w.cache = {}
+    end
     tab._item:style()
   end
   tab._real_table[key] = value
@@ -43,6 +49,7 @@ function module.setup_colors(data,args)
   for k,v in pairs(theme_colors) do
       priv["fg_"..k] = args["fg_"..k] or beautiful["menu_fg_"..v.beautiful_name] or beautiful["fg_"..v.beautiful_name] or (v.fallback and beautiful.fg_normal)
       priv["bg_"..k] = args["bg_"..k] or beautiful["menu_bg_"..v.beautiful_name] or beautiful["bg_"..v.beautiful_name] or (v.fallback and beautiful.bg_normal)
+      priv["underlay_bg_"..k] = args["underlay_bg_"..k] or beautiful["menu_underlay_bg_"..v.beautiful_name] or beautiful["underlay_bg_"..v.beautiful_name]
   end
 end
 
@@ -54,14 +61,14 @@ function module.setup_item_colors(data,item,args)
       priv["fg_"..k] = args["fg_"..k]
     else
       rawset(item,"get_fg_"..k,function()
-        return data["fg_"..k]
+        return priv["fg_"..k] or data["fg_"..k]
       end)
     end
     if args["bg_"..k] then
       priv["bg_"..k] = args["bg_"..k]
     else
       rawset(item,"get_bg_"..k, function()
-        return data["bg_"..k]
+        return priv["bg_"..k] or data["bg_"..k]
       end)
     end
   end

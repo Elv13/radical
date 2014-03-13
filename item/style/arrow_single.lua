@@ -52,7 +52,7 @@ local function draw(item,args)
     item.widget:set_fg(              item["fg_"..state_name])
   else
     item.widget:set_bg(args.color or nil)
---     item.widget:set_fg(item["fg"])
+    item.widget:set_fg(item["fg"])
   end
 end
 
