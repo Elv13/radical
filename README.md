@@ -137,7 +137,7 @@ mytextbox:set_tooltip("foo bar")
 The "underlay" is the opposite of an overlay. Think of it as a background label.
 Radical add this option to all Awesome widget by calling the `set_underlay`
 method. The first argument is the text (or table of string) and the second is
-an array with the `style` and `alpha` keys.
+an array with the `style`, `color` and `alpha` keys.
 
 ## Options
 

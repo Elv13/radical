@@ -276,6 +276,7 @@ local function new(args)
       fkeys_prefix    = args.fkeys_prefix or false,
       underlay_alpha  = args.underlay_alpha or beautiful.underlay_alpha  or 0.7,
       underlay_style  = args.underlay_style or nil,
+      filter_underlay = args.filter_underlay or nil,
       filter_prefix   = args.filter_prefix or "Filter:",
       enable_keyboard = (args.enable_keyboard ~= false),
       max_items       = args.max_items or nil,
@@ -287,6 +288,9 @@ local function new(args)
       overlay         = args.overlay or nil,
       opacity         = args.opacity or beautiful.menu_opacity or 1,
       icon_transformation = args.icon_transformation or nil,
+      filter_underlay_style = args.filter_underlay_style or nil,
+      filter_underlay_color = args.filter_underlay_color,
+      filter_placeholder    = args.filter_placeholder or "",
     },
     force_private = {
       parent  = true,

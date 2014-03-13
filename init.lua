@@ -37,7 +37,7 @@ end
 
 local function _underlay_draw(self,w, cr, width, height)
   cr:save()
-  local udl = underlay.draw(self._underlay,{height=height,style = self._underlay_style})
+  local udl = underlay.draw(self._underlay,{height=height,style = self._underlay_style,bg=self._underlay_color})
   cr:set_source_surface(udl,width-udl:get_width()-3)
   cr:paint_with_alpha(self._underlay_alpha or beautiful.underlay_alpha or 0.7)
   cr:restore()
@@ -53,6 +53,7 @@ local function set_underlay(self,udl,args)
   self._underlay = udl
   self._underlay_style = args.style
   self._underlay_alpha = args.alpha
+  self._underlay_color = args.color
   self:emit_signal("widget::updated")
 end
 
