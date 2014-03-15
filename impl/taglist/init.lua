@@ -14,7 +14,11 @@ local color     = require( "gears.color"  )
 local client    = require( "awful.client" )
 local wibox     = require( "wibox"        )
 local awful     = require( "awful"        )
+local theme     = require( "radical.theme")
 
+local CLONED = 100
+
+theme.register_color(CLONED , "cloned" , "taglist_cloned" , true )
 
 local module,instances = {},{}
 
@@ -26,7 +30,6 @@ local cache = setmetatable({}, { __mode = 'k' })
 module.buttons = { [1] = awful.tag.viewonly,
                       [2] = awful.tag.viewtoggle,
                       [3] = function(q,w,e,r)
-                              print("hello",q,q._item,q.item)
                               local menu = customMenu.tagOption.getMenu()
                               menu.visible = true
                             end,
@@ -56,13 +59,19 @@ local function create_item(t,s)
   w:add(ib)
   local tw = wibox.widget.textbox()
   tw.draw = index_draw
---   tw:set_fg("#000000")
-  tw:set_markup(" <b>"..(menu.rowcount+1).."</b> ")
+  local index = tag.getidx(t)
+  tw:set_markup(" <b>"..(index).."</b> ")
   w:add(tw)
   local item = menu:add_item { text = t.name, prefix_widget = w}
-  item:connect_signal("index::changed",function(_,value)
-    tw:set_markup(" <b>"..(item.index).."</b> ")
-  end)
+--   item:connect_signal("index::changed",function(_,value)
+--     tw:set_markup(" <b>"..(index).."</b> ")
+--   end)
+  item.tw = tw
+
+  if tag.getproperty(t,"clone_of") then
+    item.state[CLONED] = true
+  end
+--   menu:move(item,index)
 
   menu:connect_signal("button::press",function(menu,item,button_id,mod)
     if module.buttons and module.buttons[button_id] then
@@ -112,10 +121,10 @@ local function select(t)
   local item = cache[t] or create_item(t,tag.getscreen(t))
   if item then
     item.state[radical.base.item_flags.SELECTED] = s or nil
-    if s then
+--     if s then --We also want to unset those when we quit the tag
       item.state[radical.base.item_flags.CHANGED] = nil
       item.state[radical.base.item_flags.URGENT] = nil
-    end
+--     end
   end
 end
 
@@ -166,17 +175,27 @@ local function init()
 end
 
 local function new(s)
-  instances[s] = radical.bar {
-    select_on  = radical.base.event.NEVER,
-    fg         = beautiful.fg_normal,
-    bg_focus   = beautiful.taglist_bg_image_selected2,
+
+  local args = {
     item_style = radical.item.style.arrow_prefix,
-    bg_hover   = beautiful.menu_bg_focus,
-    bg_used    = beautiful.taglist_bg_image_used2,
-    bg_urgent  = beautiful.taglist_bg_image_urgent2,
-    bg_changed = beautiful.taglist_bg_image_changed,
+    select_on  = radical.base.event.NEVER,
+    fg         = beautiful.tasglist_fg or beautiful.fg_normal,
+    bg_focus   = beautiful.taglist_bg_selected,
+    fg_focus   = beautiful.taglist_fg_selected,
 --     fkeys_prefix = true,
   }
+  for k,v in ipairs {"hover","used","urgent","cloned","changed"} do
+    args["bg_"..v] = beautiful["taglist_bg_"..v]
+  end
+
+  instances[s] = radical.bar(args)-- {
+--     bg_hover   = beautiful.menu_bg_focus,
+--     bg_used    = beautiful.taglist_bg_image_used,
+--     bg_urgent  = beautiful.taglist_bg_image_urgent,
+--     bg_changed = beautiful.taglist_bg_image_changed,
+--     bg_cloned  = beautiful.taglist_bg_image_cloned,
+--     fg_cloned  = "#00bb00",
+--   }
 
 
   -- Load the innitial set of tags
@@ -200,6 +219,17 @@ local function new(s)
 end
 
 capi.tag.connect_signal("property::selected" , select)
+capi.tag.connect_signal("property::index",function(t,i)
+  if t then
+    local s = tag.getscreen(t)
+    local item = cache[t]
+    if item then
+      local index = tag.getidx(t)
+--       instances[s]:move(item,index)
+      item.tw:set_markup(" <b>"..(index).."</b> ")
+    end
+  end
+end)
 
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
