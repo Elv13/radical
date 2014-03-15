@@ -1,3 +1,19 @@
 ### Beautiful options
 
-tasklist_icon_transformation | function(image) |
+tasklist_bg_hover
+tasklist_fg_hover
+tasklist_underlay_bg_hover
+tasklist_bg_urgent
+tasklist_fg_urgent
+tasklist_underlay_bg_urgent
+tasklist_bg_minimized
+tasklist_fg_minimized
+tasklist_underlay_bg_minimized
+tasklist_bg_focus
+tasklist_fg_focus
+tasklist_underlay_bg_focus
+tasklist_fg
+tasklist_bg
+tasklist_underlay_style
+tasklist_icon_transformation
+tasklist_default_icon

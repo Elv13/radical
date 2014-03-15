@@ -168,7 +168,7 @@ local function init()
   capi.tag.connect_signal("property::icon", function(t)
     local item = cache[t]
     if item then
-      item.icon = tag.geticon(t)
+      item.icon = tag.geticon(t) or beautiful.taglist_default_icon
     end
   end)
   is_init = true
@@ -180,22 +180,17 @@ local function new(s)
     item_style = radical.item.style.arrow_prefix,
     select_on  = radical.base.event.NEVER,
     fg         = beautiful.tasglist_fg or beautiful.fg_normal,
+    bg         = beautiful.tasglist_bg or beautiful.bg_normal,
     bg_focus   = beautiful.taglist_bg_selected,
     fg_focus   = beautiful.taglist_fg_selected,
 --     fkeys_prefix = true,
   }
   for k,v in ipairs {"hover","used","urgent","cloned","changed"} do
     args["bg_"..v] = beautiful["taglist_bg_"..v]
+    args["fg_"..v] = beautiful["taglist_fg_"..v]
   end
 
-  instances[s] = radical.bar(args)-- {
---     bg_hover   = beautiful.menu_bg_focus,
---     bg_used    = beautiful.taglist_bg_image_used,
---     bg_urgent  = beautiful.taglist_bg_image_urgent,
---     bg_changed = beautiful.taglist_bg_image_changed,
---     bg_cloned  = beautiful.taglist_bg_image_cloned,
---     fg_cloned  = "#00bb00",
---   }
+  instances[s] = radical.bar(args)
 
 
   -- Load the innitial set of tags
@@ -204,9 +199,7 @@ local function new(s)
   end
 
   -- Per screen signals
---   tag.attached_connect_signal(s, "property::selected", tag_added)
---   tag.attached_connect_signal(screen, "property::hide", ut)
---   tag.attached_connect_signal(s, "property::index", tag_added)
+--   tag.attached_connect_signal(screen, "property::hide", ut)!
 
   instances[s]:connect_signal("button::press",function(m,item,button_id,mod)
     if module.buttons and module.buttons[button_id] then

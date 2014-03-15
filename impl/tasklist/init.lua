@@ -14,8 +14,11 @@ local beautiful = require( "beautiful"    )
 local client = require( "awful.client" )
 local wibox     = require( "wibox"        )
 local client_menu =  require("radical.impl.tasklist.client_menu")
+local theme     = require( "radical.theme")
 
 local sticky,urgent,instances,module = {},{},{},{}
+local MINIMIZED = 101
+theme.register_color(MINIMIZED , "minimized" , "tasklist_minimized" , true )
 
 -- Default button implementation
 module.buttons = {
@@ -71,6 +74,14 @@ local function urgent_callback(c)
   end
 end
 
+local function minimize_callback(c)
+  local item = instances[c.screen].cache[c]
+  if item then
+    local val = c.minimized
+    item.state[MINIMIZED] = val or nil
+  end
+end
+
 local function unmanage_callback(c)
   sticky[c] = nil
   urgent[c] = nil
@@ -105,7 +116,7 @@ local function reload_content(c,b,a)
   local item = cache[c]
   if item then
     item.text = c.name or "N/A"
-    item.icon = c.icon
+    item.icon = c.icon or beautiful.tasklist_default_icon
   end
 end
 
@@ -153,19 +164,24 @@ local function focus(c)
 end
 
 local function new(screen)
-  local cache,menu = setmetatable({}, { __mode = 'k' }),radical.flexbar {
+  local args = {
     select_on=radical.base.event.NEVER,
-    fg       = beautiful.fg_normal,
-    bg_focus = beautiful.taglist_bg_image_selected2,
-    bg_urgent = beautiful.taglist_bg_image_urgent2,
-    bg_hover   = beautiful.menu_bg_focus,
     disable_markup = true,
-    underlay_style = radical.widgets.underlay.draw_arrow,
-    overlay = function(data,item,cd,w,h)
---       print("foo!")
-    end,
+    fg       = beautiful.tasklist_fg or beautiful.fg_normal,
+    bg       = beautiful.tasklist_bg or beautiful.fg_normal,
+    underlay_style = beautiful.tasklist_underlay_style or radical.widgets.underlay.draw_arrow,
     icon_transformation = beautiful.tasklist_icon_transformation
   }
+  for k,v in ipairs {"hover","urgent","minimized","focus"} do
+    args["bg_"..v] = beautiful["tasklist_bg_"..v]
+    args["fg_"..v] = beautiful["tasklist_fg_"..v]
+    args["underlay_bg_"..v] = beautiful["tasklist_underlay_bg_"..v]
+  end
+  local cache,menu = setmetatable({}, { __mode = 'k' }),radical.flexbar(args)
+--     overlay = function(data,item,cd,w,h)
+--       print("foo!")
+--     end,
+--   }
 
   -- Clear the menu and repopulate it
   local function load_clients(t)
@@ -206,28 +222,6 @@ local function new(screen)
 
   load_clients(tag.selected(screen))
 
-  -- Try to make awesome think radical.bar is a real widget
-  -- Use "menu._internal.layout" directly in :add to avoid
-  -- the proxy overhead, for now it doesn't event work on 3.5.2
---   rawset(menu,"fit",function(self,...)
---     return menu._internal.layout.fit(menu._internal.layout,...)
---   end)
---   rawset(menu,"draw",function(self,...)
---     return menu._internal.layout.draw(menu._internal.layout,...)
---   end)
---   rawset(menu,"add_signal",function(self,...)
---     return menu._internal.layout.add_signal(menu._internal.layout,...)
---   end)
---   rawset(menu,"disconnect_signal",function(a,...)
---     return menu._internal.layout.disconnect_signal(menu._internal.layout,...)
---   end)
---   rawset(menu,"connect_signal",function(a,...)
---     return menu._internal.layout.disconnect_signal(menu._internal.layout,...)
---   end)
---   rawset(menu,"emit_signal",function(a,...)
---     return menu._internal.layout.emit_signal(menu._internal.layout,...)
---   end)
-  
   menu:connect_signal("button::press",function(menu,item,button_id,mod)
     if module.buttons and module.buttons[button_id] then
       module.buttons[button_id](item.client,menu,item,button_id,mod)
@@ -248,6 +242,7 @@ capi.client.connect_signal("property::ontop"   , reload_underlay   )
 capi.client.connect_signal("property::floating", reload_underlay   )
 capi.client.connect_signal("property::name"    , reload_content    )
 capi.client.connect_signal("property::icon"    , reload_content    )
+capi.client.connect_signal("property::minimized", minimize_callback    )
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;

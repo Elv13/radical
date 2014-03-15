@@ -17,3 +17,21 @@ between the taglist and the tags. This module aim to fix this.
 Plus, it inherit Radical style and layouts engines for both item and style, so
 this module could technically be used as a box menu or something like that
 without modifications.
+
+### Beautiful options
+
+taglist_bg_selected
+taglist_fg_selected
+
+taglist_bg
+taglist_fg
+taglist_bg_hover
+taglist_fg_hover
+taglist_bg_used
+taglist_fg_used
+taglist_bg_urgent
+taglist_fg_urgent
+taglist_bg_cloned
+taglist_fg_cloned
+taglist_bg_changed
+taglist_fg_changed
