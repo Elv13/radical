@@ -40,6 +40,7 @@ end
 -- Apply icon transformation
 function module.set_icon(self,image)
   if self._data.icon_transformation then
+    self._item._original_icon = image
     image = self._data.icon_transformation(image,self._data,self._item)
   end
   wibox.widget.imagebox.set_image(self,image)

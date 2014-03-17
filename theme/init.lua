@@ -23,13 +23,13 @@ local function change_data(tab, key,value)
     if tab._item._internal.text_w and tab._item._internal.text_w.cache then
       tab._item._internal.text_w.cache = {}
     end
-    tab._item:style()
+    tab._item:emit_signal("state::changed")
   elseif value and (rawget(tab,"_current_key") or math.huge) > key then
     rawset(tab,"_current_key",key)
     if tab._item._internal.text_w and tab._item._internal.text_w.cache then
       tab._item._internal.text_w.cache = {}
     end
-    tab._item:style()
+    tab._item:emit_signal("state::changed")
   end
   tab._real_table[key] = value
 end

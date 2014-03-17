@@ -160,6 +160,12 @@ local function new_item(data,args)
     data.item_style(item,{})
     data._current_item = item
   end
+
+  -- Listen to signals
+  item:connect_signal("state::changed",function()
+    item:style()
+  end)
+
   return item
 end
 
