@@ -260,7 +260,7 @@ local function create_item(item,data,args)
   item._internal.margin_w = m
 
   -- Draw
-  local item_style = item.item_style or data.item_style
+  local item_style = item.style or data.item_style
   item_style(item,{})
   item.widget:set_fg(item._private_data.fg)
 
