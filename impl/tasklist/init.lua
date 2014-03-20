@@ -6,7 +6,7 @@
 -- @license GPLv2+ because of copy paste from the old tasklist.lua
 ---------------------------------------------------------------------------
 
-local capi = {client = client}
+local capi = {client = client,tag=tag}
 local rawset = rawset
 local radical   = require( "radical"      )
 local tag       = require( "awful.tag"    )
@@ -17,6 +17,7 @@ local client_menu =  require("radical.impl.tasklist.client_menu")
 local theme     = require( "radical.theme")
 
 local sticky,urgent,instances,module = {},{},{},{}
+local _cache = {}
 local MINIMIZED = 101
 theme.register_color(MINIMIZED , "minimized" , "tasklist_minimized" , true )
 
@@ -56,11 +57,22 @@ module.buttons = {
 local function sticky_callback(c)
   local val = c.sticky
   sticky[c] = val and true or nil
-  for k,v in ipairs(instances) do
+  local menu = instances[c.screen]
+  local is_in_tag = false
+  for _,t in ipairs(tag.selectedlist(k)) do
+    for k2,v2 in ipairs(c:tags()) do
+      if v2 == t then
+        is_in_tag = true
+        break
+      end
+    end
+    if is_in_tag then break end
+  end
+  if not is_in_tag then
     if val then
-      v.menu:append(v.cache[c])
+      menu:append(_cache[c])
     else
-      v.menu:remove(v.cache[c])
+      menu:remove(_cache[c])
     end
   end
 end
@@ -68,14 +80,14 @@ end
 local function urgent_callback(c)
   local val = c.urgent
   urgent[c] = val and true or nil
-  local item = instances[c.screen].cache[c]
+  local item = _cache[c]
   if item then
     item.state[radical.base.item_flags.URGENT] = val or nil
   end
 end
 
 local function minimize_callback(c)
-  local item = instances[c.screen].cache[c]
+  local item = _cache[c]
   if item then
     local val = c.minimized
     item.state[MINIMIZED] = val or nil
@@ -86,15 +98,14 @@ local function unmanage_callback(c)
   sticky[c] = nil
   urgent[c] = nil
   for k,v in ipairs(instances) do
-    v.menu:remove(v.cache[c])
-    v.cache[c] = nil
+    v.menu:remove(_cache[c])
   end
+  _cache[c] = nil
 end
 
 -- Reload <float> <ontop> and <sticky> labels
 local function reload_underlay(c)
-  local cache = instances[c.screen].cache
-  local udl,item = {},cache[c]
+  local udl,item = {},_cache[c]
   if item then
     if c.ontop then
       udl[#udl+1] = "ontop"
@@ -112,43 +123,69 @@ end
 
 -- Reload title and icon
 local function reload_content(c,b,a)
-  local cache = instances[c.screen].cache
-  local item = cache[c]
+  local item = _cache[c]
   if item then
     item.text = c.name or "N/A"
     item.icon = c.icon or beautiful.tasklist_default_icon
   end
 end
 
+
 local function create_client_item(c,screen)
-  local cache = instances[screen].cache
+  local item = _cache[c]
   local menu = instances[screen].menu
   -- If it already exist, don't waste time creating a copy
-  if cache[c] then
-    return menu:append(cache[c])
+  if item then
+    menu:append(item)
+    return item
   end
 
   -- Too bad, let's create a new one
-  local item = menu:add_item{text=c.name,icon=c.icon}
+  item = menu:add_item{text=c.name,icon=c.icon}
   item.client = c
-  cache[c] = item
+  _cache[c] = item
   return item
 end
 
+-- Add client to the tasklist
 local function add_client(c,screen)
   if not (c.skip_taskbar or c.hidden or c.type == "splash" or c.type == "dock" or c.type == "desktop") and c.screen == screen then
     local ret = create_client_item(c,screen)
     reload_underlay(c)
-    if c.focus == c then
+    if capi.client.focus == c then
       ret.selected = true
     end
   end
 end
 
+-- Clear the menu and repopulate it
+local function load_clients(t)
+  local screen = tag.getscreen(t)
+  if not t or not screen then return end
+  local menu = instances[screen].menu
+  if t.selected then
+    menu:clear()
+    for k, c in ipairs(t:clients()) do
+      if not c.sticky then
+        add_client(c,screen)
+      end
+    end
+    for c,_ in pairs(sticky) do
+      add_client(c,screen)
+    end
+  end
+end
+
+-- Reload the tag
+local function tag_screen_changed(t)
+  if not t.selected then return end
+  local screen = tag.getscreen(t)
+  load_clients(t)
+end
+
 -- Unselect the old focussed client
 local function unfocus(c)
-  local cache = instances[c.screen].cache
-  local item = cache[c]
+  local item = _cache[c]
   if item and item.selected then
     item.selected = false
   end
@@ -156,8 +193,7 @@ end
 
 -- Select the newly focussed client
 local function focus(c)
-  local cache = instances[c.screen].cache
-  local item = cache[c]
+  local item = _cache[c]
   if item then
     item.selected = true
   end
@@ -183,21 +219,6 @@ local function new(screen)
 --     end,
 --   }
 
-  -- Clear the menu and repopulate it
-  local function load_clients(t)
-    if not t then return end
-    if t.selected and tag.getscreen(t) == screen then
-      menu:clear()
-      for k, c in ipairs(t:clients()) do
-        if not c.sticky then
-          add_client(c,screen)
-        end
-      end
-      for c,_ in pairs(sticky) do
-        add_client(c,screen)
-      end
-    end
-  end
 
   -- Add and remove clients from the tasklist
   local function tagged(c,t)
@@ -215,8 +236,9 @@ local function new(screen)
   -- Connect to a bunch of signals
   tag.attached_connect_signal(screen, "property::selected" , load_clients)
   tag.attached_connect_signal(screen, "property::activated", load_clients)
-  capi.client.connect_signal("tagged"            , tagged            )
-  capi.client.connect_signal("untagged"          , untagged          )
+  capi.tag.connect_signal   ("property::screen"  , tag_screen_changed )
+  capi.client.connect_signal("tagged"            , tagged             )
+  capi.client.connect_signal("untagged"          , untagged           )
 
   instances[screen] = {menu = menu, cache = cache }
 
