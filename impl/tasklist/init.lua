@@ -17,7 +17,7 @@ local client_menu =  require("radical.impl.tasklist.client_menu")
 local theme     = require( "radical.theme")
 
 local sticky,urgent,instances,module = {},{},{},{}
-local _cache = {}
+local _cache = setmetatable({}, { __mode = 'k' })
 local MINIMIZED = 101
 theme.register_color(MINIMIZED , "minimized" , "tasklist_minimized" , true )
 
@@ -213,7 +213,7 @@ local function new(screen)
     args["fg_"..v] = beautiful["tasklist_fg_"..v]
     args["underlay_bg_"..v] = beautiful["tasklist_underlay_bg_"..v]
   end
-  local cache,menu = setmetatable({}, { __mode = 'k' }),radical.flexbar(args)
+  local menu = radical.flexbar(args)
 --     overlay = function(data,item,cd,w,h)
 --       print("foo!")
 --     end,
@@ -227,7 +227,7 @@ local function new(screen)
     end
   end
   local function untagged(c,t)
-    local item = cache[c]
+    local item = _cache[c]
     if t.selected and tag.getscreen(t) == screen then
       menu:remove(item)
     end
@@ -240,7 +240,7 @@ local function new(screen)
   capi.client.connect_signal("tagged"            , tagged             )
   capi.client.connect_signal("untagged"          , untagged           )
 
-  instances[screen] = {menu = menu, cache = cache }
+  instances[screen] = {menu = menu}
 
   load_clients(tag.selected(screen))
 

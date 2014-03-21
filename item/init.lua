@@ -151,7 +151,7 @@ local function new_item(data,args)
         data._tmp_menu = nil
       end
       data.item_style(current_item,{})
-      current_item.selected = false
+--       current_item.selected = false
     end
     if data.sub_menu_on == module.event.SELECTED and current_item ~= item then
       module.execute_sub_menu(data,item)

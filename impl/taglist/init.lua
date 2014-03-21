@@ -15,6 +15,7 @@ local client    = require( "awful.client" )
 local wibox     = require( "wibox"        )
 local awful     = require( "awful"        )
 local theme     = require( "radical.theme")
+local tracker   = require( "radical.impl.taglist.tracker" )
 
 local CLONED = 100
 
@@ -176,6 +177,8 @@ end
 
 local function new(s)
 
+  local track = tracker(s)
+
   local args = {
     item_style = radical.item.style.arrow_prefix,
     select_on  = radical.base.event.NEVER,
@@ -208,17 +211,19 @@ local function new(s)
   end)
 
   init()
+  track:reload()
   return instances[s]
 end
 
 capi.tag.connect_signal("property::selected" , select)
-capi.tag.connect_signal("property::index",function(t,i)
+capi.tag.connect_signal("property::index2",function(t,i)
+  print("FOO",t,i)
   if t then
     local s = tag.getscreen(t)
     local item = cache[t]
     if item then
       local index = tag.getidx(t)
---       instances[s]:move(item,index)
+      instances[s]:move(item,index)
       item.tw:set_markup(" <b>"..(index).."</b> ")
     end
   end
