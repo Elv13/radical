@@ -507,7 +507,7 @@ local function new(args)
     if data.max_items ~= nil and data.rowcount >= data.max_items and (data._start_at or 1) > 1 then
       local current_item = data._current_item
       if current_item then
-        current_item.selected = false
+        current_item:set_selected(false,true)
       end
       data._start_at  = (data._start_at or 1) - 1
       internal.items[data._start_at][1]._hidden = false
@@ -522,7 +522,7 @@ local function new(args)
     if data.max_items ~= nil and data.rowcount >= data.max_items and (data._start_at or 1)+data.max_items <= data.rowcount then
       local current_item = data._current_item
       if current_item then
-        current_item.selected = false
+        current_item:set_selected(false,true)
       end
       data._start_at  = (data._start_at or 1) + 1
       internal.items[data._start_at-1][1]._hidden = true

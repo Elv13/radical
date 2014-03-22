@@ -135,12 +135,12 @@ local function new_item(data,args)
   data._internal.items[#data._internal.items][1] = item
 
   -- Setters
-  item.set_selected = function(_,value)
+  item.set_selected = function(_,value,force)
     private_data.selected = value
 
     -- Hide the sub-menu
     local current_item = data._current_item
-    if current_item and current_item ~= item or not value then
+    if current_item and current_item ~= item or force then
       current_item.state[module.item_flags.SELECTED] = nil
       if current_item._tmp_menu then
         current_item._tmp_menu.visible = false

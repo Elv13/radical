@@ -156,12 +156,6 @@ local function create_item(item,data,args)
   -- Background
   local bg = wibox.widget.background()
 
-  --Cache item height
-  bg.fit = function(box,w,h,...)
-    args.y = data.height-h-data.margins.top
-    return wibox.widget.background.fit(box,w,h)
-  end
-
   -- Margins
   local m = wibox.layout.margin(la)
   m:set_margins (0)
