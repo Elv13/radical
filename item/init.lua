@@ -132,7 +132,7 @@ local function new_item(data,args)
 
   -- Need to be done before painting
   data._internal.items[#data._internal.items+1] = {}
-  data._internal.items[#data._internal.items][1] = item
+  data._internal.items[#data._internal.items] = item
 
   -- Setters
   item.set_selected = function(_,value,force)

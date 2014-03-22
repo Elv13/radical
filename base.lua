@@ -85,15 +85,15 @@ local function filter(data)
     local fs,visible_counter = data.filter_string:lower(),0
     data._internal.visible_item_count = 0
     for k,v in pairs(data.items) do
-      local tmp = v[1]._filter_out
-      v[1]._filter_out = (v[1].text:lower():find(fs) == nil)-- or (fs ~= "")
-      if tmp ~= v[1]._filter_out then
-        v[1].widget:emit_signal("widget::updated")
+      local tmp = v._filter_out
+      v._filter_out = (v.text:lower():find(fs) == nil)-- or (fs ~= "")
+      if tmp ~= v._filter_out then
+        v.widget:emit_signal("widget::updated")
       end
-      if (not v[1]._filter_out) and (not v[1]._hidden) then
-        visible_counter = visible_counter + v[1].height
+      if (not v._filter_out) and (not v._hidden) then
+        visible_counter = visible_counter + v.height
         data._internal.visible_item_count = data._internal.visible_item_count +1
-        v[1].f_key = data._internal.visible_item_count
+        v.f_key = data._internal.visible_item_count
       end
     end
     data._total_item_height = visible_counter
@@ -314,7 +314,6 @@ local function new(args)
   data.get_margin        = function(_) return {left=0,bottom=0,right=0,left=0} end
   data.get_items         = function(_) return internal.items end
   data.get_rowcount      = function(_) return #internal.items end
-  data.get_columncount   = function(_) return (#internal.items > 0) and #(internal.items[1]) or 0  end
 
   -- Setters
   data.set_auto_resize  = function(_,val) private_data[""] = val end
@@ -372,10 +371,8 @@ local function new(args)
   data.get_current_index = function(_)
     if data._current_item then
       for k,v in ipairs(internal.items) do --rows
-        for k2,v2 in ipairs(v) do --columns
-          if data._current_item == v2 then
-            return k,k2 --row, column as row is expected in most configurations
-          end
+        if data._current_item == v then
+          return k
         end
       end
     end
@@ -383,17 +380,17 @@ local function new(args)
 
   data.get_previous_item = function(_)
     local candidate,idx = internal.items[(data.current_index or 0)-1],(data.current_index or 0)-1
-    while candidate and (candidate[1]._hidden or candidate[1]._filter_out) and idx > 0 do
+    while candidate and (candidate._hidden or candidate._filter_out) and idx > 0 do
       candidate,idx = internal.items[idx - 1],idx-1
     end
-    return (candidate or internal.items[data.rowcount])[1]
+    return (candidate or internal.items[data.rowcount])
   end
   data.get_next_item     = function(_)
     local candidate,idx = internal.items[(data.current_index or 0)+1],(data.current_index or 0)+1
-    while candidate and (candidate[1]._hidden or candidate[1]._filter_out) and idx <= data.rowcount do
+    while candidate and (candidate._hidden or candidate._filter_out) and idx <= data.rowcount do
       candidate,idx = internal.items[idx + 1],idx+1
     end
-    return (candidate or internal.items[1])[1]
+    return (candidate or internal.items)
   end
 
   --Repaint when appearance properties change
@@ -456,7 +453,7 @@ local function new(args)
     if not item or not idx then return end
     local idx1 = nil
     for k,v in ipairs(internal.items) do --rows
-      if item == v[1] then
+      if item == v then
         idx1 = k
         break
       end
@@ -473,7 +470,7 @@ local function new(args)
         item.index = idx
         data:emit_signal("item::moved",item,idx,idx1)
         for i=idx,idx1 do
-          internal.items[i][1].index = i
+          internal.items[i].index = i
         end
       end
     end
@@ -483,7 +480,7 @@ local function new(args)
     if not item then return end
     local idx1 = nil
     for k,v in ipairs(internal.items) do --rows
-      if item == v[1] then
+      if item == v then
         idx1 = k
         break
       end
@@ -492,7 +489,7 @@ local function new(args)
       table.remove(internal.items,idx1)
       data:emit_signal("item::removed",item,idx1)
       for i=idx1,#internal.items do
-        internal.items[i][1].index = i
+        internal.items[i].index = i
       end
     end
   end
@@ -510,10 +507,10 @@ local function new(args)
         current_item:set_selected(false,true)
       end
       data._start_at  = (data._start_at or 1) - 1
-      internal.items[data._start_at][1]._hidden = false
-      data:emit_signal("_hidden::changed",internal.items[data._start_at][1])
-      internal.items[data._start_at+data.max_items][1]._hidden = true
-      data:emit_signal("_hidden::changed",internal.items[data._start_at+data.max_items][1])
+      internal.items[data._start_at]._hidden = false
+      data:emit_signal("_hidden::changed",internal.items[data._start_at])
+      internal.items[data._start_at+data.max_items]._hidden = true
+      data:emit_signal("_hidden::changed",internal.items[data._start_at+data.max_items])
       filter(data)
     end
   end
@@ -525,10 +522,10 @@ local function new(args)
         current_item:set_selected(false,true)
       end
       data._start_at  = (data._start_at or 1) + 1
-      internal.items[data._start_at-1][1]._hidden = true
-      data:emit_signal("_hidden::changed",internal.items[data._start_at-1][1])
-      internal.items[data._start_at-1+data.max_items][1]._hidden = false
-      data:emit_signal("_hidden::changed",internal.items[data._start_at-1+data.max_items][1])
+      internal.items[data._start_at-1]._hidden = true
+      data:emit_signal("_hidden::changed",internal.items[data._start_at-1])
+      internal.items[data._start_at-1+data.max_items]._hidden = false
+      data:emit_signal("_hidden::changed",internal.items[data._start_at-1+data.max_items])
       filter(data)
     end
   end

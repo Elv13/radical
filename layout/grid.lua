@@ -20,7 +20,7 @@ local function up(data)
   if idx <= 0 then
     idx = rc + idx + 1
   end
-  data.items[idx][1].selected = true
+  data.items[idx].selected = true
 end
 
 local function down(data)
@@ -29,7 +29,7 @@ local function down(data)
   if idx > rc then
     idx = idx - rc - 1
   end
-  data.items[idx][1].selected = true
+  data.items[idx].selected = true
 end
 
 function module:setup_key_hooks(data)
@@ -69,7 +69,7 @@ local function new(data)
     end
     local rc = data.rowcount+1
     for i=1,rc do
-      rows[((i-1)%constraint)+1]:add((rc == i and item.widget or data.items[i][1].widget))
+      rows[((i-1)%constraint)+1]:add((rc == i and item.widget or data.items[i].widget))
     end
     return true
   end

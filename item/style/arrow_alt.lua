@@ -91,11 +91,11 @@ end
 
 local function get_prev(data,item)
   for k,v in ipairs(data.items) do
-    if v[1] == item then
+    if v == item then
       while k > 0 do
         k = k - 1
-        if k > 0 and (not data.items[k][1].hidden) and data.items[k][1]._internal.f_key == item._internal.f_key - 1 then
-          return data.items[k][1]
+        if k > 0 and (not data.items[k].hidden) and data.items[k]._internal.f_key == item._internal.f_key - 1 then
+          return data.items[k]
         end
       end
       return nil

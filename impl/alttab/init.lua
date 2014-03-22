@@ -4,17 +4,12 @@ local button    = require( "awful.button" )
 local beautiful = require( "beautiful"    )
 local tag       = require( "awful.tag"    )
 local client2   = require( "awful.client" )
-local menu      = require( "radical.box"  )
+local radical   = require( "radical"      )
 local util      = require( "awful.util"   )
 local wibox     = require( "wibox"        )
 local capi = { client = client, mouse = mouse, screen = screen}
 
 local module,pause_monitoring = {},false
-
-local function draw_underlay(text)
-  -- If blind is installed, it can be used to draw the tag(s) name in the background
-  return beautiful.draw_underlay and beautiful.draw_underlay(text) or nil
-end
 
 -- Keep its own history instead of using awful.client.focus.history
 local focusIdx,focusTable = 1,setmetatable({}, { __mode = 'v' })
@@ -76,12 +71,35 @@ local function new(args)
   if #histo == o then
     return
   end
-  
-  local t,auto_release = tag.selected(capi.client.focus and capi.client.focus.screen or capi.mouse.screen),args.auto_release
-  local currentMenu = menu({filter = true, show_filter=true, autodiscard = true,
-    disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[capi.client.focus and capi.client.focus.screen or capi.mouse.screen]).geometry.width)/2),
-    icon_transformation = beautiful.alttab_icon_transformation})
 
+  local t,auto_release = tag.selected(capi.client.focus and capi.client.focus.screen or capi.mouse.screen),args.auto_release
+  local currentMenu = radical.box({filter = true, show_filter=true, autodiscard = true,
+    disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[capi.client.focus and capi.client.focus.screen or capi.mouse.screen]).geometry.width)/2),
+    icon_transformation = beautiful.alttab_icon_transformation,filter_underlay="Use [Shift] to toggle clients",filter_underlay_color=beautiful.menu_bg_normal,
+    filter_placeholder="<span fgcolor='".. (beautiful.menu_fg_disabled or beautiful.fg_disabled or "#777777") .."'>Type to filter</span>"})
+
+  local pref_bg = wibox.widget.background()
+  local pref_l = wibox.layout.align.horizontal()
+  pref_bg.fit = function(s,w,h)
+    local w2,h2 = wibox.widget.background.fit(s,w,h)
+    return w2,currentMenu.item_height
+  end
+  pref_bg:set_bg(currentMenu.bg_alternate)
+  local tb2= wibox.widget.textbox()
+  tb2:set_text("foo!!!!")
+  pref_l:set_first(tb2)
+  pref_bg:set_widget(pref_l)
+  local pref_menu,pref_menu_l = radical.bar{item_style=radical.item.style.basic}
+  pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+  pref_menu:add_item{text="Exclusive"}
+  pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+  pref_menu:add_item{text="12 clients"}
+  pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+  pref_menu:add_item{text="Screen 1"}
+  pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+  pref_l:set_third(pref_menu_l)
+
+  currentMenu:add_prefix_widget(pref_bg)
 
   currentMenu:add_key_hook({}, "Tab", "press", select_next)
   currentMenu:add_key_hook({}, "Shift_L", "press", function()

@@ -13,7 +13,7 @@ local module = {}
 local function left(data)
   if data._current_item._tmp_menu then
     data = data._current_item._tmp_menu
-    data.items[1][1].selected = true
+    data.items.selected = true
     return true,data
   end
 end
@@ -21,8 +21,8 @@ end
 local function right(data)
   if data.parent_geometry.is_menu then
     for k,v in ipairs(data.items) do
-      if v[1]._tmp_menu == data or v[1].sub_menu_m == data then
-        v[1].selected = true
+      if v._tmp_menu == data or v.sub_menu_m == data then
+        v.selected = true
       end
     end
     data.visible = false
