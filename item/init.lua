@@ -48,7 +48,6 @@ local module = {
 }
 
 local function load_async(tab,key)
-  print("here",key)
   if key == "style" then
     module.style = require("radical.item.style")
     return module.style
@@ -138,26 +137,30 @@ local function new_item(data,args)
   -- Setters
   item.set_selected = function(_,value)
     private_data.selected = value
-    if value == false then
-      data.item_style(item,{})
-      return
-    end
+
+    -- Hide the sub-menu
     local current_item = data._current_item
-    if current_item and current_item ~= item then
+    if current_item and current_item ~= item or not value then
       current_item.state[module.item_flags.SELECTED] = nil
       if current_item._tmp_menu then
         current_item._tmp_menu.visible = false
         current_item._tmp_menu = nil
         data._tmp_menu = nil
+        current_item:emit_signal("state::changed")
       end
-      data.item_style(current_item,{})
---       current_item.selected = false
     end
+
+    -- Unselect item
+    if value == false then
+      item.state[module.item_flags.SELECTED] = nil
+      return
+    end
+
+    -- Select the new one
     if data.sub_menu_on == module.event.SELECTED and current_item ~= item then
       module.execute_sub_menu(data,item)
     end
     item.state[module.item_flags.SELECTED] = true
-    data.item_style(item,{})
     data._current_item = item
   end
 

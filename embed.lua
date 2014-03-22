@@ -26,9 +26,9 @@ local function setup_drawable(data)
   data.set_visible = function(_,v) if data._embeded_parent then data._embeded_parent.visible = v end end
 
   -- Enumate geometry --BUG this is fake, but better than nothing
-  data.get_width = function() return data._embeded_parent and (data._embeded_parent.width + (internal.current_width or 0))end
-  data.get_y = function() return data._embeded_parent and (data._embeded_parent.y + (internal.current_y or 0)) end
-  data.get_x = function() return data._embeded_parent and (data._embeded_parent.x + (internal.current_x or 0)) end
+  data.get_width = function() return data._embeded_parent and (data._embeded_parent.width --[[+ (internal.current_width or 0)]])end
+  data.get_y = function() return data._embeded_parent and (data._embeded_parent.y--[[ + (internal.current_y or 0)]]) end
+  data.get_x = function() return data._embeded_parent and (data._embeded_parent.x--[[ + (internal.current_x or 0)]]) end
   if not data.layout then
     data.layout = layout.vertical
   end
@@ -36,9 +36,19 @@ local function setup_drawable(data)
   data.width,data.height = data._internal.layout:fit()
   data.margins={left=0,right=0,bottom=0,top=0}
   internal.layout:connect_signal("mouse::enter",function(_,geo)
-    internal.current_x = geo.x
-    internal.current_y = geo.y
-    internal.current_width = geo.width
+--     internal.current_x = geo.x
+--     internal.current_y = geo.y
+--     internal.current_width = geo.width
+    if data._embeded_parent._current_item then
+      data._embeded_parent._current_item.state[base.item_flags.SELECTED] = nil
+      data._embeded_parent._current_item.selected = false
+    end
+  end)
+  internal.layout:connect_signal("mouse::leave",function(_,geo)
+    if data._current_item then
+      data._current_item.selected = false
+      data._current_item.state[base.item_flags.SELECTED] = nil
+    end
   end)
 end
 
@@ -76,9 +86,9 @@ local function setup_item(data,item,args)
     end
   end)
 
---   item.widget:connect_signal("mouse::enter",function(_,geo)
---     item._internal.tmp_y
---   end)
+  item.widget:connect_signal("mouse::enter",function(_,geo)
+    item.y = geo.y
+  end)
 end
 
 local function new(args)

@@ -217,7 +217,6 @@ end
 
 capi.tag.connect_signal("property::selected" , select)
 capi.tag.connect_signal("property::index2",function(t,i)
-  print("FOO",t,i)
   if t then
     local s = tag.getscreen(t)
     local item = cache[t]
