@@ -2,6 +2,7 @@ local setmetatable,math = setmetatable,math
 local beautiful = require( "beautiful"    )
 local wibox     = require( "wibox"        )
 local cairo     = require( "lgi"          ).cairo
+local object    = require( "radical.object" )
 local capi = { screen = screen ,
                mouse  = mouse  }
 local module={}
@@ -36,10 +37,84 @@ local function rel_parent(w,args2,args)
   return {}
 end
 
-local function new(widget,text, args)
-  local args,data = args or  {},{}
+local function init(data,widget,args)
+  if not data.init then
+    data.init = true
 
-  data.text = text
+    local vertical = (args.direction == "left") or (args.direction == "right")
+    local w,extents = data.wibox or wibox({position="free"}),widget._layout:get_pixel_extents()
+    extents.width = extents.width + 60
+    w.visible = false
+    w.width   = extents.width
+    w.height  = vertical and 20 or 25
+    w.ontop   = true
+    w:set_bg(beautiful.tooltip_bg or beautiful.bg_normal or "")
+
+    local img = cairo.ImageSurface(cairo.Format.A1, extents.width, vertical and 20 or 25)
+    local cr = cairo.Context(img)
+    --Clear the surface
+    cr:set_source_rgba( 0, 0, 0, 0 )
+    cr:paint()
+
+    --Draw the corner
+    cr:set_source_rgba( 1, 1, 1, 1 )
+    if not (vertical) then
+        cr:arc(20-(vertical and 5 or 0), 20/2 + (5), 20/2 - 1,0,2*math.pi)
+    end
+    cr:arc(extents.width-20+(2*(vertical and 5 or 0)), 20/2 + (vertical and 0 or 5), 20/2 - 1,0,2*math.pi)
+
+    --Draw arrow
+    if not (vertical) then
+        for i=0,(5) do
+            cr:rectangle(extents.width/2 - 5 + i ,5-i, 1, i)
+            cr:rectangle(extents.width/2 + 5 - i ,5-i, 1, i)
+        end
+    else
+        for i=0,(12) do
+            cr:rectangle(i, (20/2) - i, i, i*2)
+        end
+    end
+    cr:rectangle(20-((vertical) and 5 or 0),vertical and 0 or 5, extents.width-40+((vertical) and 14 or 0 ), 20)
+    cr:fill()
+
+
+    w:set_fg(beautiful.fg_normal)
+
+    if args.direction == "left" or args.direction == "top" then --Mirror
+      local matrix,pattern = cairo.Matrix(),cairo.Pattern.create_for_surface(img)
+      cairo.Matrix.init_rotate(matrix,math.pi)
+      matrix:translate(-extents.width,-((vertical) and 20 or 25))
+      pattern:set_matrix(matrix)
+      local img2 = cairo.ImageSurface(cairo.Format.A1, extents.width, vertical and 20 or 25)
+      local cr2 = cairo.Context(img2)
+      cr2:set_source(pattern)
+      cr2:paint()
+      img = img2
+    end
+    w.shape_bounding  = img._native
+
+    data.wibox = w
+  end
+end
+
+local function set_text(self,text)
+  self.init = nil
+  self._text = text
+
+  textw:set_markup("<b>".. data._text .."</b>")
+  init(data,data._w,dara._args)
+end
+
+local function new(widget,text, args)
+  local args,data = args or  {},object({
+    private_data  = {
+    },
+    autogen_getmap  = true,
+    autogen_setmap  = true,
+    autogen_signals = true,
+  })
+
+  data._text = text
 
   local function hide_tooltip()
     if data.wibox then
@@ -56,70 +131,25 @@ local function new(widget,text, args)
   function data:showToolTip(show,args2)
     local args2 = args2 or args or {}
     args.direction = args.direction or get_direction(args2)
-    if not data.wibox then
-      local vertical,textw = (args.direction == "left") or (args.direction == "right"),wibox.widget.textbox()
-      textw.align = "center"
-      textw:set_markup("<b>".. data.text .."</b>")
-      local w,extents = wibox({position="free"}),textw._layout:get_pixel_extents()
-      extents.width = extents.width + 60
-      w.visible = false
-      w.width   = extents.width
-      w.height  = vertical and 20 or 25
-      w.ontop   = true
-      w:set_bg(beautiful.tooltip_bg or beautiful.bg_normal or "")
 
-      local img = cairo.ImageSurface(cairo.Format.A1, extents.width, vertical and 20 or 25)
-      local cr = cairo.Context(img)
-      --Clear the surface
-      cr:set_source_rgba( 0, 0, 0, 0 )
-      cr:paint()
+    local vertical,textw = (args.direction == "left") or (args.direction == "right"),wibox.widget.textbox()
+    textw.align = "center"
+    textw:set_markup("<b>".. data._text .."</b>")
+    data._w = textw
+    init(data,textw,args)
 
-      --Draw the corner
-      cr:set_source_rgba( 1, 1, 1, 1 )
-      if not (vertical) then
-          cr:arc(20-(vertical and 5 or 0), 20/2 + (5), 20/2 - 1,0,2*math.pi)
-      end
-      cr:arc(extents.width-20+(2*(vertical and 5 or 0)), 20/2 + (vertical and 0 or 5), 20/2 - 1,0,2*math.pi)
+    if data.wibox then
 
-      --Draw arrow
-      if not (vertical) then
-          for i=0,(5) do
-              cr:rectangle(extents.width/2 - 5 + i ,5-i, 1, i)
-              cr:rectangle(extents.width/2 + 5 - i ,5-i, 1, i)
-          end
-      else
-          for i=0,(12) do
-              cr:rectangle(i, (20/2) - i, i, i*2)
-          end
-      end
-      cr:rectangle(20-((vertical) and 5 or 0),vertical and 0 or 5, extents.width-40+((vertical) and 14 or 0 ), 20)
-      cr:fill()
       local l,m = wibox.layout.fixed.horizontal(),wibox.layout.margin(textw)
       m:set_left    ( 30 )
       m:set_right   ( 10 )
       m:set_bottom  ( not vertical and ((args.direction == "top") and 4 or -4) or 0 )
       l:add(m)
+
       l:fill_space(true)
-      w:set_widget(l)
-      w:set_fg(beautiful.fg_normal)
+      data.wibox:set_widget(l)
 
-      if args.direction == "left" or args.direction == "top" then --Mirror
-        local matrix,pattern = cairo.Matrix(),cairo.Pattern.create_for_surface(img)
-        cairo.Matrix.init_rotate(matrix,math.pi)
-        matrix:translate(-extents.width,-((vertical) and 20 or 25))
-        pattern:set_matrix(matrix)
-        local img2 = cairo.ImageSurface(cairo.Format.A1, extents.width, vertical and 20 or 25)
-        local cr2 = cairo.Context(img2)
-        cr2:set_source(pattern)
-        cr2:paint()
-        img = img2
-      end
-      w.shape_bounding  = img._native
-
-      w:connect_signal("mouse::leave",hide_tooltip)
-      data.wibox = w
-    end
-    if data.wibox then
+      data.wibox:connect_signal("mouse::leave",hide_tooltip)
       local relative_to_parent = rel_parent(data.wibox,args2,args)
       data.wibox.x = args2.x or args.x or relative_to_parent.x or capi.mouse.coords().x - data.wibox.width/2 -5
       data.wibox.y = args2.y or args.y or relative_to_parent.y or ((not vertical) and capi.screen[capi.mouse.screen].geometry.height - 16 - 25 or 16)
@@ -133,6 +163,8 @@ local function new(widget,text, args)
   widget:connect_signal("mouse::enter"  , function(widget,geometry) data:showToolTip( true  , {parent=geometry}) end)
   widget:connect_signal("mouse::leave"  , hide_tooltip)
   widget:connect_signal("button::press" , hide_tooltip)
+  data.set_text = set_text
+  data._args = args
   return data
 end
 
