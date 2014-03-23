@@ -3,6 +3,7 @@ local beautiful = require( "beautiful"        )
 local color     = require( "gears.color"      )
 local cairo     = require( "lgi"              ).cairo
 local base = require( "radical.base" )
+local glib = require("lgi").GLib
 
 local module = {
   margins = {
@@ -51,7 +52,7 @@ local function do_gen_menu_top(data, width, height, radius,padding,args)
   return img
 end
 
-local function set_direction(data,direction)
+local function _set_direction(data,direction)
   local geometry = (direction == "left" or direction == "right") and {width = data.wibox.height, height = data.wibox.width} or {height = data.wibox.height, width = data.wibox.width}
   local top_clip_surface        = do_gen_menu_top(data,geometry.width,geometry.height,10,data.border_width,{bg=beautiful.fg_normal or "#0000ff",fg=data.bg or "#00ffff"})
   local top_bounding_surface    = do_gen_menu_top(data,geometry.width,geometry.height,10,0,{bg="#00000000",fg="#ffffffff"})
@@ -70,6 +71,15 @@ local function set_direction(data,direction)
   end
   data.wibox.shape_bounding = top_bounding_surface._native
   data.wibox:set_bg(cairo.Pattern.create_for_surface(top_clip_surface))
+  data._internal._need_direction_reload = false
+end
+
+-- Try to avoid useless repaint, this function is heavy
+local function set_direction(data,direction)
+  if not data._internal._need_direction_reload then
+    glib.idle_add(glib.PRIORITY_HIGH_IDLE, function() _set_direction(data,direction) end)
+    data._internal._need_direction_reload = true
+  end
 end
 
 local function draw(data,args)

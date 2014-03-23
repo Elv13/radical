@@ -20,7 +20,8 @@ local function draw(self, w, cr, width, height)
 end
 
 local function fit(box, w, h)
-  return box.direction == module.VERTICAL and 5 or w,box.direction == module.VERTICAL and h or 5
+  local direction = box.direction or w > h and module.HORIZONTAL or module.VERTICAL
+  return direction == module.VERTICAL and 5 or w,direction == module.VERTICAL and h or 5
 end
 
 local function new(menu,direction)
