@@ -163,7 +163,7 @@ local function setup_drawable(data)
   end
   function internal:set_visible(value)
     internal.w.visible = value
-    if not value then
+    if not value and (not data.parent_geometry or not data.parent_geometry.is_menu) then
       capi.keygrabber.stop()
     end
   end

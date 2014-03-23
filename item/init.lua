@@ -94,7 +94,6 @@ local function new_item(data,args)
       tooltip     = args.tooltip     or nil                                                                 ,
       style       = args.style       or data.item_style                                                     ,
       item_layout = args.item_layout or nil                                                                 ,
-      selected    = false                                                                                   ,
       overlay     = args.overlay     or data.overlay or nil                                                 ,
     },
     force_private = {
@@ -133,6 +132,11 @@ local function new_item(data,args)
   -- Need to be done before painting
   data._internal.items[#data._internal.items+1] = {}
   data._internal.items[#data._internal.items] = item
+
+  -- Getters
+  item.get_selected = function(_)
+    return item == data._current_item
+  end
 
   -- Setters
   item.set_selected = function(_,value,force)

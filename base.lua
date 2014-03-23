@@ -125,6 +125,10 @@ local function activateKeyboard(data)
           if self and type(self) == "table" then
             data = self
           end
+          if retval == false then
+            data.visible = false
+            capi.keygrabber.stop()
+          end
           return retval
         end
       end
@@ -390,7 +394,7 @@ local function new(args)
     while candidate and (candidate._hidden or candidate._filter_out) and idx <= data.rowcount do
       candidate,idx = internal.items[idx + 1],idx+1
     end
-    return (candidate or internal.items)
+    return (candidate or internal.items[1])
   end
 
   --Repaint when appearance properties change

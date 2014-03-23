@@ -27,6 +27,8 @@ local function right(data)
     data.visible = false
     data = data.parent_geometry
     return true,data
+  else
+    return false
   end
 end
 
@@ -43,10 +45,10 @@ function module:setup_key_hooks(data)
   data:add_key_hook({}, "&"       , "press", up    ) -- Xephyr bug
   data:add_key_hook({}, "Down"    , "press", down  )
   data:add_key_hook({}, "KP_Enter", "press", down  ) -- Xephyr bug
-  data:add_key_hook({}, "Left"    , "press", left  )
-  data:add_key_hook({}, "\""      , "press", left  ) -- Xephyr bug
-  data:add_key_hook({}, "Right"   , "press", right )
-  data:add_key_hook({}, "#"       , "press", right ) -- Xephyr bug
+  data:add_key_hook({}, "Left"    , "press", right )
+  data:add_key_hook({}, "\""      , "press", right ) -- Xephyr bug
+  data:add_key_hook({}, "Right"   , "press", left  )
+  data:add_key_hook({}, "#"       , "press", left  ) -- Xephyr bug
 end
 
 --Get preferred item geometry

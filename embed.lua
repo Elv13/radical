@@ -37,14 +37,12 @@ local function setup_drawable(data)
   data.margins={left=0,right=0,bottom=0,top=0}
   internal.layout:connect_signal("mouse::enter",function(_,geo)
     if data._embeded_parent._current_item then
-      data._embeded_parent._current_item.state[base.item_flags.SELECTED] = nil
       data._embeded_parent._current_item.selected = false
     end
   end)
   internal.layout:connect_signal("mouse::leave",function(_,geo)
     if data._current_item then
       data._current_item.selected = false
-      data._current_item.state[base.item_flags.SELECTED] = nil
     end
   end)
 end
