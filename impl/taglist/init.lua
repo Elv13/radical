@@ -16,6 +16,7 @@ local wibox     = require( "wibox"        )
 local awful     = require( "awful"        )
 local theme     = require( "radical.theme")
 local tracker   = require( "radical.impl.taglist.tracker" )
+local tag_menu  = require( "radical.impl.taglist.tag_menu" )
 
 local CLONED = 100
 
@@ -31,7 +32,7 @@ local cache = setmetatable({}, { __mode = 'k' })
 module.buttons = { [1] = awful.tag.viewonly,
                       [2] = awful.tag.viewtoggle,
                       [3] = function(q,w,e,r)
-                              local menu = customMenu.tagOption.getMenu()
+                              local menu = tag_menu()
                               menu.visible = true
                             end,
                       [4] = function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end,
