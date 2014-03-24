@@ -101,20 +101,6 @@ function module:setup_text(item,data,text_w)
       text_w:set_markup(value)
     end
     item._private_data.text = value
-    if data.auto_resize then
-      local fit_w,fit_h = wibox.widget.textbox.fit(text_w,9999,9999)
-      local is_largest = item == data._internal.largest_item_w
-      item.widget:emit_signal("widget::updated")
-      if not data._internal.largest_item_w_v or data._internal.largest_item_w_v < fit_w then
-        data._internal.largest_item_w = item
-        data._internal.largest_item_w_v = fit_w
-      end
-      --TODO find new largest is item is smaller
-  --     if data._internal.largest_item_h_v < fit_h then
-  --       data._internal.largest_item_h =item
-  --       data._internal.largest_item_h_v = fit_h
-  --     end
-    end
   end
   item:set_text(item._private_data.text)
   return text_w
@@ -191,13 +177,23 @@ function module:setup_item(data,item,args)
   local item_style = item.item_style or data.item_style
   item_style(item,{})
 
+  -- Compute the minimum width
+  if data.auto_resize then
+    local fit_w,fit_h = wibox.layout.margin.fit(item._internal.margin_w,9999,9999)
+    local is_largest = item == data._internal.largest_item_w
+    if fit_w < 1000 and (not data._internal.largest_item_w_v or data._internal.largest_item_w_v < fit_w) then
+      data._internal.largest_item_w = item
+      data._internal.largest_item_w_v = fit_w
+    end
+  end
+
   item.widget:emit_signal("widget::updated")
 end
 
 local function compute_geo(data)
   local w = data.default_width
   if data.auto_resize and data._internal.largest_item_w then
-    w = data._internal.largest_item_w_v+100 > data.default_width and data._internal.largest_item_w_v+100 or data.default_width
+    w = data._internal.largest_item_w_v > data.default_width and data._internal.largest_item_w_v or data.default_width
   end
   local visblerow = data.filter_string == "" and data.rowcount or data._internal.visible_item_count
   if data.max_items and data.max_items < data.rowcount then
