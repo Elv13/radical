@@ -7,27 +7,9 @@ local beautiful = require( "beautiful"  )
 local awful     = require( "awful"      )
 local util      = require( "awful.util" )
 local wibox     = require( "wibox"      )
+local listTags  = require( "radical.impl.common.tag" ).listTags
 
 local module,mainMenu = {},nil
-
-local function listTags()
-  function createTagList(aScreen)
-    local tagList = radical.context({autodiscard = true})
-    for _, v in ipairs(awful.tag.gettags(aScreen)) do
-      tagList:add_item({text = v.name,icon=awful.tag.geticon(v)})
-    end
-    return tagList
-  end
-  if capi.screen.count() == 1 then
-    return createTagList(1)
-  else
-    local screenSelect = radical.context(({autodiscard = true}))
-    for i=1, capi.screen.count() do
-      screenSelect:add_item({text="Screen "..i , sub_menu = createTagList(i)})
-    end
-    return screenSelect
-  end
-end
 
 local function createNewTag()
   return awful.tag.add(module.client.class,{})
