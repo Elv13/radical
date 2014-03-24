@@ -6,6 +6,7 @@ local config    = require( "forgotten"        )
 local menu      = require( "radical.context"  )
 local listTags  = require( "radical.impl.common.tag" ).listTags
 local awful = require("awful")
+local radical = require("radical")
 local capi = { screen = screen }
 
 local module = {}
@@ -54,7 +55,7 @@ local function new(t)
 
   aTagMenu:add_item({text = "<b>Save settings</b>"})
 
-  local mainMenu2 = menu()
+  local mainMenu2 = menu{layout=radical.layout.grid,column=6,}
 
   -- TODO port to async
   local f = io.popen('find '..config.iconPath .. "tags/ -maxdepth 1 -iname \"*.png\" -type f","r")
@@ -64,7 +65,7 @@ local function new(t)
     if (file == "END" or nil) or (counter > 30) then
       break
     end
-    mainMenu2:add_item({"Text", button1 = function() tag.seticon(file,aTag) end, icon = file})
+    mainMenu2:add_item({ button1 = function() tag.seticon(file,aTag) end, icon = file})
     counter = counter +1
   end
   f:close()
