@@ -76,8 +76,9 @@ end
 
 -- Try to avoid useless repaint, this function is heavy
 local function set_direction(data,direction)
+  data._internal._need_direction = direction
   if not data._internal._need_direction_reload then
-    glib.idle_add(glib.PRIORITY_HIGH_IDLE, function() _set_direction(data,direction) end)
+    glib.idle_add(glib.PRIORITY_HIGH_IDLE, function() _set_direction(data,data._internal._need_direction) end)
     data._internal._need_direction_reload = true
   end
 end
