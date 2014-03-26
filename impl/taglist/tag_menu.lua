@@ -65,7 +65,7 @@ local function new(t)
     if (file == "END" or nil) or (counter > 30) then
       break
     end
-    mainMenu2:add_item({ button1 = function() tag.seticon(file,aTag) end, icon = file})
+    mainMenu2:add_item({ button1 = function() tag.seticon(file,aTag) end, icon = file, item_layout = radical.item.layout.icon})
     counter = counter +1
   end
   f:close()

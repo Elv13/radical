@@ -222,9 +222,8 @@ capi.tag.connect_signal("property::index2",function(t,i)
     local s = tag.getscreen(t)
     local item = cache[t]
     if item then
-      local index = tag.getidx(t)
-      instances[s]:move(item,index)
-      item.tw:set_markup(" <b>"..(index).."</b> ")
+      instances[s]:move(item,i)
+      item.tw:set_markup(" <b>"..(i).."</b> ")
     end
   end
 end)

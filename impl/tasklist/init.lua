@@ -202,7 +202,9 @@ end
 -- Remove the client from the tag
 local function untagged(c,t)
   local item = _cache[c]
-  local menu = instances[tag.getscreen(t)].menu
+  local screen = tag.getscreen(t)
+  if not item or not instances[screen] then return end
+  local menu = instances[screen].menu
   if t.selected then
     menu:remove(item)
   end

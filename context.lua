@@ -14,6 +14,7 @@ local layout    = require( "radical.layout"   )
 local checkbox  = require( "radical.widgets.checkbox" )
 local arrow_style = require( "radical.style.arrow" )
 local item_mod  = require("radical.item")
+local glib = require("lgi").GLib
 
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
 
@@ -36,9 +37,35 @@ local function get_direction(data)
   end
 end
 
+local function set_geometry_real(data)
+  local geo = data._internal._next_geometry
+  if geo then
+    for k,v in pairs(geo) do
+      data.wibox[k] = v
+    end
+  end
+  data._internal._next_geometry = nil
+  data._internal._need_geometry_reload = nil
+end
+
+-- This will update the position before the next loop cycle
+-- This avoid tons of round trips with X for dynamic menus
+local function change_geometry_idle(data, x, y, w, h)
+  data._internal._next_geometry = data._internal._next_geometry or {}
+  local geo = data._internal._next_geometry
+  geo.x      = x or geo.x
+  geo.y      = y or geo.y
+  geo.width  = w or geo.width
+  geo.height = h or geo.height
+  if not data._internal._need_geometry_reload then
+    glib.idle_add(glib.PRIORITY_HIGH_IDLE, function() set_geometry_real(data) end)
+    data._internal._need_geometry_reload = true
+  end
+end
+
 local function set_position(self)
   if not self.visible then return end
-  local ret,parent = {x=self.wibox.x,y=self.wibox.y},self.parent_geometry
+  local ret,parent = {x=self.x,y=self.y},self.parent_geometry
   local prefx,prefy = self._internal.private_data.x,self._internal.private_data.y
   local src_geo = capi.screen[capi.mouse.screen].geometry
   if parent and parent.is_menu then
@@ -60,9 +87,9 @@ local function set_position(self)
   elseif parent then
     local drawable_geom = parent.drawable.drawable.geometry(parent.drawable.drawable)
     if (self.direction == "left") or (self.direction == "right") then
-      ret = {x=drawable_geom.x+((self.direction == "right") and - self.wibox.width or drawable_geom.width),y=drawable_geom.y+parent.y+((self.arrow_type ~= base.arrow_type.NONE) and parent.height/2-(self.arrow_x or 20)-6 or 0)}
+      ret = {x=drawable_geom.x+((self.direction == "right") and - self.width or drawable_geom.width),y=drawable_geom.y+parent.y+((self.arrow_type ~= base.arrow_type.NONE) and parent.height/2-(self.arrow_x or 20)-6 or 0)}
     else
-      ret = {x=drawable_geom.x+parent.x-((self.arrow_type ~= base.arrow_type.NONE) and (self._arrow_x or 20)+11-parent.width/2 or 0),y=(self.direction == "bottom") and drawable_geom.y-self.wibox.height or drawable_geom.y+drawable_geom.height}
+      ret = {x=drawable_geom.x+parent.x-((self.arrow_type ~= base.arrow_type.NONE) and (self._arrow_x or 20)+11-parent.width/2 or 0),y=(self.direction == "bottom") and drawable_geom.y-self.height or drawable_geom.y+drawable_geom.height}
     end
   elseif prefx ~= 0 or prefy ~= 0 then
     ret = capi.mouse.coords()
@@ -94,8 +121,7 @@ local function set_position(self)
   elseif ret.x < 0 then
     ret.x = 0
   end
-  self.wibox.x = ret.x
-  self.wibox.y = ret.y - 2*(self.wibox.border_width or 0)
+  change_geometry_idle(self,ret.x,ret.y - 2*(self.wibox.border_width or 0))
 end
 
 local function setup_drawable(data)
@@ -118,10 +144,10 @@ local function setup_drawable(data)
 
   --Getters
   data.get_wibox     = function() return internal.w end
-  data.get_x         = function() return internal.w.x end
-  data.get_y         = function() return internal.w.y end
-  data.get_width     = function() return internal.w.width end
-  data.get_height    = function() return internal.w.height end
+  data.get_x         = function() return data._internal._next_geometry and data._internal._next_geometry.x      or internal.w.x end
+  data.get_y         = function() return data._internal._next_geometry and data._internal._next_geometry.y      or internal.w.y end
+  data.get_width     = function() return data._internal._next_geometry and data._internal._next_geometry.width  or internal.w.width end
+  data.get_height    = function() return data._internal._next_geometry and data._internal._next_geometry.height or internal.w.height end
   data.get_visible   = function() return private_data.visible end
   data.get_direction = function() return private_data.direction end
   data.get_margins   = function()
@@ -141,12 +167,12 @@ local function setup_drawable(data)
       data.width  = fit_w
     end
   end
-  data.set_x      = function(_,value) internal.w.x      = value end
-  data.set_y      = function(_,value) internal.w.y      = value end
+  data.set_x      = function(_,value) change_geometry_idle(data,value) end
+  data.set_y      = function(_,value) change_geometry_idle(data,nil,value) end
   data.set_width  = function(_,value)
     local need_update = internal.w.width == (value + 2*data.border_width)
     local margins = data.margins
-    internal.w.width  = value + data.margins.left + data.margins.right
+    change_geometry_idle(data,nil,nil,value + data.margins.left + data.margins.right)
     if need_update then
       data.style(data)
     end
@@ -155,7 +181,7 @@ local function setup_drawable(data)
     local margins = data.margins
     local need_update = (internal.w.height ~= (value + margins.top + margins.bottom))
     local new_height = (value + margins.top + margins.bottom) or 1
-    internal.w.height = new_height > 0 and new_height or 1
+    change_geometry_idle(data,nil,nil,nil,new_height > 0 and new_height or 1)
     if need_update then
       data.style(data)
       internal.set_position(data)

@@ -53,7 +53,7 @@ local function do_gen_menu_top(data, width, height, radius,padding,args)
 end
 
 local function _set_direction(data,direction)
-  local geometry = (direction == "left" or direction == "right") and {width = data.wibox.height, height = data.wibox.width} or {height = data.wibox.height, width = data.wibox.width}
+  local geometry = (direction == "left" or direction == "right") and {width = data.height, height = data.width} or {height = data.height, width = data.width}
   local top_clip_surface        = do_gen_menu_top(data,geometry.width,geometry.height,10,data.border_width,{bg=beautiful.fg_normal or "#0000ff",fg=data.bg or "#00ffff"})
   local top_bounding_surface    = do_gen_menu_top(data,geometry.width,geometry.height,10,0,{bg="#00000000",fg="#ffffffff"})
 
@@ -91,16 +91,16 @@ local function draw(data,args)
   local at = data.arrow_type
   if at == base.arrow_type.PRETTY or not at then
     if direction == "left" then
-      data._arrow_x = data.wibox.height -20 - (data.arrow_x or 20)
+      data._arrow_x = data.height -20 - (data.arrow_x or 20)
     elseif direction == "right" then
       --TODO
     elseif direction == "bottom" then
-      data._arrow_x = data.wibox.width -20 - (data.arrow_x or 20)
+      data._arrow_x = data.width -20 - (data.arrow_x or 20)
     elseif direction == "top" then
       --TODO
     end
   elseif at == base.arrow_type.CENTERED then
-    data._arrow_x = data.wibox.width/2 - 13
+    data._arrow_x = data.width/2 - 13
   end
   --END set_arrow
 

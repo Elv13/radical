@@ -148,11 +148,13 @@ function module:setup_item(data,item,args)
   end)
 
   item._private_data._fit = wibox.widget.background.fit
-  item._internal.margin_w.fit = function(...)
-    if (item.visible == false or item._filter_out == true or item._hidden == true) then
-      return 0,0
+  if item._internal.margin_w then
+    item._internal.margin_w.fit = function(...)
+      if (item.visible == false or item._filter_out == true or item._hidden == true) then
+        return 0,0
+      end
+      return data._internal.layout.item_fit(data,item,...)
     end
-    return data._internal.layout.item_fit(data,item,...)
   end
 
   -- Text need to take as much space as possible, override default
@@ -160,6 +162,7 @@ function module:setup_item(data,item,args)
 
   -- Necessary for :set_position()
   local fit_w,fit_h = data._internal.layout:fit()
+
   data.width = fit_w
   data.height = fit_h
 
@@ -178,7 +181,7 @@ function module:setup_item(data,item,args)
   item_style(item,{})
 
   -- Compute the minimum width
-  if data.auto_resize then
+  if data.auto_resize and item._internal.margin_w then
     local fit_w,fit_h = wibox.layout.margin.fit(item._internal.margin_w,9999,9999)
     local is_largest = item == data._internal.largest_item_w
     if fit_w < 1000 and (not data._internal.largest_item_w_v or data._internal.largest_item_w_v < fit_w) then
