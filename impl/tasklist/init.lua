@@ -57,7 +57,7 @@ module.buttons = {
 local function sticky_callback(c)
   local val = c.sticky
   sticky[c] = val and true or nil
-  local menu = instances[c.screen]
+  local menu = instances[c.screen].menu
   local is_in_tag = false
   for _,t in ipairs(tag.selectedlist(k)) do
     for k2,v2 in ipairs(c:tags()) do
@@ -161,7 +161,7 @@ end
 -- Clear the menu and repopulate it
 local function load_clients(t)
   local screen = tag.getscreen(t)
-  if not t or not screen then return end
+  if not t or not screen or not instances[screen] then return end
   local menu = instances[screen].menu
   if t.selected then
     menu:clear()
@@ -199,6 +199,22 @@ local function focus(c)
   end
 end
 
+-- Remove the client from the tag
+local function untagged(c,t)
+  local item = _cache[c]
+  local menu = instances[tag.getscreen(t)].menu
+  if t.selected then
+    menu:remove(item)
+  end
+end
+
+-- Add and remove clients from the tasklist
+local function tagged(c,t)
+  if t.selected and not c.sticky then
+    add_client(c,tag.getscreen(t))
+  end
+end
+
 local function new(screen)
   local args = {
     select_on=radical.base.event.NEVER,
@@ -220,26 +236,8 @@ local function new(screen)
 --   }
 
 
-  -- Add and remove clients from the tasklist
-  local function tagged(c,t)
-    if t.selected and not c.sticky and tag.getscreen(t) == screen then
-      add_client(c,screen)
-    end
-  end
-  local function untagged(c,t)
-    local item = _cache[c]
-    if t.selected and tag.getscreen(t) == screen then
-      menu:remove(item)
-    end
-  end
 
   -- Connect to a bunch of signals
-  tag.attached_connect_signal(screen, "property::selected" , load_clients)
-  tag.attached_connect_signal(screen, "property::activated", load_clients)
-  capi.tag.connect_signal   ("property::screen"  , tag_screen_changed )
-  capi.client.connect_signal("tagged"            , tagged             )
-  capi.client.connect_signal("untagged"          , untagged           )
-
   instances[screen] = {menu = menu}
 
   load_clients(tag.selected(screen))
@@ -265,6 +263,11 @@ capi.client.connect_signal("property::floating", reload_underlay   )
 capi.client.connect_signal("property::name"    , reload_content    )
 capi.client.connect_signal("property::icon"    , reload_content    )
 capi.client.connect_signal("property::minimized", minimize_callback    )
+capi.client.connect_signal("tagged"            , tagged             )
+capi.client.connect_signal("untagged"          , untagged           )
+capi.tag.connect_signal   ("property::screen"  , tag_screen_changed )
+capi.tag.connect_signal("property::selected" , load_clients)
+capi.tag.connect_signal("property::activated", load_clients)
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;
