@@ -65,6 +65,7 @@ local function create_item(t,s)
   tw:set_markup(" <b>"..(index).."</b> ")
   w:add(tw)
   local item = menu:add_item { text = t.name, prefix_widget = w}
+  item._internal.icon_w = ib
 --   item:connect_signal("index::changed",function(_,value)
 --     tw:set_markup(" <b>"..(index).."</b> ")
 --   end)
@@ -170,7 +171,7 @@ local function init()
   capi.tag.connect_signal("property::icon", function(t)
     local item = cache[t]
     if item then
-      item.icon = tag.geticon(t) or beautiful.taglist_default_icon
+      item._internal.icon_w:set_image(tag.geticon(t) or beautiful.taglist_default_icon)
     end
   end)
   is_init = true

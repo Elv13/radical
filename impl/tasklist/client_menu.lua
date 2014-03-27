@@ -16,11 +16,12 @@ local function createNewTag()
   return awful.tag.add(module.client.class,{})
 end
 
-local above,below,ontop
+local above,below,ontop,normal
 local function layer_button1()
-  above.checked = module.client.above
-  ontop.checked = module.client.ontop
-  below.checked = module.client.below
+  above.checked  = module.client.above
+  ontop.checked  = module.client.ontop
+  below.checked  = module.client.below
+  normal.checked = not (module.client.above or module.client.ontop or module.client.below)
 end
 local layer_m = nil
 local function layerMenu()
@@ -29,6 +30,12 @@ local function layerMenu()
   end
   layer_m = radical.context{}
 
+  normal = layer_m:add_item({text="Normal"       , checked=true , button1 = function()
+    module.client.above = false
+    module.client.below = false
+    module.client.ontop = false
+    layer_button1()
+  end})
   above = layer_m:add_item({text="Above"       , checked=true , button1 = function()
     module.client.above = not module.client.above
     layer_button1()

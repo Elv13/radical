@@ -45,7 +45,7 @@ local function draw(item,args)
     item.widget._overlay_init = true
   end
 
-  local ih = item.height
+  local ih = item.height or 1
   if not focussed or not focussed[ih] then
     if not focussed then
       focussed,default,alt={},{},{}

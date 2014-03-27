@@ -31,6 +31,7 @@ local function do_gen_menu_top(data, width, height, radius,padding,args)
   local cr = cairo.Context(img)
   local no_arrow = data.arrow_type == base.arrow_type.NONE
   local top_padding = (data.arrow_type == base.arrow_type.NONE) and 0 or 13
+  local arrow_x = data._arrow_x or 20
   cr:set_operator(cairo.Operator.SOURCE)
   cr:set_source( color(args.bg) )
   cr:paint()
@@ -38,9 +39,10 @@ local function do_gen_menu_top(data, width, height, radius,padding,args)
   cr:rectangle(10, top_padding+padding, width - 20 +1 , 10)
   if not no_arrow then
     for i=1,13 do
-      cr:rectangle((data._arrow_x or 20) + 13  - i, i+padding , 2*i , 1)
+      cr:rectangle((arrow_x) + 13  - i, i+padding , 2*i , 1)
     end
   end
+  cr:rectangle(arrow_x+padding,top_padding+padding,26+padding,10)
   cr:rectangle(padding or 0,no_arrow and 10 or 23, width-2*padding, height-33 + (no_arrow and 13 or 0))
   cr:rectangle(10+padding-1,height-10, width-20, 10-padding)
   cr:fill()
@@ -52,7 +54,33 @@ local function do_gen_menu_top(data, width, height, radius,padding,args)
   return img
 end
 
+local function get_arrow_x(data,direction)
+  local at = data.arrow_type
+  local par_center_x = data.parent_geometry and (data.parent_geometry.x + data.parent_geometry.width/2) or -1
+  local par_center_y = data.parent_geometry and (data.parent_geometry.y + data.parent_geometry.height/2) or -1
+  local menu_beg_x = data.x
+  local menu_end_x = data.x + data.width
+
+  if at == base.arrow_type.PRETTY or not at then
+    if direction == "left" then
+      data._arrow_x = data.height -20 - (data.arrow_x or 20)
+    elseif direction == "right" then
+      --TODO
+    elseif direction == "bottom" then
+      data._arrow_x = data.width -20 - (data.arrow_x or 20)
+      if par_center_x >= menu_beg_x then
+        data._arrow_x = data.width - (par_center_x - menu_beg_x) - 13
+      end
+    elseif direction == "top" then
+      --TODO
+    end
+  elseif at == base.arrow_type.CENTERED then
+    data._arrow_x = data.width/2 - 13
+  end
+end
+
 local function _set_direction(data,direction)
+  get_arrow_x(data,direction)
   local geometry = (direction == "left" or direction == "right") and {width = data.height, height = data.width} or {height = data.height, width = data.width}
   local top_clip_surface        = do_gen_menu_top(data,geometry.width,geometry.height,10,data.border_width,{bg=beautiful.fg_normal or "#0000ff",fg=data.bg or "#00ffff"})
   local top_bounding_surface    = do_gen_menu_top(data,geometry.width,geometry.height,10,0,{bg="#00000000",fg="#ffffffff"})
@@ -86,23 +114,6 @@ end
 local function draw(data,args)
   local args = args or {}
   local direction = data.direction or "top"
-
-  --BEGIN set_arrow, this used to be a function, but was only called once
-  local at = data.arrow_type
-  if at == base.arrow_type.PRETTY or not at then
-    if direction == "left" then
-      data._arrow_x = data.height -20 - (data.arrow_x or 20)
-    elseif direction == "right" then
-      --TODO
-    elseif direction == "bottom" then
-      data._arrow_x = data.width -20 - (data.arrow_x or 20)
-    elseif direction == "top" then
-      --TODO
-    end
-  elseif at == base.arrow_type.CENTERED then
-    data._arrow_x = data.width/2 - 13
-  end
-  --END set_arrow
 
   set_direction(data,direction)
 --   data._internal.set_position(data) --TODO DEAD CODE?

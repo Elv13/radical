@@ -4,7 +4,7 @@ local ipairs       = ipairs
 local tag       = require( "awful.tag"     )
 local config    = require( "forgotten"        )
 local menu      = require( "radical.context"  )
-local listTags  = require( "radical.impl.common.tag" ).listTags
+local com_tag = require( "radical.impl.common.tag" )
 local awful = require("awful")
 local radical = require("radical")
 local capi = { screen = screen }
@@ -41,7 +41,7 @@ local function new(t)
     end
   end
 
-  aTagMenu:add_item({text = "Merge With", sub_menu = listTags})
+  aTagMenu:add_item({text = "Merge With", sub_menu = com_tag.listTags})
 
   function createTagList(aScreen)
     local tagList = menu()
@@ -72,7 +72,8 @@ local function new(t)
   aTagMenu:add_item({text= "Set Icon", sub_menu = mainMenu2})
 
   aTagMenu:add_item({text= "Layout", sub_menu = function()
-
+    local m = radical.context({filter=false,item_style=radical.item.style.rounded,item_height=30,column=4,layout=radical.layout.grid})
+    return com_tag.layouts(m)
   end})
 
   aTagMenu:add_item({text= "Flags", sub_menu = function()
