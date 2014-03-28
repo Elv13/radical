@@ -261,6 +261,12 @@ local function create_item(item,data,args)
   -- Setup events
   module.setup_event(data,item)
 
+  -- Setup dynamic underlay
+    -- Setup dynamic underlay
+  item:connect_signal("underlay::changed",function(_,udl)
+    bg:emit_signal("widget::updated")
+  end)
+
   if item.buttons then
     bg:buttons(item.buttons)
   end

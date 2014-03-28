@@ -1,12 +1,13 @@
 local setmetatable,type = setmetatable, type
 local ipairs, pairs     = ipairs, pairs
-local button    = require( "awful.button" )
-local beautiful = require( "beautiful"    )
-local tag       = require( "awful.tag"    )
-local client2   = require( "awful.client" )
-local radical   = require( "radical"      )
-local util      = require( "awful.util"   )
-local wibox     = require( "wibox"        )
+local button    = require( "awful.button"         )
+local beautiful = require( "beautiful"            )
+local tag       = require( "awful.tag"            )
+local client2   = require( "awful.client"         )
+local radical   = require( "radical"              )
+local util      = require( "awful.util"           )
+local wibox     = require( "wibox"                )
+local tag_list  = require( "radical.impl.taglist" )
 local capi = { client = client, mouse = mouse, screen = screen}
 
 local module,pause_monitoring = {},false
@@ -66,6 +67,27 @@ local function is_in_tag(t,c)
   return false
 end
 
+local function reload_underlay(client,item)
+  local underlays = {}
+  for k,v in ipairs(client:tags()) do
+    underlays[#underlays+1] = v.name
+  end
+  if item then
+    item.underlay = underlays
+  end
+  return underlays
+end
+
+local function reload_highlight(i)
+  if i.selected then
+    local hl = {}
+    for k,v in ipairs(i.client:tags()) do
+      hl[#hl+1] = v
+    end
+    tag_list.highlight(hl)
+  end
+end
+
 local function new(args)
   local histo = get_history(--[[screen]])
   if #histo == o then
@@ -105,6 +127,8 @@ local function new(args)
   currentMenu:add_key_hook({}, "Shift_L", "press", function()
     currentMenu._current_item.checked = not currentMenu._current_item.checked
     client2.toggletag (t, currentMenu._current_item.client)
+    reload_underlay(currentMenu._current_item.client,currentMenu._current_item)
+    reload_highlight(currentMenu._current_item)
     return true
   end)
 
@@ -118,13 +142,10 @@ local function new(args)
       l:add( button_group({client = v, field = "ontop"    , focus = false, checked = function() return v.ontop     end, onclick = function() v.ontop     = not v.ontop     end }))
       l:add( button_group({client = v, field = "close"    , focus = false, checked = function() return false       end, onclick = function() v:kill()                      end }))
 
-      local underlays = {}
-      for k,v in ipairs(v:tags()) do
-        underlays[#underlays+1] = v.name
-      end
+      local underlays = reload_underlay(v)
 
       l.fit = function (s,w,h) return 5*h,h end
-      currentMenu:add_item({
+      local i = currentMenu:add_item({
         text          = v.name,
         icon          = v.icon or module.default_icon,
         suffix_widget = not auto_release and l or nil,
@@ -140,7 +161,10 @@ local function new(args)
           v:raise()
           currentMenu.visible = false
         end,
-      }).client = v
+      })
+      i.client = v
+
+      i:connect_signal("selected::changed",reload_highlight)
     end
   end
 
@@ -154,7 +178,11 @@ local function new(args)
 
   pause_monitoring,currentMenu.visible = true, true
   currentMenu:connect_signal("visible::changed",function(m)
-    if not m.visible then pause_monitoring = false;push_focus(capi.client.focus) end
+    if not m.visible then
+      pause_monitoring = false
+      push_focus(capi.client.focus)
+      tag_list.highlight()
+    end
   end)
   return currentMenu
 end

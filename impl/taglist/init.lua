@@ -179,17 +179,22 @@ local function init()
   is_init = true
 end
 
-local highlighted = nil
+local highlighted = {}
 function module.highlight(t)
+  local tp = type(t)
   if highlighted and highlighted ~= t then
-    highlighted.state[HIGHLIGHTED] = nil
-    highlighted = nil
+    for k,v in ipairs(highlighted) do
+      v.state[HIGHLIGHTED] = nil
+    end
+    highlighted = {}
   end
   if t then
-    local item = cache[t]
-    if item then
-      highlighted = item
-      highlighted.state[HIGHLIGHTED] = true
+    for k,v in ipairs(tp == "table" and t or {t}) do
+      local item = cache[v]
+      if item then
+        highlighted[#highlighted+1] = item
+        item.state[HIGHLIGHTED] = true
+      end
     end
   end
 end
