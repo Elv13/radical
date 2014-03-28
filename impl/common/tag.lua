@@ -3,6 +3,7 @@ local capi = { screen = screen, client=client}
 local awful     = require( "awful"      )
 local beautiful =  require("beautiful")
 local suits = require("awful.layout.suit")
+local tag_list = nil
 
 local module = {}
 
@@ -22,10 +23,21 @@ local fallback_layouts = {
 }
 
 local function createTagList(aScreen)
+  if not tag_list then
+    tag_list = require("radical.impl.taglist")
+  end
   local tagList = radical.context({autodiscard = true})
   for _, v in ipairs(awful.tag.gettags(aScreen)) do
-    tagList:add_item({text = v.name,icon=awful.tag.geticon(v)})
+    local i = tagList:add_item({text = v.name,icon=awful.tag.geticon(v)})
+    i:connect_signal("mouse::enter",function()
+      tag_list.highlight(v)
+    end)
   end
+  tagList:connect_signal("visible::changed",function()
+    if not tagList.visible then
+      tag_list.highlight(nil)
+    end
+  end)
   return tagList
 end
 

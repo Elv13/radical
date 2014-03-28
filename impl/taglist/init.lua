@@ -19,8 +19,10 @@ local tracker   = require( "radical.impl.taglist.tracker" )
 local tag_menu  = require( "radical.impl.taglist.tag_menu" )
 
 local CLONED = 100
+local HIGHLIGHTED = -2
 
-theme.register_color(CLONED , "cloned" , "taglist_cloned" , true )
+theme.register_color(CLONED , "cloned" , "cloned" , true )
+theme.register_color(HIGHLIGHTED , "highlight" , "highlight" , true )
 
 local module,instances = {},{}
 
@@ -177,6 +179,21 @@ local function init()
   is_init = true
 end
 
+local highlighted = nil
+function module.highlight(t)
+  if highlighted and highlighted ~= t then
+    highlighted.state[HIGHLIGHTED] = nil
+    highlighted = nil
+  end
+  if t then
+    local item = cache[t]
+    if item then
+      highlighted = item
+      highlighted.state[HIGHLIGHTED] = true
+    end
+  end
+end
+
 local function new(s)
 
   local track = tracker(s)
@@ -190,10 +207,11 @@ local function new(s)
     fg_focus   = beautiful.taglist_fg_selected,
 --     fkeys_prefix = true,
   }
-  for k,v in ipairs {"hover","used","urgent","cloned","changed"} do
+  for k,v in ipairs {"hover","used","urgent","cloned","changed","highlight"} do
     args["bg_"..v] = beautiful["taglist_bg_"..v]
     args["fg_"..v] = beautiful["taglist_fg_"..v]
   end
+  print("THAT",beautiful.taglist_bg_highlight)
 
   instances[s] = radical.bar(args)
 
