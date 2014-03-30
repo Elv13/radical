@@ -117,7 +117,7 @@ local function new(args)
   pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
   pref_menu:add_item{text="12 clients"}
   pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
-  pref_menu:add_item{text="Screen 1"}
+  pref_menu:add_item{text="All Screens"}
   pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
   pref_l:set_third(pref_menu_l)
 

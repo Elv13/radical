@@ -16,7 +16,7 @@ local wibox     = require( "wibox"        )
 local client_menu =  require("radical.impl.tasklist.client_menu")
 local theme     = require( "radical.theme")
 
-local sticky,urgent,instances,module = {},{},{},{}
+local sticky,urgent,instances,module = {extensions=require("radical.impl.tasklist.extensions")},{},{},{}
 local _cache = setmetatable({}, { __mode = 'k' })
 local MINIMIZED = 101
 theme.register_color(MINIMIZED , "minimized" , "tasklist_minimized" , true )
@@ -141,7 +141,11 @@ local function create_client_item(c,screen)
   end
 
   -- Too bad, let's create a new one
-  item = menu:add_item{text=c.name,icon=c.icon}
+  local suf_w = wibox.layout.fixed.horizontal()
+  item = menu:add_item{text=c.name,icon=c.icon,suffix_widget=suf_w}
+  item.add_suffix = function(w,w2)
+    suf_w:add(w2)
+  end
   item.client = c
   _cache[c] = item
   return item
@@ -251,6 +255,10 @@ local function new(screen)
   end)
 
   return menu,menu._internal.layout
+end
+
+function module.item(client)
+  return _cache[client]
 end
 
 -- Global callbacks

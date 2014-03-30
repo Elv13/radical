@@ -9,6 +9,7 @@ local util      = require( "awful.util" )
 local wibox     = require( "wibox"      )
 local listTags  = require( "radical.impl.common.tag" ).listTags
 local singalMenu = require( "radical.impl.common.client" ).signals
+local extensions = require("radical.impl.tasklist.extensions")
 
 local module,mainMenu = {},nil
 
@@ -104,6 +105,7 @@ local function new(screen, args)
   end}
 
   itemLayer     = mainMenu:add_item({text="Layer"       , sub_menu=layerMenu(), button1 = function()  end})
+  mainMenu:add_item{text="Add widgets",sub_menu=function() return extensions.extensions_menu(module.client) end}
   mainMenu:add_widget(radical.widgets.separator())
 
   local ib = wibox.widget.imagebox()
