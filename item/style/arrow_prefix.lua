@@ -17,12 +17,20 @@ local module = {
 
 local function prefix_draw(self, w, cr, width, height)
   cr:save()
+
+  -- This item style require negative padding, this is a little dangerous to
+  -- do as it can corrupt area outside of the widget
   local col = self._item.bg_prefix or beautiful.icon_grad or beautiful.fg_normal
   cr:set_source(color(col))
-  cr:rectangle(0,0,width-height/2-2-height/6,height)
+  cr:move_to(-height/2-2,0)
+  cr:line_to(width-height+2,0)
+  cr:rel_line_to(height*.6,height/2)
+  cr:line_to(width-height+2,height)
+  cr:line_to(-height*.6,height)
+  cr:line_to(0,height/2)
+  cr:close_path()
+  cr:reset_clip()
   cr:fill()
-  cr:set_source_surface(arrow_alt.get_beg_arrow({width=height/2+2,height=height,bg_color=col}),width-height/2-2 - height/6,0)
-  cr:paint()
   cr:restore()
   self._draw(self, w, cr, width, height)
 end
@@ -30,14 +38,6 @@ end
 local function prefix_fit(box,w,h)
   local width,height = box._fit(box,w,h)
   return width + h/2 + h/6,height
-end
-
-local function suffix_draw(self, w, cr, width, height)
-  cr:save()
-  cr:set_source_surface(arrow_alt.get_end_arrow({width=height/2+2,height=height,bg_color=self._item.bg_prefix or beautiful.icon_grad or beautiful.fg_normal}),width-height/2-2,0)
-  cr:paint()
-  cr:restore()
-  self._draw(self, w, cr, width, height)
 end
 
 local function suffix_fit(box,w,h)
@@ -75,9 +75,7 @@ local function draw(item,args)
     -- Replace suffix function
     item._internal.align.third._item = item
     item._internal.align.third._fit = item._internal.align.third.fit
-    item._internal.align.third._draw = item._internal.align.third.draw
     item._internal.align.third.fit = suffix_fit
-    item._internal.align.third.draw = suffix_draw
   end
 
   local state = item.state or {}
