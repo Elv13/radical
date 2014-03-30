@@ -18,7 +18,7 @@ local module = {
   }
 }
 
-local hcode = {"#7777ff","#ff7777","#77ff77"}
+local hcode = {"#7777ff","#ff7777","#77ff77","#77ffff","#ffff77"}
 
 local end_cache = {}
 module.get_end_arrow = function(args)
@@ -77,11 +77,25 @@ module.get_beg_arrow = function(args)
 end
 
 local function draw_real(self, w, cr, width, height)
-  wibox.widget.background.draw(self, w, cr, width, height)
+--   wibox.widget.background.draw(self, w, cr, width, height)
   cr:save()
-  cr:set_source_surface(module.get_end_arrow({width=height/2+2,height=height,bg_color=self.next_color or  "#ff0000"}),width-height/2-2,0)
-  cr:paint()
+
+  -- This item style require negative padding, this is a little dangerous to
+  -- do as it can corrupt area outside of the widget
+  local col = self._item.bg_prefix or beautiful.icon_grad or beautiful.fg_normal
+  cr:set_source(color(self.background))
+  cr:move_to(-height/2-2,0)
+  cr:line_to(width-height+2,0)
+  cr:rel_line_to(height*.6,height/2)
+  cr:line_to(width-height+2,height)
+  cr:line_to(-height*.6,height)
+  cr:line_to(0,height/2)
+  cr:close_path()
+  cr:reset_clip()
+  cr:fill()
   cr:restore()
+  self._draw(self, w, cr, width, height)
+
   self.widget:draw(w, cr, width, height)
   local overlay = self._item and self._item.overlay
   if overlay then
@@ -89,53 +103,28 @@ local function draw_real(self, w, cr, width, height)
   end
 end
 
-local function get_prev(data,item)
-  for k,v in ipairs(data.items) do
-    if v == item then
-      while k > 0 do
-        k = k - 1
-        if k > 0 and (not data.items[k].hidden) and data.items[k]._internal.f_key == item._internal.f_key - 1 then
-          return data.items[k]
-        end
-      end
-      return nil
-    end
-  end
-end
-
 local function draw(item,args)
   local args = args or {}
   if item.widget.draw ~= draw_real then
+    item.widget._draw = item.widget.draw
     item.widget.draw = draw_real
     item.widget:emit_signal("widget::updated")
   end
 
   local color_idx = math.mod(item.f_key,#hcode) + 1
-  local previous_idx = color_idx == 1 and #hcode or color_idx - 1
   local next_idx = color_idx + 1 > #hcode and 1 or (color_idx + 1)
-  local prev_color = item.widget.next_color
-  item.widget.next_color = hcode[next_idx]
 
   local state = item.state or {}
   local current_state = state._current_key or nil
   local state_name = base.colors_by_id[current_state]
 
-  local prev_item = get_prev(data,item)
   if current_state == base.item_flags.SELECTED or (item._tmp_menu) then
-    if prev_item and prev_item.widget.next_color ~= (args.color) then
-      prev_item.widget.next_color = args.color
-      prev_item.widget:emit_signal("widget::updated")
-    end
     item.widget:set_fg(item["fg_focus"])
     item.widget:set_bg(args.color)
   elseif state_name then --TODO untested, most likely broken
     item.widget:set_bg(args.color or item["bg_"..state_name])
     item.widget:set_fg(              item["fg_"..state_name])
   else
-    if prev_item and prev_item.widget.next_color ~= hcode[color_idx] then
-      prev_item.widget.next_color = hcode[color_idx]
-      prev_item.widget:emit_signal("widget::updated")
-    end
     item.widget:set_bg(args.color or hcode[color_idx])
     item.widget:set_fg(item["fg_normal"])
   end
