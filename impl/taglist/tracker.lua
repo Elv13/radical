@@ -20,7 +20,7 @@ local function reload(t,s)
   local new_tags = tag.gettags(s)
   for k,v in ipairs(new_tags) do
     if v ~= old_tags[k] then
-      print(v.name,k,s,tag.getscreen(v),tag.getidx(v))
+--       print(v.name,k,s,tag.getscreen(v),tag.getidx(v))
       v:emit_signal("property::index2",k)
       screen_cache[v] = s
     end

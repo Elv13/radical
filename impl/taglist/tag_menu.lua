@@ -7,6 +7,7 @@ local menu      = require( "radical.context"  )
 local com_tag = require( "radical.impl.common.tag" )
 local awful = require("awful")
 local radical = require("radical")
+local extensions = require("radical.impl.taglist.extensions")
 local capi = { screen = screen }
 
 local module = {}
@@ -78,6 +79,9 @@ local function new(t)
 
   aTagMenu:add_item({text= "Flags", sub_menu = function()
 
+  end})
+  aTagMenu:add_item({text= "Add widgets", sub_menu = function()
+    return extensions.extensions_menu(aTag)
   end})
   return aTagMenu
 end

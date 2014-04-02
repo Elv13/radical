@@ -34,7 +34,7 @@ local cache = setmetatable({}, { __mode = 'k' })
 module.buttons = { [1] = awful.tag.viewonly,
                       [2] = awful.tag.viewtoggle,
                       [3] = function(q,w,e,r)
-                              local menu = tag_menu()
+                              local menu = tag_menu(q)
                               menu.visible = true
                             end,
                       [4] = function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end,
@@ -66,11 +66,21 @@ local function create_item(t,s)
   local index = tag.getidx(t)
   tw:set_markup(" <b>"..(index).."</b> ")
   w:add(tw)
-  local item = menu:add_item { text = t.name, prefix_widget = w}
+  local suf_w = wibox.layout.fixed.horizontal()
+  local item = menu:add_item { text = t.name, prefix_widget = w,suffix_widget=suf_w}
   item._internal.icon_w = ib
 --   item:connect_signal("index::changed",function(_,value)
 --     tw:set_markup(" <b>"..(index).."</b> ")
 --   end)
+
+  item.add_suffix = function(_,w2)
+    suf_w:add(w2)
+  end
+  item.add_prefix = function(_,w2)
+    w:add(w2)
+  end
+
+
   item.tw = tw
 
   if tag.getproperty(t,"clone_of") then
@@ -216,7 +226,6 @@ local function new(s)
     args["bg_"..v] = beautiful["taglist_bg_"..v]
     args["fg_"..v] = beautiful["taglist_fg_"..v]
   end
-  print("THAT",beautiful.taglist_bg_highlight)
 
   instances[s] = radical.bar(args)
 
@@ -251,6 +260,10 @@ capi.tag.connect_signal("property::index2",function(t,i)
     end
   end
 end)
+
+function module.item(t)
+  return cache[t]
+end
 
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
