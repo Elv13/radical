@@ -68,6 +68,8 @@ The current valid types are:
  * **Context:** Regular context menu
  * **Box:** Centered menus (think Windows alt-tab menu)
  * **Embed:** Menus in menus. This can be used as subsections in large menus
+ * **Bar:** A compact horizontal wibox widget
+ * **Flexbar:** An extensible horizontal wibox widget
 
 ### Menu style
 
@@ -90,6 +92,9 @@ Like menus, items can have their own style. Valid values:
  * **Basic:** The most simple kind of items, no borders or special shape
  * **Classic:** 1px border at the end of each items
  * **Rounded:** A 3px border radius at each corner
+ * **Arrow_alt:** "Powerline" arrow with alternating colors
+ * **Arrow_prefix:** The item prefix are "Powerlined"
+ * **Arrow_single:** The item start with a `<` and end with a `>`
 
 ### Menu layouts
 
@@ -151,14 +156,6 @@ Multiple items can have multiple sets of options.
 
 |         Name        | Description                                        | Type                          |
 | ------------------- | -------------------------------------------------- | ----------------------------- |
-| bg                  | Background color                                   | String/gradient/pattern       |
-| fg                  | Foreground (text) color                            | String/gradient/pattern       |
-| bg_focus            | Background of focussed items                       | String/gradient/pattern       |
-| fg_focus            | Foreground of focussed items                       | String/gradient/pattern       |
-| bg_hover            | Background of hoverred items                       | String/gradient/pattern       |
-| fg_hover            | Foreground of hoverred items                       | String/gradient/pattern       |
-| bg_alternate        | Alternate background color                         | String/gradient/pattern       |
-| bg_highlight        | Highlight background color                         | String/gradient/pattern       |
 | bg_header           | Header (see widgets section) color                 | String/gradient/pattern       |
 | bg_prefix           | Prefix background for item_styles that support it  | String/gradient/pattern       |
 | border_color        | Border color                                       | String/gradient/pattern       |
@@ -202,10 +199,6 @@ Multiple items can have multiple sets of options.
 | text           | The item text                                | string            |
 | height         | The item height                              | number            |
 | icon           | The item icon                                | string or pattern |
-| bg             | See menu options                             | see menu options  |
-| fg             | See menu options                             | see menu options  |
-| fg_focus       | See menu options                             | see menu options  |
-| bg_focus       | See menu options                             | see menu options  |
 | sub_menu       | Add a submenu to this item                   | menu or function  |
 | selected       | Select this item                             | boolean           |
 | checkable      | Is the item dual state (a checkbox)          | boolean           |
@@ -213,8 +206,8 @@ Multiple items can have multiple sets of options.
 | underlay       | Text to render at the far-right of the item  | [array of] string |
 | prefix_widget  | Widget to append at the begenning of the item| widget            |
 | suffix_widget  | Widget to append at the end of the item      | widget            |
-| item_style     | Custom item_style for this item              | item_style        |
-| item_layout    | Custom item_layout for this item             | item_layout       |
+| style          | Custom item_style for this item              | item_style        |
+| layout         | Custom item_layout for this item             | item_layout       |
 | tooltip        | A tooltip shown on the side or bottom        | string            |
 | button1        | Left mouse button action                     | function          |
 | button2        | Mid mouse button action                      | function          |
@@ -222,6 +215,35 @@ Multiple items can have multiple sets of options.
 | button4        | Scroll up action                             | function          |
 | button5        | Scroll down action                           | function          |
 | overlay        | See menu.overlay                             | function          |
+
+###Colors options
+
+The colors option are available for both menus and items objects.
+
+|     Name     |          State        |                  Description                  |
+| ------------ | --------------------- | --------------------------------------------- |
+| bg           |          ---          | Default background                            |
+| fg           |          ---          | Default foreground                            |
+| bg_disabled  | theme.state.DISABLED  | The item cannot be interracted with           |
+| fg_disabled  | theme.state.DISABLED  | The item cannot be interracted with           |
+| bg_urgent    | theme.state.URGENT    | The item request immediate attention          |
+| fg_urgent    | theme.state.URGENT    | The item request immediate attention          |
+| bg_focus     | theme.state.SELECTED  | Focussed / Selected items                     |
+| fg_focus     | theme.state.SELECTED  | Focussed / Selected items                     |
+| bg_pressed   | theme.state.PRESSED   | The item is being pressed                     |
+| fg_pressed   | theme.state.PRESSED   | The item is being pressed                     |
+| bg_hover     | theme.state.HOVERED   | The mouse is over the item                    |
+| fg_hover     | theme.state.HOVERED   | The mouse is over the item                    |
+| bg_changed   | theme.state.CHANGED   | The item recently changed                     |
+| fg_changed   | theme.state.CHANGED   | The item recently changed                     |
+| bg_used      | theme.state.USED      | The item is used                              |
+| fg_used      | theme.state.USED      | The item is used                              |
+| bg_checked   | theme.state.CHECKED   | The item is checked                           |
+| fg_checked   | theme.state.CHECKED   | The item is checked                           |
+| bg_alternate | theme.state.ALTERNATE | Alternative to bg                             |
+| fg_alternate | theme.state.ALTERNATE | Alternative to fg                             |
+| bg_highlight | theme.state.HIGHLIGHT | The item is hightlighted                      |
+| fg_highlight | theme.state.HIGHLIGHT | The item is hightlighted                      |
 
 ###Common methods
 
