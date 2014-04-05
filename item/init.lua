@@ -1,4 +1,5 @@
 local type = type
+local capi = {timer = timer}
 local beautiful = require("beautiful")
 local theme = require("radical.theme")
 local object = require("radical.object")
@@ -93,7 +94,7 @@ local function new_item(data,args)
       underlay    = args.underlay    or nil                                                                 ,
       tooltip     = args.tooltip     or nil                                                                 ,
       style       = args.style       or data.item_style                                                     ,
-      item_layout = args.item_layout or nil                                                                 ,
+      layout      = args.layout      or args.item_layout or nil                                             ,
       overlay     = args.overlay     or data.overlay or nil                                                 ,
     },
     force_private = {
@@ -171,6 +172,45 @@ local function new_item(data,args)
   -- Listen to signals
   item:connect_signal("state::changed",function()
     item:style()
+  end)
+
+  -- Add support for long hover and press
+  local main_timer,press_timer = nil
+  item:connect_signal("mouse::enter",function()
+    if not main_timer then
+      main_timer = timer{}
+      main_timer.timeout = 1.5
+      main_timer:connect_signal("timeout",function()
+        item:emit_signal("long::hover")
+        main_timer:stop()
+      end)
+    end
+    if not main_timer.started then
+      main_timer:start()
+    end
+  end)
+  item:connect_signal("mouse::leave",function()
+    if main_timer and main_timer.started then
+      main_timer:stop()
+    end
+  end)
+  item:connect_signal("button::press",function()
+    if not press_timer then
+      press_timer = timer{}
+      press_timer.timeout = 1.5
+      press_timer:connect_signal("timeout",function()
+        item:emit_signal("long::press")
+        press_timer:stop()
+      end)
+    end
+    if not press_timer.started then
+      press_timer:start()
+    end
+  end)
+  item:connect_signal("button::release",function()
+    if press_timer and press_timer.started then
+      press_timer:stop()
+    end
   end)
 
   return item
