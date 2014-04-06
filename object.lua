@@ -11,12 +11,14 @@ local function setup_object(args)
     function data:connect_signal(name,func)
         signals[name] = signals[name] or {}
         table.insert(signals[name],func)
+        data:emit_signal("connection",name,#signals[name])
     end
     
     function data:disconnect_signal(name,func)
         for k,v in pairs(signals[name] or {}) do
             if v == func then
                 signals[name][k] = nil
+                data:emit_signal("disconnection",name,#signals[name])
             end
         end
     end
