@@ -111,7 +111,8 @@ function module:setup_item(data,item,args)
     base = require( "radical.base" )
   end
   --Create the background
-  local item_layout = item.item_layout or horizontal_item_layout
+  local item_layout = item.layout or data.item_layout or horizontal_item_layout
+  print("\n\n\n\nsadHERE",item.layout,data.item_layout)
   item.widget = item_layout(item,data,args)--wibox.widget.background()
   cache_pixmap(item)
 

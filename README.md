@@ -291,6 +291,8 @@ like when a modifier is applied.
 | button::release   | A button release              | menu,item,button_id,mods |
 | mouse::enter      | When the mouse enter          | menu,item                |
 | mouse::leave      | When the mouse leave          | menu,item                |
+| long::hover       | The mouse is hover 1.5 sec    | menu,item                |
+| long::press       | The mouse is pressed 1.5 sec  | menu,item                |
 
 `mods` is an array with the applied modifier as **key**. If the value is `nil`,
 then the modifier is not present. Usual modifiers are `Control`, `Shift`, `mod1`

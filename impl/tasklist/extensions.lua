@@ -20,8 +20,19 @@ local global = {}
 
 local extension_list = {}
 
+local function read_add(item,w,position)
+  if position == "suffix" then
+    item:add_suffix(w)
+  elseif position == "prefix" then
+    item:add_prefix(w)
+  elseif position == "overlay" then
+    item:add_overlay(w)
+  end
+end
+
 local per_m,per_glob,per_class,per_this = nil
-local function persistence_menu(ext)
+local function persistence_menu(ext,position)
+  local position=position
   if not tasklist then
     tasklist = require("radical.impl.tasklist")
   end
@@ -30,14 +41,14 @@ local function persistence_menu(ext)
     per_glob  = per_m:add_item{text= "All clients"      ,checkable = true , button1 = function()
       local i1 = tasklist.item(current_client)
       if i1 and (not i1._internal.has_widget or not i1._internal.has_widget[ext]) then
-        i1:add_suffix(ext(current_client))
+        read_add(i1,ext(current_client),position)
         i1._internal.has_widget = i1._internal.has_widget or {}
         i1._internal.has_widget[ext] = true
       end
       for k,v in ipairs(capi.client.get()) do
         local i2 = tasklist.item(v)
         if i2 and  (not i2._internal.has_widget or not i2._internal.has_widget[ext]) then
-          i2:add_suffix(ext(v))
+          read_add(i2,ext(v),position)
           i2._internal.has_widget = i2._internal.has_widget or {}
           i2._internal.has_widget[ext] = true
         end
@@ -47,7 +58,7 @@ local function persistence_menu(ext)
     per_class = per_m:add_item{text= "This class only"  ,checkable = true, button1 = function()
       local i1 = tasklist.item(current_client)
       if i1 and  (not i1._internal.has_widget or not i1._internal.has_widget[ext]) then
-        i1:add_suffix(ext(current_client))
+        read_add(i1,ext(current_client),position)
         i1._internal.has_widget = i1._internal.has_widget or {}
         i1._internal.has_widget[ext] = true
       end
@@ -55,7 +66,7 @@ local function persistence_menu(ext)
         if v.class == current_client.class then
           local i2 = tasklist.item(v)
           if i2 and  (not i2._internal.has_widget or not i2._internal.has_widget[ext]) then
-            i2:add_suffix(ext(v))
+            read_add(i2,ext(v),position)
             i2._internal.has_widget = i2._internal.has_widget or {}
             i2._internal.has_widget[ext] = true
           end
@@ -66,7 +77,7 @@ local function persistence_menu(ext)
     per_this  = per_m:add_item{text= "This client only" ,checkable = true, button1 = function()
       local i1 = tasklist.item(current_client)
       if i1 and (not i1._internal.has_widget or not i1._internal.has_widget[ext]) then
-        i1:add_suffix(ext(current_client))
+        read_add(i1,ext(current_client),position)
         i1._internal.has_widget = i1._internal.has_widget or {}
         i1._internal.has_widget[ext] = true
       end
@@ -98,11 +109,11 @@ local function persistence_menu(ext)
 end
 
 local ext_list_m = nil
-local function extension_list_menu()
+local function extension_list_menu(position)
   if not ext_list_m then
     ext_list_m = radical.context{}
     for k,v in pairs(extension_list) do
-      ext_list_m:add_item{text=k,sub_menu=function() return persistence_menu(v) end}
+      ext_list_m:add_item{text=k,sub_menu=function() return persistence_menu(v,position) end}
     end
   end
   return ext_list_m
@@ -113,9 +124,9 @@ function module.extensions_menu(c)
   current_client = c
   if not ext_m then
     ext_m = radical.context{}
-    ext_m:add_item{text="Overlay widget", sub_menu=extension_list_menu() }
-    ext_m:add_item{text="Prefix widget" , sub_menu=extension_list_menu() }
-    ext_m:add_item{text="Suffix widget" , sub_menu=extension_list_menu() }
+    ext_m:add_item{text="Overlay widget", sub_menu=function() return extension_list_menu( "overlay" ) end }
+    ext_m:add_item{text="Prefix widget" , sub_menu=function() return extension_list_menu( "prefix"  ) end }
+    ext_m:add_item{text="Suffix widget" , sub_menu=function() return extension_list_menu( "suffix"  ) end }
   end
   return ext_m
 end

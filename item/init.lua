@@ -73,6 +73,19 @@ function module.execute_sub_menu(data,item)
   end
 end
 
+-- local registered_items = {}
+-- local is_watching = false
+-- local mouse_tracker = object{}
+local function watch_mouse(a,b,c)
+  print("move",a,b,c)
+end
+
+-- local function register_mouse_track()
+--   if not is_watching then
+--     
+--   end
+-- end
+
 local function new_item(data,args)
   local args = args or {}
   local item,private_data = object({
@@ -175,23 +188,32 @@ local function new_item(data,args)
   end)
 
   -- Add support for long hover and press
+--   local function test()
+--     print("test")
+--   end
   local main_timer,press_timer = nil
   item:connect_signal("mouse::enter",function()
     if not main_timer then
       main_timer = timer{}
       main_timer.timeout = 1.5
       main_timer:connect_signal("timeout",function()
-        item:emit_signal("long::hover")
+        item._internal._is_long_hover = true
+        item:emit_signal("long::hover",data,item)
         main_timer:stop()
       end)
     end
     if not main_timer.started then
+--       item:connect_signal("mouse::move",test)
       main_timer:start()
     end
   end)
   item:connect_signal("mouse::leave",function()
     if main_timer and main_timer.started then
       main_timer:stop()
+--       item:disconnect_signal("mouse::move",test)
+    elseif item._internal._is_long_hover then
+      item._internal._is_long_hover = nil
+      item:emit_signal("long::exit",data,item)
     end
   end)
   item:connect_signal("button::press",function()
@@ -199,11 +221,13 @@ local function new_item(data,args)
       press_timer = timer{}
       press_timer.timeout = 1.5
       press_timer:connect_signal("timeout",function()
-        item:emit_signal("long::press")
+        item:emit_signal("long::press",data,item)
+--         item:disconnect_signal("mouse::move",test)
         press_timer:stop()
       end)
     end
     if not press_timer.started then
+--       item:connect_signal("mouse::move",test)
       press_timer:start()
     end
   end)

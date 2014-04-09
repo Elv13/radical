@@ -274,6 +274,7 @@ local function new(args)
       screen          = args.screen or nil,
       style           = args.style  or nil,
       item_style      = args.item_style or require("radical.item.style.basic"),
+      item_layout     = args.item_layout or nil,
       filter          = args.filter ~= false,
       show_filter     = args.show_filter or false,
       filter_string   = args.filter_string or "",

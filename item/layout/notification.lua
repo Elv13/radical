@@ -160,7 +160,8 @@ end
 
 -- Use all the space, let "align_fit" compute the right size
 local function textbox_fit(box,w,h)
-  return w,h
+  local w2,h2 = wibox.widget.textbox.fit(box,w,h)
+  return w,h2
 end
 
 -- Force the width or compute the minimum space
@@ -204,25 +205,6 @@ local function create_item(item,data,args)
     layout:add(args.prefix_widget)
   end
 
-  -- Text
-  local tb = wibox.widget.textbox()
-  tb.fit = data._internal.text_fit or textbox_fit
-  tb.draw = function(self,w, cr, width, height)
-    if item.underlay then
-      module.paint_underlay(data,item,cr,width,height)
-    end
-    wibox.widget.textbox.draw(self,w, cr, width, height)
-  end
-  tb:set_text(item.text)
-  item.set_text = function (_,value)
-    if data.disable_markup then
-      tb:set_text(value)
-    else
-      tb:set_markup(value)
-    end
-    item._private_data.text = value
-  end
-
   -- Checkbox
   local ck = module:setup_checked(item,data)
   if ck then
@@ -243,15 +225,46 @@ local function create_item(item,data,args)
     right:add(args.suffix_widget)
   end
 
+  -- Vertical text layout
+  local vert = wibox.layout.fixed.vertical()
+--   vert:add(tb)
+
+  -- Text
+  local tb4 = wibox.widget.textbox()
+  tb4.draw = function(self,w, cr, width, height)
+    if item.underlay then
+      module.paint_underlay(data,item,cr,width,height)
+    end
+    wibox.widget.textbox.draw(self,w, cr, width, height)
+  end
+
+  item.set_text = function (_,value)
+    if data.disable_markup then
+      tb4:set_text(value)
+    else
+      tb4:set_markup("<b>"..value.."</b>")
+    end
+    item._private_data.text = value
+  end
+  item:set_text(item.text or "")
+  local tb2 = wibox.widget.textbox()
+  tb2:set_text("alternate")
+  tb2.fit = function(s,w,h)
+    return w,h
+  end
+
+  vert:add(tb4)
+  vert:add(tb2)
+
   -- Layout (align)
   local align = wibox.layout.align.horizontal()
-  align:set_middle( tb     )
+  align:set_middle( vert   )
   align:set_left  ( layout )
   align:set_right ( right  )
   m:set_widget    ( align  )
   align._item = item
   align._data = data
-  align.fit   = data._internal.align_fit or align_fit
+--   align.fit   = data._internal.align_fit or align_fit
   item._internal.align = align
 
   -- Set widget
@@ -267,7 +280,7 @@ local function create_item(item,data,args)
     item.widget:emit_signal("widget::updated")
   end
 
-  item._internal.text_w = tb
+  item._internal.text_w = wibox.widget.textbox()--tb4
   item._internal.icon_w = icon
   item._internal.margin_w = m
 
