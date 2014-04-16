@@ -95,7 +95,6 @@ local function create_item(t,s)
   end)
 
   item._internal.screen = s
---   item.state[radical.base.item_flags.USED    ] = #t:clients() > 0
   item.state[radical.base.item_flags.SELECTED] = t.selected or nil
   cache[t] = item
   item.tag = t
@@ -106,8 +105,8 @@ local function track_used(c,t)
   if t then
     local item = cache[t] or create_item(t,tag.getscreen(t))
     if not item then return end -- Yes, it happen if the screen is still nil
-    item.state[radical.base.item_flags.USED] = #t:clients() > 0
-    item.state[radical.base.item_flags.CHANGED] = not t.selected
+    item.state[radical.base.item_flags.USED] = #t:clients() > 0 and true or nil
+    item.state[radical.base.item_flags.CHANGED] = ((not t.selected) and #t:clients() > 0) and true or nil
   end
 end
 

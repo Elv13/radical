@@ -167,11 +167,17 @@ local function load_clients(t)
   local screen = tag.getscreen(t)
   if not t or not screen or not instances[screen] then return end
   local menu = instances[screen].menu
-  if t.selected then
+  local clients = {}
+  local selected = tag.selectedlist(screen)
+  -- The "#selected > 0" is for reseting when multiple tags are selected
+  if t.selected or #selected > 0 then
     menu:clear()
-    for k, c in ipairs(t:clients()) do
-      if not c.sticky then
-        add_client(c,screen)
+    for k2,t2 in ipairs(selected) do
+      for k, c in ipairs(t2:clients()) do
+        if not c.sticky then
+          add_client(c,screen)
+          clients[#clients+1] = c
+        end
       end
     end
     for c,_ in pairs(sticky) do
