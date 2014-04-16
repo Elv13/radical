@@ -73,12 +73,21 @@ function module.execute_sub_menu(data,item)
   end
 end
 
+local function hide_sub_menu(item,data)
+  if item._tmp_menu then
+    item._tmp_menu.visible = false
+    item._tmp_menu = nil
+    data._tmp_menu = nil
+    item:emit_signal("state::changed")
+  end
+end
+
 -- local registered_items = {}
 -- local is_watching = false
 -- local mouse_tracker = object{}
-local function watch_mouse(a,b,c)
-  print("move",a,b,c)
-end
+-- local function watch_mouse(a,b,c)
+--   print("move",a,b,c)
+-- end
 
 -- local function register_mouse_track()
 --   if not is_watching then
@@ -149,7 +158,7 @@ local function new_item(data,args)
 
   -- Getters
   item.get_selected = function(_)
-    return item == data._current_item
+    return item.state[module.item_flags.SELECTED] == true
   end
 
   -- Setters
@@ -160,12 +169,7 @@ local function new_item(data,args)
     local current_item = data._current_item
     if current_item and current_item ~= item or force then
       current_item.state[module.item_flags.SELECTED] = nil
-      if current_item._tmp_menu then
-        current_item._tmp_menu.visible = false
-        current_item._tmp_menu = nil
-        data._tmp_menu = nil
-        current_item:emit_signal("state::changed")
-      end
+      hide_sub_menu(current_item,data)
     end
 
     -- Unselect item
@@ -175,7 +179,7 @@ local function new_item(data,args)
     end
 
     -- Select the new one
-    if data.sub_menu_on == module.event.SELECTED and current_item ~= item then
+    if data.sub_menu_on == module.event.SELECTED and (current_item ~= item or not item._tmp_menu)then
       module.execute_sub_menu(data,item)
     end
     item.state[module.item_flags.SELECTED] = true

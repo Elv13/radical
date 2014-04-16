@@ -219,7 +219,11 @@ local function setup_buttons(data,item,args)
     buttons[3] = function()
       data.visible = false
       if data.parent_geometry and data.parent_geometry.is_menu then
-        data.parent_geometry.visible = false
+        local parent = data.parent_geometry
+        while parent do
+          parent.visible = false
+          parent = parent.parent_geometry and parent.parent_geometry.is_menu and parent.parent_geometry
+        end
       end
     end
   end
