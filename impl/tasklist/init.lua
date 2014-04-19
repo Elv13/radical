@@ -46,11 +46,11 @@ module.buttons = {
   end,
   [4] = function ()
     client.focus.byidx(1)
-    if client.focus then client.focus:raise() end
+    if capi.client.focus then capi.client.focus:raise() end
   end,
   [5] = function ()
     client.focus.byidx(-1)
-    if capi.client.focus then client.focus:raise() end
+    if capi.client.focus then capi.client.focus:raise() end
   end
 }
 
