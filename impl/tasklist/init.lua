@@ -8,13 +8,14 @@
 
 local capi = {client = client,tag=tag}
 local rawset = rawset
-local radical   = require( "radical"      )
-local tag       = require( "awful.tag"    )
-local beautiful = require( "beautiful"    )
-local client = require( "awful.client" )
-local wibox     = require( "wibox"        )
+local radical     = require( "radical"      )
+local tag         = require( "awful.tag"    )
+local beautiful   = require( "beautiful"    )
+local client      = require( "awful.client" )
+local wibox       = require( "wibox"        )
+local surface     = require( "gears.surface")
 local client_menu =  require("radical.impl.tasklist.client_menu")
-local theme     = require( "radical.theme")
+local theme       = require( "radical.theme")
 
 local sticky,urgent,instances,module = {extensions=require("radical.impl.tasklist.extensions")},{},{},{}
 local _cache = setmetatable({}, { __mode = 'k' })
@@ -125,8 +126,8 @@ end
 local function reload_content(c,b,a)
   local item = _cache[c]
   if item then
+    item.icon = surface(c.icon) or beautiful.tasklist_default_icon
     item.text = c.name or "N/A"
-    item.icon = c.icon or beautiful.tasklist_default_icon
   end
 end
 
@@ -142,7 +143,7 @@ local function create_client_item(c,screen)
 
   -- Too bad, let's create a new one
   local suf_w = wibox.layout.fixed.horizontal()
-  item = menu:add_item{text=c.name,icon=c.icon,suffix_widget=suf_w}
+  item = menu:add_item{text=c.name,icon=surface(c.icon),suffix_widget=suf_w}
   item.add_suffix = function(w,w2)
     suf_w:add(w2)
   end
@@ -268,22 +269,22 @@ function module.item(client)
 end
 
 -- Global callbacks
-capi.client.connect_signal("property::sticky"  , sticky_callback   )
-capi.client.connect_signal("property::urgent"  , urgent_callback   )
-capi.client.connect_signal("unmanage"          , unmanage_callback )
-capi.client.connect_signal("focus"             , focus             )
-capi.client.connect_signal("unfocus"           , unfocus           )
-capi.client.connect_signal("property::sticky"  , reload_underlay   )
-capi.client.connect_signal("property::ontop"   , reload_underlay   )
-capi.client.connect_signal("property::floating", reload_underlay   )
-capi.client.connect_signal("property::name"    , reload_content    )
-capi.client.connect_signal("property::icon"    , reload_content    )
-capi.client.connect_signal("property::minimized", minimize_callback    )
-capi.client.connect_signal("tagged"            , tagged             )
-capi.client.connect_signal("untagged"          , untagged           )
-capi.tag.connect_signal   ("property::screen"  , tag_screen_changed )
-capi.tag.connect_signal("property::selected" , load_clients)
-capi.tag.connect_signal("property::activated", load_clients)
+capi.client.connect_signal("property::sticky"   , sticky_callback    )
+capi.client.connect_signal("property::urgent"   , urgent_callback    )
+capi.client.connect_signal("unmanage"           , unmanage_callback  )
+capi.client.connect_signal("focus"              , focus              )
+capi.client.connect_signal("unfocus"            , unfocus            )
+capi.client.connect_signal("property::sticky"   , reload_underlay    )
+capi.client.connect_signal("property::ontop"    , reload_underlay    )
+capi.client.connect_signal("property::floating" , reload_underlay    )
+capi.client.connect_signal("property::name"     , reload_content     )
+capi.client.connect_signal("property::icon"     , reload_content     )
+capi.client.connect_signal("property::minimized", minimize_callback  )
+capi.client.connect_signal("tagged"             , tagged             )
+capi.client.connect_signal("untagged"           , untagged           )
+capi.tag.connect_signal   ("property::screen"   , tag_screen_changed )
+capi.tag.connect_signal   ("property::selected" , load_clients       )
+capi.tag.connect_signal   ("property::activated", load_clients       )
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;
