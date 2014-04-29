@@ -38,7 +38,7 @@ local function rel_parent(w,args2,args)
 end
 
 local function init(data,widget,args)
-  if not data.init then
+  if widget and not data.init then
     data.init = true
 
     local vertical = (args.direction == "left") or (args.direction == "right")
@@ -100,10 +100,10 @@ end
 local function set_text(self,text)
   self.init = nil
   self._text = text
-  if textw then
-    textw:set_markup("<b>".. data._text .."</b>")
+  if self._w then
+    self._w:set_markup("<b>".. self._text .."</b>")
   end
-  init(data,data._w,dara._args)
+  init(self,self._w,self._args)
 end
 
 local function new(widget,text, args)
