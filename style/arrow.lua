@@ -80,7 +80,6 @@ local function get_arrow_x(data,direction)
 end
 
 local function _set_direction(data,direction)
-  get_arrow_x(data,direction)
   local geometry = (direction == "left" or direction == "right") and {width = data.height, height = data.width} or {height = data.height, width = data.width}
   local top_clip_surface        = do_gen_menu_top(data,geometry.width,geometry.height,10,data.border_width,{bg=beautiful.fg_normal or "#0000ff",fg=data.bg or "#00ffff"})
   local top_bounding_surface    = do_gen_menu_top(data,geometry.width,geometry.height,10,0,{bg="#00000000",fg="#ffffffff"})
@@ -106,6 +105,7 @@ end
 local function set_direction(data,direction)
   data._internal._need_direction = direction
   if not data._internal._need_direction_reload then
+    get_arrow_x(data,direction)
     glib.idle_add(glib.PRIORITY_HIGH_IDLE, function() _set_direction(data,data._internal._need_direction) end)
     data._internal._need_direction_reload = true
   end
