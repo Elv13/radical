@@ -100,8 +100,9 @@ end
 local function set_text(self,text)
   self.init = nil
   self._text = text
-
-  textw:set_markup("<b>".. data._text .."</b>")
+  if textw then
+    textw:set_markup("<b>".. data._text .."</b>")
+  end
   init(data,data._w,dara._args)
 end
 
