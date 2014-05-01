@@ -80,6 +80,9 @@ local function get_arrow_x(data,direction)
 end
 
 local function _set_direction(data,direction)
+  if not data._arrow_x then
+    get_arrow_x(data,direction)
+  end
   local geometry = (direction == "left" or direction == "right") and {width = data.height, height = data.width} or {height = data.height, width = data.width}
   local top_clip_surface        = do_gen_menu_top(data,geometry.width,geometry.height,10,data.border_width,{bg=beautiful.fg_normal or "#0000ff",fg=data.bg or "#00ffff"})
   local top_bounding_surface    = do_gen_menu_top(data,geometry.width,geometry.height,10,0,{bg="#00000000",fg="#ffffffff"})
