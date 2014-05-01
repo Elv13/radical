@@ -14,10 +14,12 @@ local module,pause_monitoring = {},false
 
 -- Keep its own history instead of using awful.client.focus.history
 local focusIdx,focusTable = 1,setmetatable({}, { __mode = 'v' })
+local focusTag = setmetatable({}, { __mode = 'v' })
 local function push_focus(c)
   if c and not pause_monitoring then
     focusTable[c] = focusIdx
     focusIdx = focusIdx + 1
+    focusTag[c] = tag.selected(c.screen)
   end
 end
 capi.client.connect_signal("focus", push_focus)
@@ -58,7 +60,7 @@ end
 local function select_next(menu)
   local item = menu.next_item
   item.selected = true
-  item.button1()
+  item.button1(nil,nil,nil,nil,true)
   return true
 end
 
@@ -95,40 +97,44 @@ local function new(args)
   end
 
   local t,auto_release = tag.selected(capi.client.focus and capi.client.focus.screen or capi.mouse.screen),args.auto_release
-  local currentMenu = radical.box({filter = true, show_filter=true, autodiscard = true,
+  local currentMenu = radical.box({filter = true, show_filter=not auto_release, autodiscard = true,
     disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[capi.client.focus and capi.client.focus.screen or capi.mouse.screen]).geometry.width)/2),
     icon_transformation = beautiful.alttab_icon_transformation,filter_underlay="Use [Shift] to toggle clients",filter_underlay_color=beautiful.menu_bg_normal,
     filter_placeholder="<span fgcolor='".. (beautiful.menu_fg_disabled or beautiful.fg_disabled or "#777777") .."'>Type to filter</span>"})
 
-  local pref_bg = wibox.widget.background()
-  local pref_l = wibox.layout.align.horizontal()
-  pref_bg.fit = function(s,w,h)
-    local w2,h2 = wibox.widget.background.fit(s,w,h)
-    return w2,currentMenu.item_height
-  end
-  pref_bg:set_bg(currentMenu.bg_alternate)
-  local tb2= wibox.widget.textbox()
-  tb2:set_text("foo!!!!")
-  pref_l:set_first(tb2)
-  pref_bg:set_widget(pref_l)
-  local pref_menu,pref_menu_l = radical.bar{item_style=radical.item.style.basic}
-  pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
-  pref_menu:add_item{text="Exclusive"}
-  pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
-  pref_menu:add_item{text="12 clients"}
-  pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
-  pref_menu:add_item{text="All Screens"}
-  pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
-  pref_l:set_third(pref_menu_l)
+  if not auto_release then
+    local pref_bg = wibox.widget.background()
+    local pref_l = wibox.layout.align.horizontal()
+    pref_bg.fit = function(s,w,h)
+      local w2,h2 = wibox.widget.background.fit(s,w,h)
+      return w2,currentMenu.item_height
+    end
+    pref_bg:set_bg(currentMenu.bg_alternate)
+    local tb2= wibox.widget.textbox()
+    tb2:set_text("foo!!!!")
+    pref_l:set_first(tb2)
+    pref_bg:set_widget(pref_l)
+    local pref_menu,pref_menu_l = radical.bar{item_style=radical.item.style.basic}
+    pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+    pref_menu:add_item{text="Exclusive"}
+    pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+    pref_menu:add_item{text="12 clients"}
+    pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+    pref_menu:add_item{text="All Screens"}
+    pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+    pref_l:set_third(pref_menu_l)
 
-  currentMenu:add_prefix_widget(pref_bg)
+    currentMenu:add_prefix_widget(pref_bg)
+  end
 
   currentMenu:add_key_hook({}, "Tab", "press", select_next)
   currentMenu:add_key_hook({}, "Shift_L", "press", function()
     currentMenu._current_item.checked = not currentMenu._current_item.checked
     client2.toggletag (t, currentMenu._current_item.client)
     reload_underlay(currentMenu._current_item.client,currentMenu._current_item)
-    reload_highlight(currentMenu._current_item)
+    if not auto_release then
+      reload_highlight(currentMenu._current_item)
+    end
     return true
   end)
 
@@ -136,11 +142,13 @@ local function new(args)
   if module.titlebar_path then
     for k,v2 in ipairs(histo) do
       local l,v = wibox.layout.fixed.horizontal(),v2[2]
-      l:add( button_group({client = v, field = "floating" , focus = false, checked = function() return v.floating  end, onclick = function() v.floating  = not v.floating  end }))
-      l:add( button_group({client = v, field = "maximized", focus = false, checked = function() return v.maximized end, onclick = function() v.maximized = not v.maximized end }))
-      l:add( button_group({client = v, field = "sticky"   , focus = false, checked = function() return v.sticky    end, onclick = function() v.sticky    = not v.sticky    end }))
-      l:add( button_group({client = v, field = "ontop"    , focus = false, checked = function() return v.ontop     end, onclick = function() v.ontop     = not v.ontop     end }))
-      l:add( button_group({client = v, field = "close"    , focus = false, checked = function() return false       end, onclick = function() v:kill()                      end }))
+      if not auto_release then
+        l:add( button_group({client = v, field = "floating" , focus = false, checked = function() return v.floating  end, onclick = function() v.floating  = not v.floating  end }))
+        l:add( button_group({client = v, field = "maximized", focus = false, checked = function() return v.maximized end, onclick = function() v.maximized = not v.maximized end }))
+        l:add( button_group({client = v, field = "sticky"   , focus = false, checked = function() return v.sticky    end, onclick = function() v.sticky    = not v.sticky    end }))
+        l:add( button_group({client = v, field = "ontop"    , focus = false, checked = function() return v.ontop     end, onclick = function() v.ontop     = not v.ontop     end }))
+        l:add( button_group({client = v, field = "close"    , focus = false, checked = function() return false       end, onclick = function() v:kill()                      end }))
+      end
 
       local underlays = reload_underlay(v)
 
@@ -153,18 +161,23 @@ local function new(args)
         underlay      = underlays,
         checkable     = not auto_release,
         checked       = not auto_release and is_in_tag(t,v) or nil,
-        button1       = function()
-          if v:tags()[1] and v:tags()[1].selected == false then
-            tag.viewonly(v:tags()[1])
+        button1       = function(a,b,c,d,no_hide)
+          local t = focusTag[v] or v:tags()[1]
+          if t and t.selected == false and not util.table.hasitem(v:tags(),tag.selected(v.screen)) then
+            tag.viewonly(t)
           end
           capi.client.focus = v
           v:raise()
-          currentMenu.visible = false
+          if not no_hide then
+            currentMenu.visible = false
+          end
         end,
       })
       i.client = v
 
-      i:connect_signal("selected::changed",reload_highlight)
+      if not auto_release then
+        i:connect_signal("selected::changed",reload_highlight)
+      end
     end
   end
 
@@ -181,7 +194,9 @@ local function new(args)
     if not m.visible then
       pause_monitoring = false
       push_focus(capi.client.focus)
-      tag_list.highlight()
+      if not auto_release then
+        tag_list.highlight()
+      end
     end
   end)
   return currentMenu
