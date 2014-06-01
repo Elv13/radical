@@ -98,6 +98,13 @@ local function filter(data)
     end
     data._total_item_height = visible_counter
     local w,h = data._internal.layout:fit()
+    -- Make sure to select an item
+    if data._current_item and data._current_item._filter_out then
+      local n = data.next_item
+      if n then
+        n.selected = true
+      end
+    end
     data.height = h
   end
 end

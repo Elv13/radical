@@ -14,6 +14,7 @@ local taglist = nil
 local module = {}
 
 local current_client = nil
+local current_pos = nil
 
 local classes = {}
 local global = {}
@@ -40,14 +41,14 @@ local function persistence_menu(ext,position)
     per_glob  = per_m:add_item{text= "All clients"      ,checkable = true , button1 = function()
       local i1 = taglist.item(current_client)
       if i1 and (not i1._internal.has_widget or not i1._internal.has_widget[ext]) then
-        read_add(i1,ext(current_client),position)
+        read_add(i1,ext(current_client),current_pos)
         i1._internal.has_widget = i1._internal.has_widget or {}
         i1._internal.has_widget[ext] = true
       end
       for k,v in ipairs(capi.client.get()) do
         local i2 = taglist.item(v)
         if i2 and  (not i2._internal.has_widget or not i2._internal.has_widget[ext]) then
-          read_add(i2,ext(v),position)
+          read_add(i2,ext(v),current_pos)
           i2._internal.has_widget = i2._internal.has_widget or {}
           i2._internal.has_widget[ext] = true
         end
@@ -57,7 +58,7 @@ local function persistence_menu(ext,position)
     per_this  = per_m:add_item{text= "This client only" ,checkable = true, button1 = function()
       local i1 = taglist.item(current_client)
       if i1 and (not i1._internal.has_widget or not i1._internal.has_widget[ext]) then
-        read_add(i1,ext(current_client),position)
+        read_add(i1,ext(current_client),current_pos)
         i1._internal.has_widget = i1._internal.has_widget or {}
         i1._internal.has_widget[ext] = true
       end
@@ -86,10 +87,11 @@ end
 
 local ext_list_m = nil
 local function extension_list_menu(position)
+  current_pos = position
   if not ext_list_m then
     ext_list_m = radical.context{}
     for k,v in pairs(extension_list) do
-      ext_list_m:add_item{text=k,sub_menu=function() return persistence_menu(v,position) end}
+      ext_list_m:add_item{text=k,sub_menu=function() return persistence_menu(v,current_pos) end}
     end
   end
   return ext_list_m

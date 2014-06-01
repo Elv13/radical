@@ -47,7 +47,7 @@ module.buttons = { [1] = awful.tag.viewonly,
 
 local function index_draw(self,w, cr, width, height)
   cr:save()
-  cr:set_source(color(beautiful.bg_normal))
+  cr:set_source(color(beautiful.taglist_fg_prefix or beautiful.fg_normal))
   local d = wibox.widget.textbox._draw or wibox.widget.textbox.draw
   d(self,wibox, cr, width, height)
   cr:restore()
@@ -90,14 +90,15 @@ local function create_item(t,s)
 
   menu:connect_signal("button::press",function(menu,item,button_id,mod)
     if module.buttons and module.buttons[button_id] then
-      module.buttons[button_id](item.client,menu,item,button_id,mod)
+      module.buttons[button_id](item.tag[1],menu,item,button_id,mod)
     end
   end)
 
   item._internal.screen = s
   item.state[radical.base.item_flags.SELECTED] = t.selected or nil
   cache[t] = item
-  item.tag = t
+  item.tag = setmetatable({}, { __mode = 'v' })
+  item.tag[1] = t
   return item
 end
 
@@ -107,6 +108,14 @@ local function track_used(c,t)
     if not item then return end -- Yes, it happen if the screen is still nil
     item.state[radical.base.item_flags.USED] = #t:clients() > 0 and true or nil
     item.state[radical.base.item_flags.CHANGED] = ((not t.selected) and #t:clients() > 0) and true or nil
+  end
+end
+
+local function track_title(c)
+  for _,t in ipairs(c:tags()) do
+    if t.selected ~= true and cache[t] then
+      cache[t].state[radical.base.item_flags.CHANGED] = true
+    end
   end
 end
 
@@ -142,22 +151,12 @@ local function select(t)
   end
 end
 
-capi.tag.add_signal("property::urgent")
-local function urgent_callback(c)
-    local modif = c.urgent == true and 1 or -1
-    for k,t in ipairs(c:tags()) do
-        local current = (awful.tag.getproperty(t,"urgent") or 0)
-        local item = cache[t] or create_item(t,tag.getscreen(t))
-        if current + modif < 0 then
-            awful.tag.setproperty(t,"urgent",0)
-            item.state[radical.base.item_flags.URGENT] = nil
-        else
-            awful.tag.setproperty(t,"urgent",current + modif)
-            if not t.selected then
-              item.state[radical.base.item_flags.URGENT] = true
-            end
-        end
-    end
+local function urgent_callback(t)
+  local modif = tag.getproperty(t,"urgent")
+  local item = cache[t] or create_item(t,tag.getscreen(t))
+  if item then
+    item.state[radical.base.item_flags.URGENT] = modif and true or nil
+  end
 end
 
 local is_init = false
@@ -165,12 +164,15 @@ local function init()
   if is_init then return end
 
   -- Global signals
-  capi.client.connect_signal("tagged", track_used)
-  capi.client.connect_signal("untagged", track_used)
-  capi.client.connect_signal("unmanage", track_used)
-  capi.client.connect_signal("property::urgent"  , urgent_callback   )
-  capi.tag.connect_signal("property::activated",tag_activated)
-  capi.tag.connect_signal("property::screen", tag_added)
+  capi.client.connect_signal("tagged"          , track_used      )
+  capi.client.connect_signal("untagged"        , track_used      )
+  capi.client.connect_signal("unmanage"        , track_used      )
+  capi.tag.connect_signal("property::activated", tag_activated   )
+  capi.tag.connect_signal("property::screen"   , tag_added       )
+  capi.tag.connect_signal("property::urgent"   , urgent_callback )
+  if module.taglist_watch_name_changes then
+    capi.client.connect_signal("property::name", track_title     )
+  end
 
   -- Property bindings
   capi.tag.connect_signal("property::name", function(t)
@@ -239,7 +241,7 @@ local function new(s)
 
   instances[s]:connect_signal("button::press",function(m,item,button_id,mod)
     if module.buttons and module.buttons[button_id] then
-      module.buttons[button_id](item.tag,m,item,button_id,mod)
+      module.buttons[button_id](item.tag[1],m,item,button_id,mod)
     end
   end)
 

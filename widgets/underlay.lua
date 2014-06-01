@@ -51,7 +51,7 @@ function module.draw_arrow(cr,x,y,width,height,padding,args)
   cr:restore()
 end
 
-function module.draw(text,args)
+function module.fit(text,args)
   local args = args or {}
   local height = args.height or (beautiful.menu_height)
   local padding = height/4--beautiful.default_height/3
@@ -75,6 +75,14 @@ function module.draw(text,args)
     ret[k] = pango_l[height]:get_pixel_extents().width + height + padding
     full_width = full_width + ret[k]
   end
+  return full_width,ret
+end
+
+function module.draw(text,args)
+  local args = args or {}
+  local height = args.height or (beautiful.menu_height)
+  local padding = height/4--beautiful.default_height/3
+  local full_width,ret = module.fit(text,args)
 
   local img = cairo.ImageSurface.create(cairo.Format.ARGB32, full_width+(args.padding_right or 0), height+padding)
   cr = cairo.Context(img)

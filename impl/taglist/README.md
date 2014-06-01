@@ -18,6 +18,10 @@ Plus, it inherit Radical style and layouts engines for both item and style, so
 this module could technically be used as a box menu or something like that
 without modifications.
 
+### Options
+
+taglist_watch_name_changes | Make the tag state `changed` if a client title change
+
 ### Beautiful options
 
 taglist_bg_selected

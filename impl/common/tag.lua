@@ -22,13 +22,15 @@ local fallback_layouts = {
   suits.magnifier
 }
 
-local function createTagList(aScreen)
+local function createTagList(aScreen,args)
   if not tag_list then
     tag_list = require("radical.impl.taglist")
   end
   local tagList = radical.context({autodiscard = true})
   for _, v in ipairs(awful.tag.gettags(aScreen)) do
-    local i = tagList:add_item({text = v.name,icon=awful.tag.geticon(v)})
+    args.text,args.icon = v.name,awful.tag.geticon(v)
+    local i = tagList:add_item(args)
+    i._tag = v
     i:connect_signal("mouse::enter",function()
       tag_list.highlight(v)
     end)
@@ -41,13 +43,13 @@ local function createTagList(aScreen)
   return tagList
 end
 
-function module.listTags()
+function module.listTags(args)
   if capi.screen.count() == 1 then
-    return createTagList(1)
+    return createTagList(1,args or {})
   else
     local screenSelect = radical.context(({autodiscard = true}))
     for i=1, capi.screen.count() do
-      screenSelect:add_item({text="Screen "..i , sub_menu = createTagList(i)})
+      screenSelect:add_item({text="Screen "..i , sub_menu = createTagList(i,args or {})})
     end
     return screenSelect
   end

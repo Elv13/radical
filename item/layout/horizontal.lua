@@ -122,7 +122,7 @@ function module.setup_event(data,item,widget)
 
     item.state[4] =  true
     data:emit_signal("button::press",item,id,mods_invert)
-    item:emit_signal("button::press",item,id,mods_invert)
+    item:emit_signal("button::press",data,id,mods_invert)
   end)
   widget:connect_signal("button::release",function(_,__,___,id,mod)
     local mods_invert = {}
@@ -131,15 +131,15 @@ function module.setup_event(data,item,widget)
     end
     item.state[4] =  nil
     data:emit_signal("button::release",item,id,mods_invert)
-    item:emit_signal("button::release",item,id,mods_invert)
+    item:emit_signal("button::release",data,id,mods_invert)
   end)
   widget:connect_signal("mouse::enter",function(b,t)
     data:emit_signal("mouse::enter",item)
-    item:emit_signal("mouse::enter",item)
+    item:emit_signal("mouse::enter",data)
   end)
   widget:connect_signal("mouse::leave",function(b,t)
     data:emit_signal("mouse::leave",item)
-    item:emit_signal("mouse::leave",item)
+    item:emit_signal("mouse::leave",data)
   end)
 
   -- Always tracking mouse::move is expensive, only do it when necessary

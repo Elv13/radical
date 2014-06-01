@@ -108,12 +108,13 @@ local function persistence_menu(ext,position)
   return per_m
 end
 
-local ext_list_m = nil
+local ext_list_m,cur_pos = nil
 local function extension_list_menu(position)
+  cur_pos = position
   if not ext_list_m then
     ext_list_m = radical.context{}
     for k,v in pairs(extension_list) do
-      ext_list_m:add_item{text=k,sub_menu=function() return persistence_menu(v,position) end}
+      ext_list_m:add_item{text=k,sub_menu=function() return persistence_menu(v,cur_pos) end}
     end
   end
   return ext_list_m

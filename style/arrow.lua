@@ -54,7 +54,7 @@ local function do_gen_menu_top(data, width, height, radius,padding,args)
   return img
 end
 
-local function get_arrow_x(data,direction)
+local function gen_arrow_x(data,direction)
   local at = data.arrow_type
   local par_center_x = data.parent_geometry and (data.parent_geometry.x + data.parent_geometry.width/2) or -1
   local par_center_y = data.parent_geometry and (data.parent_geometry.y + data.parent_geometry.height/2) or -1
@@ -63,11 +63,11 @@ local function get_arrow_x(data,direction)
 
   if at == base.arrow_type.PRETTY or not at then
     if direction == "left" then
-      data._arrow_x = data.height -20 - (data.arrow_x or 20)
+      data._arrow_x = data._internal.w.height -20 - (data.arrow_x_orig or 20)
     elseif direction == "right" then
       --TODO
     elseif direction == "bottom" then
-      data._arrow_x = data.width -20 - (data.arrow_x or 20)
+      data._arrow_x = data.width -20 - (data.arrow_x_orig or 20)
       if par_center_x >= menu_beg_x then
         data._arrow_x = data.width - (par_center_x - menu_beg_x) - 13
       end
@@ -80,10 +80,19 @@ local function get_arrow_x(data,direction)
 end
 
 local function _set_direction(data,direction)
-  if not data._arrow_x then
-    get_arrow_x(data,direction)
+  local height,width = data.height,data.width
+  local hash = height*1000+width
+
+  -- Try not to waste time for nothing
+  if data._internal._last_direction == direction..(hash) then return end
+
+  -- Avoid recomputing the arrow_x value
+  if not data._arrow_x or data._internal.last_size ~= hash then
+    gen_arrow_x(data,direction)
+    data._internal.last_size = hash
   end
-  local geometry = (direction == "left" or direction == "right") and {width = data.height, height = data.width} or {height = data.height, width = data.width}
+
+  local geometry = (direction == "left" or direction == "right") and {width = height, height = width} or {height = height, width = width}
   local top_clip_surface        = do_gen_menu_top(data,geometry.width,geometry.height,10,data.border_width,{bg=beautiful.fg_normal or "#0000ff",fg=data.bg or "#00ffff"})
   local top_bounding_surface    = do_gen_menu_top(data,geometry.width,geometry.height,10,0,{bg="#00000000",fg="#ffffffff"})
 
@@ -102,21 +111,36 @@ local function _set_direction(data,direction)
   data.wibox.shape_bounding = top_bounding_surface._native
   data.wibox:set_bg(cairo.Pattern.create_for_surface(top_clip_surface))
   data._internal._need_direction_reload = false
+  data._internal._last_direction = direction..(hash)
 end
 
 -- Try to avoid useless repaint, this function is heavy
 local function set_direction(data,direction)
   data._internal._need_direction = direction
-  if not data._internal._need_direction_reload then
-    get_arrow_x(data,direction)
+  if not data._internal._need_direction_reload and data._internal._last_direction ~= direction..(data.height*1000+data.width) then
     glib.idle_add(glib.PRIORITY_HIGH_IDLE, function() _set_direction(data,data._internal._need_direction) end)
     data._internal._need_direction_reload = true
   end
 end
 
+local function get_arrow_x(data)
+  local height,width = data.height,data.width
+  local hash = height*1000+width
+  if not data._arrow_x or data._internal.last_size ~= hash then
+    gen_arrow_x(data,direction)
+    data._internal.last_size = hash
+  end
+  return data._arrow_x
+end
+
 local function draw(data,args)
   local args = args or {}
   local direction = data.direction or "top"
+  if not data.get_arrow_x then
+    rawset(data,"arrow_x_orig",data.arrow_x)
+    rawset(data,"arrow_x_orig",nil)
+    data.get_arrow_x = get_arrow_x
+  end
 
   set_direction(data,direction)
 --   data._internal.set_position(data) --TODO DEAD CODE?

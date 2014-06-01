@@ -89,7 +89,7 @@ local function set_position(self)
     if (self.direction == "left") or (self.direction == "right") then
       ret = {x=drawable_geom.x+((self.direction == "right") and - self.width or drawable_geom.width),y=drawable_geom.y+parent.y+((self.arrow_type ~= base.arrow_type.NONE) and parent.height/2-(self.arrow_x or 20)-6 or 0)}
     else
-      ret = {x=drawable_geom.x+parent.x-((self.arrow_type ~= base.arrow_type.NONE) and (self._arrow_x or 20)+11-parent.width/2 or 0),y=(self.direction == "bottom") and drawable_geom.y-self.height or drawable_geom.y+drawable_geom.height}
+      ret = {x=drawable_geom.x+parent.x-((self.arrow_type ~= base.arrow_type.NONE) and (self.arrow_x or 20)+11-parent.width/2 or 0),y=(self.direction == "bottom") and drawable_geom.y-self.height or drawable_geom.y+drawable_geom.height}
     end
   elseif prefx ~= 0 or prefy ~= 0 then
     ret = capi.mouse.coords()
@@ -121,6 +121,7 @@ local function set_position(self)
   elseif ret.x < 0 then
     ret.x = 0
   end
+
   change_geometry_idle(self,ret.x,ret.y - 2*(self.wibox.border_width or 0))
 end
 
