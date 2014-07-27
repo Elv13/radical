@@ -11,7 +11,21 @@ local module = {}
 
 local function icon_fit(data,...)
   local w,h = wibox.widget.imagebox.fit(...)
-  return w,data.icon_size or h
+  --Try to retermine the limiting factor
+  if data._internal.layout.dir == "y" then
+    return data.icon_size or w,data.icon_size or h
+  else
+    return w,data.icon_size or h
+  end
+  
+end
+
+local function icon_draw(self,w, cr, width, height)
+  local w,h = wibox.widget.imagebox.fit(self,width,height)
+  cr:save()
+  cr:translate((width-w)/2,0)
+  wibox.widget.imagebox.draw(self,w, cr, width, height)
+  cr:restore()
 end
 
 local function create_item(item,data,args)
@@ -30,12 +44,14 @@ local function create_item(item,data,args)
   local text_w = wibox.widget.textbox()
   text_w:set_align("center")
   item._private_data._fit = wibox.widget.background.fit
-  m.fit = function(...)
-      if item.visible == false or item._filter_out == true then
-        return 0,0
-      end
-      return data._internal.layout.item_fit(data,item,...)
-  end
+--   m.fit = function(...)
+--       if item.visible == false or item._filter_out == true then
+--         return 0,0
+--       end
+--       local w,h = data._internal.layout.item_fit(data,item,...)
+--       print("item_fit",w,h)
+--       return data._internal.layout.item_fit(data,item,...)
+--   end
 
   if data.fkeys_prefix == true then
     local pref = wibox.widget.textbox()
@@ -52,26 +68,26 @@ local function create_item(item,data,args)
     l:add(args.prefix_widget)
   end
 
-  local icon_flex = wibox.layout.align.horizontal()
   local icon = wibox.widget.imagebox()
   icon.fit = function(...) return icon_fit(data,...) end
+  icon.draw = icon_draw
   icon._data = data
   icon.set_image = horizontal.set_icon
   if args.icon then
     icon:set_image(args.icon)
   end
-  icon_flex:set_middle(icon)
-  l:add(icon_flex)
+
+  l:add(icon)
   l:add(text_w)
   if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
     local subArrow  = wibox.widget.imagebox() --TODO, make global
     subArrow.fit = function(box, w, h) return subArrow._image:get_width(),item.height end
     subArrow:set_image( beautiful.menu_submenu_icon   )
     lr:add(subArrow)
-    bg.fit = function(box,w,h,...)
-      args.y = data.height-h-data.margins.top
-      return wibox.widget.background.fit(box,w,h,...)
-    end
+  end
+  bg.fit = function(box,w,h,...)
+--     args.y = data.height-h-data.margins.top --TODO dead code?
+    return data._internal.layout.item_fit(data,item,box,w,h)
   end
   if item.checkable then
     item.get_checked = function()

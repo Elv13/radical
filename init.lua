@@ -80,6 +80,7 @@ return {
   style   = require( "radical.style"   ),
   widgets = require( "radical.widgets" ),
   item    = require( "radical.item"    ),
+--   dock    = require( "radical.dock"    ),
   bar     = bar,
   flexbar = bar.flex,
   tooltip = tooltip

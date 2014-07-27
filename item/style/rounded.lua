@@ -50,11 +50,16 @@ local function draw(item,args)
   end
 
   local ih = item.height
+  local iw = item.width
+  if iw and iw > ih then
+    ih = iw
+  end
   if not focussed or not focussed[ih] then
     if not focussed then
       focussed,default={},{}
     end
     local bc = item.border_color
+
     focussed[ih] = gen(ih,item.bg_focus,bc)
     default [ih] = gen(ih,item.bg,bc)
   end

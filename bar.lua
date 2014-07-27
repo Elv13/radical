@@ -10,7 +10,7 @@ local fkey       = require( "radical.widgets.fkey"         )
 local button     = require( "awful.button"                 )
 local checkbox   = require( "radical.widgets.checkbox"     )
 local item_style = require( "radical.item.style.arrow_single" )
-local vertical   = require( "radical.layout.vertical"      )
+-- local vertical   = require( "radical.layout.vertical"      )
 local item_layout= require( "radical.item.layout.horizontal" )
 
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
@@ -122,7 +122,7 @@ end
 
 local function setup_item(data,item,args)
   -- Add widgets
-  data._internal.layout:add(item_layout(item,data,args))
+  data._internal.layout:add(data.item_layout(item,data,args))
   if data.select_on == base.event.HOVER then
     item.widget:connect_signal("mouse::enter", function() item.selected = true end)
     item.widget:connect_signal("mouse::leave", function() item.selected = false end)
@@ -143,6 +143,7 @@ local function new(args)
     args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
     args.internal.setup_item     = args.internal.setup_item     or setup_item
     args.item_style = args.item_style or item_style
+    args.item_layout = args.item_layout or item_layout
     args.sub_menu_on = args.sub_menu_on or base.event.BUTTON1
     local ret = base(args)
     ret:connect_signal("clear::menu",function(_,vis)

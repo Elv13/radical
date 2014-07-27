@@ -82,6 +82,7 @@ end
 local function _set_direction(data,direction)
   local height,width = data.height,data.width
   local hash = height*1000+width
+  print("DIR",direction,hash,data._arrow_x,data._internal.last_size)
 
   -- Try not to waste time for nothing
   if data._internal._last_direction == direction..(hash) then return end
@@ -128,7 +129,7 @@ local function get_arrow_x(data)
   local hash = height*1000+width
   if not data._arrow_x or data._internal.last_size ~= hash then
     gen_arrow_x(data,direction)
-    data._internal.last_size = hash
+--     data._internal.last_size = hash
   end
   return data._arrow_x
 end

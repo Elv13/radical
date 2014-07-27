@@ -81,7 +81,9 @@ local function setup_event(data,item,args)
   data:connect_signal("parent_geometry::changed",function(_,vis)
     local fit_w,fit_h = data._internal.layout:fit()
     data.height = fit_h
-    data.style(data)
+    if data.style then
+      data.style(data)
+    end
   end)
   item.widget:buttons( util.table.join(unpack(buttons)))
 end
@@ -93,7 +95,9 @@ function module:setup_item(data,item,args)
   local fit_w,fit_h = data._internal.layout:fit()
   data.width = fit_w
   data.height = fit_h
-  data.style(data)
+  if data.style then
+    data.style(data)
+  end
   local text_w = item._internal.text_w
   local icon_w = item._internal.icon_w
 
@@ -143,11 +147,14 @@ local function new(data)
   l.fit = function(a1,a2,a3)
     local result,r2 = wibox.layout.fixed.fit(a1,99999,99999)
 --     return data.rowcount*(data.item_width or data.default_width),data.item_height
+    local w,h
     if data.auto_resize and data._internal.largest_item_h then
-      return data.rowcount*(data.item_width or data.default_width),data._internal.largest_item_h_v > data.item_height and data._internal.largest_item_h_v or data.item_height
+      w,h = data.rowcount*(data.item_width or data.default_width),data._internal.largest_item_h_v > data.item_height and data._internal.largest_item_h_v or data.item_height
     else
-      return data.rowcount*(data.item_width or data.default_width),data.item_height
+      w,h = data.rowcount*(data.item_width or data.default_width),data.item_height
     end
+    data:emit_signal("layout_size",w,h)
+    return w,h
   end
   l.add = function(l,item)
     return wibox.layout.fixed.add(l,item.widget)

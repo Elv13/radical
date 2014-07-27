@@ -55,7 +55,7 @@ end
 
 local function create_item(t,s)
   local menu = instances[s]
-  if not menu then return end
+  if not menu or not t then return end
   local w = wibox.layout.fixed.horizontal()
   local icon =  tag.geticon(t)
   local ib = wibox.widget.imagebox()
@@ -90,7 +90,11 @@ local function create_item(t,s)
 
   menu:connect_signal("button::press",function(menu,item,button_id,mod)
     if module.buttons and module.buttons[button_id] then
-      module.buttons[button_id](item.tag[1],menu,item,button_id,mod)
+      if item.tag[1] then
+        module.buttons[button_id](item.tag[1],menu,item,button_id,mod)
+      else
+        print("Invalid tag")
+      end
     end
   end)
 
@@ -127,15 +131,24 @@ local function tag_activated(t)
 end
 
 local function tag_added(t,b)
-  if t then
-    local s = tag.getscreen(t)
-    if not cache[t] then
-      create_item(t,s)
-    elseif cache[t]._internal.screen ~= s then
-      instances[cache[t]._internal.screen]:remove(cache[t])
-      instances[s]:append(cache[t])
-      cache[t]._internal.screen = s
+  if not t then return end
+
+  local s = tag.getscreen(t)
+  local item = cache[t]
+
+  -- Creating items when there is no screen cause random behaviors
+  if not item and s then
+    create_item(t,s)
+  elseif item._internal.screen ~= s then
+    if item._internal.screen then
+      instances[item._internal.screen]:remove(item)
     end
+    if s then
+      instances[s]:append(item)
+    end
+
+    --Allow nil
+    item._internal.screen = s
   end
 end
 
@@ -215,10 +228,10 @@ local function new(s)
   local track = tracker(s)
 
   local args = {
-    item_style = radical.item.style.arrow_prefix,
+    item_style = beautiful.taglist_theme or radical.item.style.arrow_prefix,
     select_on  = radical.base.event.NEVER,
-    fg         = beautiful.tasglist_fg or beautiful.fg_normal,
-    bg         = beautiful.tasglist_bg or beautiful.bg_normal,
+    fg         = beautiful.taglist_fg or beautiful.fg_normal,
+    bg         = beautiful.taglist_bg or beautiful.bg_normal,
     bg_focus   = beautiful.taglist_bg_selected,
     fg_focus   = beautiful.taglist_fg_selected,
 --     fkeys_prefix = true,

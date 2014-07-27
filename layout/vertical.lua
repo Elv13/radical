@@ -52,13 +52,14 @@ function module:setup_key_hooks(data)
 end
 
 --Get preferred item geometry
-local function item_fit(data,item,...)
-  local w, h = item._internal.cache_w or 1,item._internal.cache_h or 1
+local function item_fit(data,item,self,width,height)
+  local w, h = 0,0--item._internal.cache_w or 1,item._internal.cache_h or 1
   if data.visible then
-    w, h = item._private_data._fit(...)
+    w, h = item._private_data._fit(self,width,height)
     item._internal.pix_cache = {} --Clear the pimap cache
   end
-  return w, item._private_data.height or h
+
+  return w, item.height or h
 end
 
 -- As of July 2013, LGI is too slow to redraw big menus at ok speed
@@ -253,8 +254,10 @@ local function new(data)
   real_l.fit = function(a1,a2,a3)
     if not data.visible then return 1,1 end
     local result,r2 = wibox.layout.fixed.fit(a1,99999,99999)
-    local total = data._total_item_height
-    return compute_geo(data)
+    local w,h = compute_geo(data)
+    print("MIT",w,h)
+    data:emit_signal("layout_size",w,h)
+    return w,h
   end
   real_l.add = function(real_l,item)
     return wibox.layout.fixed.add(l,item.widget)

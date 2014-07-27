@@ -100,7 +100,7 @@ local function new_item(data,args)
   local item,private_data = object({
     private_data  = {
       text        = args.text        or ""                                                                  ,
-      height      = args.height      or data.item_height or beautiful.menu_height or 30                     ,
+--       height      = args.height      or data.item_height or beautiful.menu_height or 30                     ,
       width       = args.width       or nil                                                                 ,
       icon        = args.icon        or nil                                                                 ,
       prefix      = args.prefix      or ""                                                                  ,
@@ -131,7 +131,12 @@ local function new_item(data,args)
   item._private_data = private_data
   item._internal     = {}
   theme.setup_item_colors(data,item,args)
-  item.get_y = function() return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height end --Hack around missing :fit call for last item
+  item.get_y = function()
+    return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height --Hack around missing :fit call for last item
+  end
+  item.get_height = function()
+    return args.height or data.item_height or beautiful.menu_height or 30
+  end
   item.get_bg = function()
     return data.bg
   end
