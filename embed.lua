@@ -77,9 +77,9 @@ local function setup_item(data,item,args)
     end
   end
 
-  item:connect_signal("button::release",function(_m,_i,button_id,mods)
+  item:connect_signal("button::release",function(_m,_i,button_id,mods,geo)
     if #mods == 0 and buttons[button_id] then
-      buttons[button_id](_m,_i,mods)
+      buttons[button_id](_m,_i,mods,geo)
     end
   end)
 

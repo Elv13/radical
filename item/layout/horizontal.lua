@@ -124,14 +124,14 @@ function module.setup_event(data,item,widget)
     data:emit_signal("button::press",item,id,mods_invert)
     item:emit_signal("button::press",data,id,mods_invert)
   end)
-  widget:connect_signal("button::release",function(_,__,___,id,mod)
+  widget:connect_signal("button::release",function(wdg,__,___,id,mod,geo)
     local mods_invert = {}
     for k,v in ipairs(mod) do
       mods_invert[v] = i
     end
     item.state[4] =  nil
-    data:emit_signal("button::release",item,id,mods_invert)
-    item:emit_signal("button::release",data,id,mods_invert)
+    data:emit_signal("button::release",item,id,mods_invert,geo)
+    item:emit_signal("button::release",data,id,mods_invert,geo)
   end)
   widget:connect_signal("mouse::enter",function(b,t)
     data:emit_signal("mouse::enter",item)

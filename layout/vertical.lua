@@ -255,7 +255,6 @@ local function new(data)
     if not data.visible then return 1,1 end
     local result,r2 = wibox.layout.fixed.fit(a1,99999,99999)
     local w,h = compute_geo(data)
-    print("MIT",w,h)
     data:emit_signal("layout_size",w,h)
     return w,h
   end

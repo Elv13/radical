@@ -70,6 +70,7 @@ The current valid types are:
  * **Embed:** Menus in menus. This can be used as subsections in large menus
  * **Bar:** A compact horizontal wibox widget
  * **Flexbar:** An extensible horizontal wibox widget
+ * **Dock:** OS X like dock with auto hiding and rectangular items
 
 ### Menu style
 
@@ -285,14 +286,14 @@ Most item_layout also repackage the default widget signals. It usually does the
 same as using the `buttonX` menu attributes, but is preferrable in some scenarios
 like when a modifier is applied.
 
-|       Name        |           Description         |         Arguments        |
-| ----------------- | ----------------------------- | ------------------------ |
-| button::press     | A button press                | menu,item,button_id,mods |
-| button::release   | A button release              | menu,item,button_id,mods |
-| mouse::enter      | When the mouse enter          | menu,item                |
-| mouse::leave      | When the mouse leave          | menu,item                |
-| long::hover       | The mouse is hover 1.5 sec    | menu,item                |
-| long::press       | The mouse is pressed 1.5 sec  | menu,item                |
+|       Name        |           Description         |           Arguments          |
+| ----------------- | ----------------------------- | ---------------------------- |
+| button::press     | A button press                | menu,item,button_id,mods,geo |
+| button::release   | A button release              | menu,item,button_id,mods,geo |
+| mouse::enter      | When the mouse enter          | menu,item                    |
+| mouse::leave      | When the mouse leave          | menu,item                    |
+| long::hover       | The mouse is hover 1.5 sec    | menu,item                    |
+| long::press       | The mouse is pressed 1.5 sec  | menu,item                    |
 
 `mods` is an array with the applied modifier as **key**. If the value is `nil`,
 then the modifier is not present. Usual modifiers are `Control`, `Shift`, `mod1`

@@ -168,6 +168,7 @@ end
 -- Create the auto hiding wibox
 local function get_wibox(data, screen)
   if data._internal.w then return data._internal.w end
+  data:emit_signal("dock::request")
 
   local dir,rotation = get_direction(data)
   local geo_src = data._internal._geom_vals or data
@@ -224,6 +225,13 @@ local function create_placeholder(data)
       glib.idle_add(glib.PRIORITY_DEFAULT_IDLE, function()
         if not data._internal._geom_vals then return end
         local w,h,internal = data._internal._geom_vals.width,data._internal._geom_vals.height,data._internal
+
+        if h == 0 then
+          h = 1
+        end
+        if w == 0 then
+          w = 1
+        end
 
         -- Resize the placeholder
         internal.placeholder[hw_invert] = (hw_invert == "height") and h or w
@@ -282,6 +290,20 @@ local function setup_item(data,item,args)
   -- Add widgets
   local f = (data._internal.layout.setup_item) or (layout.vertical.setup_item)
   f(data._internal.layout,data,item,args)
+
+  -- Buttons
+  local buttons = {}
+  for i=1,10 do
+    if args["button"..i] then
+      buttons[i] = args["button"..i]
+    end
+  end
+
+  item:connect_signal("button::release",function(_m,_i,button_id,mods,geo)
+    if #mods == 0 and buttons[button_id] then
+      buttons[button_id](_m,_i,mods,geo)
+    end
+  end)
 
   -- Tooltip
   item.widget:set_tooltip(item.tooltip)
