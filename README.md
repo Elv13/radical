@@ -261,6 +261,7 @@ here is the list:
 | clear             | Remove all items                             |           ---         |  ---   |
 | scroll_down       | If the menu is cropped, scroll down          |           ---         |  ---   |
 | scroll_up         | If the menu is cropped, scroll up            |           ---         |  ---   |
+| hide              | Hide a menu and all sub menus                |           ---         |  ---   |
 | swap              | Swap 2 items                                 | both items            |  ---   |
 | move              | Move an item                                 | the item, the new idx |  ---   |
 | remove            | Remove the item                              | the item              |  ---   |

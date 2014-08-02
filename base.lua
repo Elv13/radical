@@ -544,6 +544,17 @@ local function new(args)
     end
   end
 
+  function data:hide()
+    data.visible = false
+    if data.parent_geometry and data.parent_geometry.is_menu then
+      local parent = data.parent_geometry
+      while parent do
+        parent.visible = false
+        parent = parent.parent_geometry and parent.parent_geometry.is_menu and parent.parent_geometry
+      end
+    end
+  end
+
   if private_data.layout then
     private_data.layout:setup_key_hooks(data)
   end
