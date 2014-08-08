@@ -87,6 +87,11 @@ local function reload_highlight(i)
       hl[#hl+1] = v
     end
     tag_list.highlight(hl)
+
+    i._internal.border_color_back = i.client.border_color
+    i.client.border_color = beautiful.bg_urgent
+  elseif i._internal.border_color_back then
+    i.client.border_color = i._internal.border_color_back
   end
 end
 
@@ -99,7 +104,7 @@ local function new(args)
   local t,auto_release = tag.selected(capi.client.focus and capi.client.focus.screen or capi.mouse.screen),args.auto_release
   local currentMenu = radical.box({filter = true, show_filter=not auto_release, autodiscard = true,
     disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[capi.client.focus and capi.client.focus.screen or capi.mouse.screen]).geometry.width)/2),
-    icon_transformation = beautiful.alttab_icon_transformation,filter_underlay="Use [Shift] to toggle clients",filter_underlay_color=beautiful.menu_bg_normal,
+    icon_transformation = beautiful.alttab_icon_transformation,filter_underlay="Use [Shift] and [Control] to toggle clients",filter_underlay_color=beautiful.menu_bg_normal,
     filter_placeholder="<span fgcolor='".. (beautiful.menu_fg_disabled or beautiful.fg_disabled or "#777777") .."'>Type to filter</span>"})
 
   if not auto_release then
@@ -131,6 +136,15 @@ local function new(args)
   currentMenu:add_key_hook({}, "Shift_L", "press", function()
     currentMenu._current_item.checked = not currentMenu._current_item.checked
     client2.toggletag (t, currentMenu._current_item.client)
+    reload_underlay(currentMenu._current_item.client,currentMenu._current_item)
+    if not auto_release then
+      reload_highlight(currentMenu._current_item)
+    end
+    return true
+  end)
+  currentMenu:add_key_hook({}, "Control_L", "press", function()
+    currentMenu._current_item.checked = not currentMenu._current_item.checked
+    client2.movetotag(t, currentMenu._current_item.client)
     reload_underlay(currentMenu._current_item.client,currentMenu._current_item)
     if not auto_release then
       reload_highlight(currentMenu._current_item)
@@ -196,6 +210,9 @@ local function new(args)
       push_focus(capi.client.focus)
       if not auto_release then
         tag_list.highlight()
+      end
+      if currentMenu._current_item and currentMenu._current_item._internal.border_color_back then
+        currentMenu._current_item.client.border_color = currentMenu._current_item._internal.border_color_back
       end
     end
   end)

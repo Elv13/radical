@@ -4,7 +4,7 @@ local awful     = require( "awful"      )
 local module = {}
 
 local function createTagList(aScreen)
-  local tagList = radical.context({autodiscard = true})
+  local tagList = radical.context {}
   for _, v in ipairs(awful.tag.gettags(aScreen)) do
     tagList:add_item({text = v.name,icon=awful.tag.geticon(v)})
   end

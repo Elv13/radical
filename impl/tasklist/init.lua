@@ -233,7 +233,7 @@ local function new(screen)
     select_on=radical.base.event.NEVER,
     disable_markup = true,
     fg       = beautiful.tasklist_fg or beautiful.fg_normal,
-    bg       = beautiful.tasklist_bg or beautiful.fg_normal,
+    bg       = beautiful.tasklist_bg or beautiful.bg_normal,
     underlay_style = beautiful.tasklist_underlay_style or radical.widgets.underlay.draw_arrow,
     icon_transformation = beautiful.tasklist_icon_transformation
   }

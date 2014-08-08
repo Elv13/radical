@@ -26,7 +26,7 @@ local function createTagList(aScreen,args)
   if not tag_list then
     tag_list = require("radical.impl.taglist")
   end
-  local tagList = radical.context({autodiscard = true})
+  local tagList = radical.context {}
   for _, v in ipairs(awful.tag.gettags(aScreen)) do
     args.text,args.icon = v.name,awful.tag.geticon(v)
     local i = tagList:add_item(args)
@@ -47,7 +47,7 @@ function module.listTags(args)
   if capi.screen.count() == 1 then
     return createTagList(1,args or {})
   else
-    local screenSelect = radical.context(({autodiscard = true}))
+    local screenSelect = radical.context {}
     for i=1, capi.screen.count() do
       screenSelect:add_item({text="Screen "..i , sub_menu = createTagList(i,args or {})})
     end
@@ -57,7 +57,7 @@ end
 
 function module.layouts(menu,layouts)
   local cur = awful.layout.get(awful.tag.getscreen(awful.tag.selected(capi.client.focus and capi.client.focus.screen)))
-  local screenSelect = menu or radical.context(({autodiscard = true}))
+  local screenSelect = menu or radical.context {}
   local layouts = layouts or fallback_layouts
   for i, layout_real in ipairs(layouts) do
     local layout2 = awful.layout.getname(layout_real)

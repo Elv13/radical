@@ -94,9 +94,9 @@ local function new(screen, args)
       itemMaximized.checked    = module.client.fullscreen 
     end
   }
-  itemMoveToTag  = mainMenu:add_item{text="Move to tag"       , sub_menu = listTags                       ,}
-  itemSendSignal = mainMenu:add_item{text="Send Signal"       , sub_menu = singalMenu()                   ,}
-  itemRenice     = mainMenu:add_item{text="Renice"            , checked  = true , button1 = function()  end}
+  itemMoveToTag  = mainMenu:add_item{text="Move to tag"       , sub_menu = function() return listTags() end,}
+  itemSendSignal = mainMenu:add_item{text="Send Signal"       , sub_menu = singalMenu()                    ,}
+  itemRenice     = mainMenu:add_item{text="Renice"            , checked  = true , button1 = function()  end,}
   itemNewTag     = mainMenu:add_item{text="Move to a new Tag" , button1  = function()
     local t = createNewTag()
     module.client:tags({t})
