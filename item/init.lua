@@ -129,7 +129,7 @@ local function new_item(data,args)
     autogen_signals = true,
   })
   item._private_data = private_data
-  item._internal     = {}
+  item._internal     = args._internal or {}
   theme.setup_item_colors(data,item,args)
   item.get_y = function()
     return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height --Hack around missing :fit call for last item
@@ -174,6 +174,7 @@ local function new_item(data,args)
     local current_item = data._current_item
     if current_item and current_item ~= item or force then
       current_item.state[module.item_flags.SELECTED] = nil
+      current_item:emit_signal("selected::changed",false)
       hide_sub_menu(current_item,data)
     end
 

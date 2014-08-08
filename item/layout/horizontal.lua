@@ -49,10 +49,6 @@ end
 -- Setup the item icon
 function module:setup_icon(item,data)
   local icon = wibox.widget.imagebox()
-  icon.fit = function(...)
-    local w,h = wibox.widget.imagebox.fit(...)
-    return w+3,h
-  end
   icon._data = data
   icon._item = item
   icon.set_image = module.set_icon
@@ -99,7 +95,7 @@ end
 -- Create sub_menu arrows
 local sub_arrow = nil
 function module:setup_sub_menu_arrow(item,data)
-  if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
+  if (item._private_data.sub_menu_f or item._private_data.sub_menu_m) and not data.disable_submenu_icon then
     if not sub_arrow then
       sub_arrow = wibox.widget.imagebox() --TODO, make global
       sub_arrow.fit = function(box, w, h) return sub_arrow._image:get_width(),item.height end
@@ -197,6 +193,10 @@ local function create_item(item,data,args)
 
   -- Icon
   local icon = module:setup_icon(item,data)
+  icon.fit = function(...)
+    local w,h = wibox.widget.imagebox.fit(...)
+    return w+3,h
+  end
   layout:add(icon)
 
   -- Prefix

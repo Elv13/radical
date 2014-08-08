@@ -7,6 +7,7 @@ local checkbox  = require( "radical.widgets.checkbox"  )
 local fkey      = require( "radical.widgets.fkey"      )
 local underlay  = require( "radical.widgets.underlay"  )
 local theme     = require( "radical.theme"             )
+local horizontal= require( "radical.item.layout.horizontal")
 
 local module = {}
 
@@ -35,35 +36,6 @@ function module.paint_underlay(data,item,cr,width,height)
   cr:set_source_surface(udl,width-udl:get_width()-3)
   cr:paint_with_alpha(data.underlay_alpha)
   cr:restore()
-end
-
--- Apply icon transformation
-function module.set_icon(self,image)
-  if self._data.icon_transformation then
-    self._item._original_icon = image
-    image = self._data.icon_transformation(image,self._data,self._item)
-  end
-  wibox.widget.imagebox.set_image(self,image)
-end
-
--- Setup the item icon
-function module:setup_icon(item,data)
-  local icon = wibox.widget.imagebox()
-  icon.fit = function(...)
-    local w,h = wibox.widget.imagebox.fit(...)
-    return w+3,h
-  end
-  icon._data = data
-  icon._item = item
-  icon.set_image = module.set_icon
-  if item.icon then
-    icon:set_image(item.icon)
-  end
-
-  item.set_icon = function (_,value)
-    icon:set_image(value)
-  end
-  return icon
 end
 
 -- Show the checkbox
@@ -197,7 +169,11 @@ local function create_item(item,data,args)
   end
 
   -- Icon
-  local icon = module:setup_icon(item,data)
+  local icon = horizontal.setup_icon(horizontal,item,data)
+  icon.fit = function(...)
+    local w,h = wibox.widget.imagebox.fit(...)
+    return w+3,h
+  end
   layout:add(icon)
 
   -- Prefix

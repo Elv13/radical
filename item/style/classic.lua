@@ -61,7 +61,7 @@ local function draw(item,args)
 
   local state = item.state or {}
   local current_state = state._current_key or nil
-  local state_name = base.colors_by_id[current_state]
+  local state_name = current_state and base.colors_by_id[current_state] or "normal"
 
   if current_state  == base.item_flags.SELECTED or (item._tmp_menu) then
     item.widget:set_bg(focussed[ih])

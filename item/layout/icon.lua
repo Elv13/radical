@@ -68,14 +68,9 @@ local function create_item(item,data,args)
     l:add(args.prefix_widget)
   end
 
-  local icon = wibox.widget.imagebox()
+  local icon = horizontal.setup_icon(horizontal,item,data)
   icon.fit = function(...) return icon_fit(data,...) end
   icon.draw = icon_draw
-  icon._data = data
-  icon.set_image = horizontal.set_icon
-  if args.icon then
-    icon:set_image(args.icon)
-  end
 
   l:add(icon)
   l:add(text_w)

@@ -192,6 +192,7 @@ Multiple items can have multiple sets of options.
 | overlay             | A layer on top of the item                         | function(data,item,cr,w,h)    |
 | opacity             | Make this menu translucent (require a compositor)  | number (0 to 1)               |
 | icon_transformation | Hijack the icon drawing function                   | function(icon,data,item)      |
+| disable_submenu_icon| Do not show the submenu icon (arrow)               | boolean                       |
 
 ###Item options
 

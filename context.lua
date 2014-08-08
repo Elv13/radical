@@ -218,14 +218,7 @@ local function setup_buttons(data,item,args)
   --Hide on right click
   if not buttons[3] then
     buttons[3] = function()
-      data.visible = false
-      if data.parent_geometry and data.parent_geometry.is_menu then
-        local parent = data.parent_geometry
-        while parent do
-          parent.visible = false
-          parent = parent.parent_geometry and parent.parent_geometry.is_menu and parent.parent_geometry
-        end
-      end
+      data:hide()
     end
   end
 
