@@ -59,6 +59,7 @@ end
 
 local function select_next(menu)
   local item = menu.next_item
+  if not item then return end
   item.selected = true
   item.button1(nil,nil,nil,nil,true)
   return true
@@ -97,7 +98,7 @@ end
 
 local function new(args)
   local histo = get_history(--[[screen]])
-  if #histo == o then
+  if #histo == 0 then
     return
   end
 
@@ -153,45 +154,43 @@ local function new(args)
   end)
 
 
-  if module.titlebar_path then
-    for k,v2 in ipairs(histo) do
-      local l,v = wibox.layout.fixed.horizontal(),v2[2]
-      if not auto_release then
-        l:add( button_group({client = v, field = "floating" , focus = false, checked = function() return v.floating  end, onclick = function() v.floating  = not v.floating  end }))
-        l:add( button_group({client = v, field = "maximized", focus = false, checked = function() return v.maximized end, onclick = function() v.maximized = not v.maximized end }))
-        l:add( button_group({client = v, field = "sticky"   , focus = false, checked = function() return v.sticky    end, onclick = function() v.sticky    = not v.sticky    end }))
-        l:add( button_group({client = v, field = "ontop"    , focus = false, checked = function() return v.ontop     end, onclick = function() v.ontop     = not v.ontop     end }))
-        l:add( button_group({client = v, field = "close"    , focus = false, checked = function() return false       end, onclick = function() v:kill()                      end }))
-      end
-
-      local underlays = reload_underlay(v)
-
+  for k,v2 in ipairs(histo) do
+    local l,v = wibox.layout.fixed.horizontal(),v2[2]
+    if not auto_release and module.titlebar_path then
+      l:add( button_group({client = v, field = "floating" , focus = false, checked = function() return v.floating  end, onclick = function() v.floating  = not v.floating  end }))
+      l:add( button_group({client = v, field = "maximized", focus = false, checked = function() return v.maximized end, onclick = function() v.maximized = not v.maximized end }))
+      l:add( button_group({client = v, field = "sticky"   , focus = false, checked = function() return v.sticky    end, onclick = function() v.sticky    = not v.sticky    end }))
+      l:add( button_group({client = v, field = "ontop"    , focus = false, checked = function() return v.ontop     end, onclick = function() v.ontop     = not v.ontop     end }))
+      l:add( button_group({client = v, field = "close"    , focus = false, checked = function() return false       end, onclick = function() v:kill()                      end }))
       l.fit = function (s,w,h) return 5*h,h end
-      local i = currentMenu:add_item({
-        text          = v.name,
-        icon          = v.icon or module.default_icon,
-        suffix_widget = not auto_release and l or nil,
-        selected      = capi.client.focus and capi.client.focus == v,
-        underlay      = underlays,
-        checkable     = not auto_release,
-        checked       = not auto_release and is_in_tag(t,v) or nil,
-        button1       = function(a,b,c,d,no_hide)
-          local t = focusTag[v] or v:tags()[1]
-          if t and t.selected == false and not util.table.hasitem(v:tags(),tag.selected(v.screen)) then
-            tag.viewonly(t)
-          end
-          capi.client.focus = v
-          v:raise()
-          if not no_hide then
-            currentMenu.visible = false
-          end
-        end,
-      })
-      i.client = v
+    end
 
-      if not auto_release then
-        i:connect_signal("selected::changed",reload_highlight)
-      end
+    local underlays = reload_underlay(v)
+
+    local i = currentMenu:add_item({
+      text          = v.name,
+      icon          = v.icon or module.default_icon,
+      suffix_widget = not auto_release and l or nil,
+      selected      = capi.client.focus and capi.client.focus == v,
+      underlay      = underlays,
+      checkable     = not auto_release,
+      checked       = not auto_release and is_in_tag(t,v) or nil,
+      button1       = function(a,b,c,d,no_hide)
+        local t = focusTag[v] or v:tags()[1]
+        if t and t.selected == false and not util.table.hasitem(v:tags(),tag.selected(v.screen)) then
+          tag.viewonly(t)
+        end
+        capi.client.focus = v
+        v:raise()
+        if not no_hide then
+          currentMenu.visible = false
+        end
+      end,
+    })
+    i.client = v
+
+    if not auto_release then
+      i:connect_signal("selected::changed",reload_highlight)
     end
   end
 

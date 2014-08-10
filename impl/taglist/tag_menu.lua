@@ -2,7 +2,6 @@ local setmetatable = setmetatable
 local io           = io
 local ipairs       = ipairs
 local tag       = require( "awful.tag"     )
-local config    = require( "forgotten"        )
 local menu      = require( "radical.context"  )
 local com_tag = require( "radical.impl.common.tag" )
 local awful = require("awful")
@@ -15,6 +14,13 @@ local module = {}
 local aTagMenu = nil
 
 local aTag = nil
+
+
+-- My config has an icon directory path stored there, change as you like
+local config = nil
+if pcall(require,("forgotten")) then
+  config = require("forgotten")
+end
 
 local function new(t)
   aTag = t or aTag
