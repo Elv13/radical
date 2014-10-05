@@ -4,6 +4,7 @@ local color     = require( "gears.color"      )
 local cairo     = require( "lgi"              ).cairo
 local base = require( "radical.base" )
 local glib = require("lgi").GLib
+local margins = require("radical.margins")
 
 local module = {
   margins = {
@@ -75,14 +76,17 @@ local function gen_arrow_x(data,direction)
       --TODO
     end
   elseif at == base.arrow_type.CENTERED then
-    data._arrow_x = data.width/2 - 13
+    if direction == "left" or direction == "right" then
+      data._arrow_x = data.height/2 - 13
+    else
+      data._arrow_x = data.width/2 - 13
+    end
   end
 end
 
 local function _set_direction(data,direction)
   local height,width = data.height,data.width
   local hash = height*1000+width
-  print("DIR",direction,hash,data._arrow_x,data._internal.last_size)
 
   -- Try not to waste time for nothing
   if data._internal._last_direction == direction..(hash) then return end
@@ -110,9 +114,12 @@ local function _set_direction(data,direction)
     top_clip_surface     = rotate(top_clip_surface,geometry,angle,swap)
   end
   data.wibox.shape_bounding = top_bounding_surface._native
+--   data.wibox.shape_clip = top_clip_surface._native
   data.wibox:set_bg(cairo.Pattern.create_for_surface(top_clip_surface))
   data._internal._need_direction_reload = false
   data._internal._last_direction = direction..(hash)
+
+
 end
 
 -- Try to avoid useless repaint, this function is heavy
@@ -122,6 +129,15 @@ local function set_direction(data,direction)
     glib.idle_add(glib.PRIORITY_HIGH_IDLE, function() _set_direction(data,data._internal._need_direction) end)
     data._internal._need_direction_reload = true
   end
+
+  -- Margins need to set manually, a reset will override user changes
+  if data.arrow_type ~= base.arrow_type.NONE and (not (data.parent_geometry and data.parent_geometry.is_menu)) and data._internal.former_direction ~= direction then
+    if data._internal.former_direction then
+      data.margins[data._internal.former_direction] = data.border_width + module.margins[data._internal.former_direction:upper()]
+    end
+    data.margins[direction] = 13 + 2*data.border_width
+  end
+  data._internal.former_direction = direction
 end
 
 local function get_arrow_x(data)
@@ -146,11 +162,7 @@ local function draw(data,args)
   set_direction(data,direction)
 --   data._internal.set_position(data) --TODO DEAD CODE?
 
-  local margins = data.margins
-  local margin = data._internal.margin
-  for k,v in pairs(margins) do
-    margin["set_"..k](margin,v)
-  end
+  --TODO call this less often
   return w,w2
 end
 

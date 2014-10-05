@@ -144,9 +144,8 @@ local function new(data)
     base = require( "radical.base" )
   end
   local l = wibox.layout.fixed.horizontal()
-  l.fit = function(a1,a2,a3)
-    local result,r2 = wibox.layout.fixed.fit(a1,99999,99999)
---     return data.rowcount*(data.item_width or data.default_width),data.item_height
+  l.fit = function(a1,a2,a3,force_values)
+    local result,r2 = wibox.layout.fixed.fit(a1,force_values and a2 or 99999,force_values and a3 or 99999)
     local w,h
     if data.auto_resize and data._internal.largest_item_h then
       w,h = data.rowcount*(data.item_width or data.default_width),data._internal.largest_item_h_v > data.item_height and data._internal.largest_item_h_v or data.item_height

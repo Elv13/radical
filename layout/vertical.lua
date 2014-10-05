@@ -194,33 +194,21 @@ function module:setup_item(data,item,args)
   item.widget:emit_signal("widget::updated")
 end
 
-local function compute_geo(data)
+local function compute_geo(data,width,height,force_values)
   local w = data.default_width
   if data.auto_resize and data._internal.largest_item_w then
     w = data._internal.largest_item_w_v > data.default_width and data._internal.largest_item_w_v or data.default_width
   end
-  local visblerow = data.filter_string == "" and data.rowcount or data._internal.visible_item_count
-  if data.max_items and data.max_items < data.rowcount then
-    visblerow = data.max_items
-    if data.filter_string ~= "" then
-      local cur,vis = (data._start_at or 1),0
-      while (data._internal.items[cur] and data._internal.items[cur]) and cur < data.max_items + (data._start_at or 1) do
-        vis = vis + (data._internal.items[cur]._filter_out and 0 or 1)
-        cur = cur +1
-      end
-      visblerow = vis
-    end
-  end
+  
+  local visblerow = data.visible_row_count
+  
   local sw,sh = data._internal.suf_l:fit(9999,9999)
   local pw,ph = data._internal.pref_l:fit(9999,9999)
   if not data._internal.has_widget then
     return w,(total and total > 0 and total or visblerow*data.item_height) + ph + sh
   else
-    local h = (visblerow-#data._internal.widgets)*data.item_height
-    for k,v in ipairs(data._internal.widgets) do
-      local fw,fh = v.widget:fit(9999,9999)
-      h = h + fh
-    end
+    local sumh = data.widget_fit_height_sum
+    local h = (visblerow-#data._internal.widgets)*data.item_height + sumh
     return w,h
   end
 end
@@ -251,10 +239,9 @@ local function new(data)
       suf_l:add(data._internal.scroll_w["down"])
     end
   end
-  real_l.fit = function(a1,a2,a3)
+  real_l.fit = function(a1,a2,a3,force_values)
     if not data.visible then return 1,1 end
-    local result,r2 = wibox.layout.fixed.fit(a1,99999,99999)
-    local w,h = compute_geo(data)
+    local w,h = compute_geo(data,a2,a3,force_values)
     data:emit_signal("layout_size",w,h)
     return w,h
   end

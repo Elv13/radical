@@ -2,6 +2,7 @@ local base = require( "radical.base" )
 local print = print
 local unpack = unpack
 local debug = debug
+local rawset = rawset
 local type = type
 local setmetatable = setmetatable
 local color     = require( "gears.color"      )
@@ -15,6 +16,7 @@ local checkbox  = require( "radical.widgets.checkbox" )
 local arrow_style = require( "radical.style.arrow" )
 local item_mod  = require("radical.item")
 local glib = require("lgi").GLib
+local margins2 = require("radical.margins")
 
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
 
@@ -72,7 +74,8 @@ local function set_position(self)
     if parent.direction == "right" then
       ret={x=parent.x-self.width,y=parent.y+(self.parent_item.y)}
     else
-      ret={x=parent.x+parent.width,y=parent.y+(self.parent_item.y)-self.style.margins.TOP}
+      local margins = self.margins
+      ret={x=parent.x+parent.width,y=parent.y+(self.parent_item.y)-(margins and self.margins.top or self.style.margins.TOP)}
 
       --Handle when the menu doesn't fit in the srceen horizontally
       if ret.x+self.width > src_geo.x + src_geo.width then
@@ -81,13 +84,13 @@ local function set_position(self)
 
       -- Handle when the menu doesn't fit on the screen vertically
       if ret.y+self.height > src_geo.y + src_geo.height then
-       ret.y = ret.y - self.height + self.item_height + 2*self.style.margins.TOP
+       ret.y = ret.y - self.height + self.item_height + 2*(margins and self.margins.top or self.style.margins.TOP)
       end
     end
   elseif parent then
     local drawable_geom = parent.drawable.drawable.geometry(parent.drawable.drawable)
     if (self.direction == "left") or (self.direction == "right") then
-      ret = {x=drawable_geom.x+((self.direction == "right") and - self.width or drawable_geom.width),y=drawable_geom.y+parent.y+((self.arrow_type ~= base.arrow_type.NONE) and parent.height/2-(self.arrow_x or 20)-6 or 0)}
+      ret = {x=drawable_geom.x+((self.direction == "right") and - self.width or drawable_geom.width),y=drawable_geom.y+parent.y--[[+((self.arrow_type ~= base.arrow_type.NONE) and parent.height/2-(self.arrow_x or 20)-6 or 0)]]}
     else
       ret = {x=drawable_geom.x+parent.x-((self.arrow_type ~= base.arrow_type.NONE) and (self.arrow_x or 20)+11-parent.width/2 or 0),y=(self.direction == "bottom") and drawable_geom.y-self.height or drawable_geom.y+drawable_geom.height}
     end
@@ -99,7 +102,7 @@ local function set_position(self)
     if prefy then
       ret.y = prefy
     end
-  elseif not parent then --Use mouse position to set position --TODO it is called too often
+  else --Use mouse position to set position --TODO it is called too often
     ret = capi.mouse.coords()
     local draw = awful.mouse.wibox_under_pointer and awful.mouse.wibox_under_pointer() or awful.mouse.drawin_under_pointer and awful.mouse.drawin_under_pointer()
     if draw then
@@ -152,11 +155,22 @@ local function setup_drawable(data)
   data.get_visible   = function() return private_data.visible end
   data.get_direction = function() return private_data.direction end
   data.get_margins   = function()
-    local ret = {left=data.border_width,right=data.border_width,top=data.style.margins.TOP,bottom=data.style.margins.BOTTOM}
-    if data.arrow_type ~= base.arrow_type.NONE then
-      ret[data.direction] = ret[data.direction]+13
+    if not internal._margins then
+      local ret = {
+        left   = data.border_width+data.style.margins.LEFT   ,
+        right  = data.border_width+data.style.margins.RIGHT  ,
+        top    = data.border_width+data.style.margins.TOP    ,
+        bottom = data.border_width+data.style.margins.BOTTOM ,
+      }
+      m = margins2(internal.margin,ret)
+      rawset(m,"_reset",m.reset)
+      m.reset = function(margins)
+        m.defaults = ret
+        m:_reset()
+      end
+      internal._margins = m
     end
-    return ret
+    return internal._margins
   end
 
   --Setters
