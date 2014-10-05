@@ -1,6 +1,9 @@
 local radical = require("radical")
 local capi = { screen = screen, }
+local type,math = type,math
 local awful     = require( "awful"      )
+local cairo     = require( "lgi"              ).cairo
+local surface = require("gears.surface")
 local module = {}
 
 local function createTagList(aScreen)
@@ -52,6 +55,67 @@ function module.signals()
   sigxcpu       = sigMenu:add_item({text="SIGXCPU"   , button1 = function() util.spawn("kill -s XCPU    "..module.client.pid);mainMenu.visible = false end,underlay=nil})
   sigxfsz       = sigMenu:add_item({text="SIGXFSZ"   , button1 = function() util.spawn("kill -s XFSZ    "..module.client.pid);mainMenu.visible = false end,underlay=nil})
   return sigMenu
+end
+
+function module.screenshot(clients,geo)
+  if not clients then return end
+
+  local prev_menu= radical.context({layout=radical.layout.horizontal,item_width=140,item_height=140,icon_size=100,
+      arrow_type=radical.base.arrow_type.CENTERED,enable_keyboard=false,item_style=radical.item.style.rounded})
+  local t = type(clients)
+  if t == "client" then
+    clients = {clients}
+  elseif t == "tag" then
+    clients = clients:clients()
+  end
+
+  --TODO detect black
+
+  for k,c in ipairs(clients) do
+    local geom = c:geometry()
+    local ratio,h_or_w = geom.width/geom.height,geom.width>geom.height
+    local w,h,scale = h_or_w and 140 or (140*ratio),h_or_w and (140*ratio) or 140,h_or_w and 140/geom.width or 140/geom.height
+
+
+    -- Create a working surface
+    local img = cairo.ImageSurface(cairo.Format.ARGB32, w, h)
+    local cr = cairo.Context(img)
+
+    -- Create a mask
+    cr:arc(10,10,10,0,math.pi*2)
+    cr:fill()
+    cr:arc(w-10,10,10,0,math.pi*2)
+    cr:fill()
+    cr:arc(w-10,h-10,10,0,math.pi*2)
+    cr:fill()
+    cr:arc(10,h-10,10,0,math.pi*2)
+    cr:fill()
+    cr:rectangle(10,0,w-20,h)
+    cr:rectangle(0,10,w,h-20)
+    cr:fill()
+
+    -- Create a matrix to scale down the screenshot
+    cr:scale(scale+0.05,scale+0.05)
+
+    -- Paint the screenshot in the rounded rectangle
+    cr:set_source_surface(surface(c.content))
+    cr:set_operator(cairo.Operator.IN)
+    cr:paint()
+
+    -- Create the item
+    local prev_item = prev_menu:add_item({text = "<b>"..c.name.."</b>",icon=img})
+    prev_menu.wibox.opacity=0.8
+    prev_item.icon = img
+    prev_item.text  = "<b>"..c.name:gsub('&','&amp;').."</b>"
+
+  end
+
+  if geo then
+    prev_menu.parent_geometry = geo
+  end
+
+  prev_menu.visible = true
+  return prev_menu
 end
 
 return module--setmetatable(module, {})
