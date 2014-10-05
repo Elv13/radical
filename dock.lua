@@ -12,9 +12,10 @@ local button     = require( "awful.button"                 )
 local checkbox   = require( "radical.widgets.checkbox"     )
 local vertical   = require( "radical.layout.vertical"      )
 local horizontal = require( "radical.layout.horizontal"    )
-local item_layout= require( "radical.item.layout.icon" )
-local item_style = require("radical.item.style.rounded")
-local glib       = require("lgi").GLib
+local item_layout= require( "radical.item.layout.icon"     )
+local item_style = require( "radical.item.style.rounded"   )
+local glib       = require( "lgi"                          ).GLib
+local margins2   = require("radical.margins"               )
 
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
 local max_size = {height={},width={}}
@@ -103,7 +104,6 @@ local function align_wibox(w,direction,screen)
   if direction == "left" then
     w.x = src_geom.x
   elseif direction == "right" then
-    print("sdfsdf",src_geom.x + src_geom.width - w.width)
     w.x = src_geom.x + src_geom.width - w.width
   elseif direction == "bottom" then
     w.y = src_geom.y+src_geom.height-w.height
@@ -124,6 +124,10 @@ local function set_position(self,value)
   self._internal.position = value
 end
 
+local function get_position(self,value)
+  return self._internal.position
+end
+
 -- Compute the optimal maxmimum size
 local function get_max_size(data,screen)
   local dir = get_direction(data)
@@ -140,23 +144,50 @@ local function get_max_size(data,screen)
   return res
 end
 
+-- local function get_size(data,screen)
+--   local max = get_max_size(data,screen)
+--   if data._internal.orientation == "vertical" and h > max then
+--     
+--   elseif data._internal.orientation == "horizontal" and w > max then
+--     
+--   end
+--   return w,h,max
+-- end
+
 -- The dock always have to be shorter than the screen
 local function adapt_size(data,w,h,screen)
   local max = get_max_size(data,screen)
+
+  -- Get the current size, then compare and ajust
+  local fit_w,fit_h = data._internal.layout:fit(20,9999,true)
+  
+  -- Get the number of items minus the number of widgets
+  -- This can be used to approximate the number of pixel to remove
+  local visible_item = data.visible_row_count - #data._internal.widgets + 1
+
   if data._internal.orientation == "vertical" and h > max then
-    --TODO use item_height to guess the other widget (separators) total size
-    data.item_height = math.ceil((data.item_height*max)/h)
+    local wdg_height = data.widget_fit_height_sum
+    --TODO this assume the widget size wont change
+--     data.item_height = math.ceil((data.item_height*max)/h) --OLD
+    data.item_height = math.ceil((max-wdg_height)/visible_item)
     w = data.item_height
     h = max
     data.item_width  = w
     data.menu_width  = w
+    w = w + data.margins.left+data.margins.right
+    data.default_width = w
+    data._internal.private_data.width = w
   elseif data._internal.orientation == "horizontal" and w > max then
     --TODO merge this with above
+    local wdg_width = data.widget_fit_width_sum
     data.item_width = math.ceil((data.item_height*max)/w)
+    data._internal.private_data = data.item_width
     w = max
     h = data.item_width
     data.item_height  = h
     data.menu_height  = h
+    h = h + data.margins.bottom+data.margins.top
+--     data.default_width = h
   end
   if data.icon_size and data.icon_size > w then
     data.icon_size = w
@@ -173,12 +204,19 @@ local function get_wibox(data, screen)
   local dir,rotation = get_direction(data)
   local geo_src = data._internal._geom_vals or data
 
+  -- Need to be created befoce calling align_wibox
+  local m = wibox.layout.margin()
+  m:set_widget(data._internal.layout)
+  m:set_margins(0)
+  data._internal.mrgns.widget = m
+
   -- Make sure the down will fit on the screen
   geo_src.width,geo_src.height = adapt_size(data,geo_src.width,geo_src.height,screen)
 
   local w = wibox{ screen = screen, width = geo_src.width, height = geo_src.height,ontop=true}
   align_wibox(w,dir,screen)
-  w:set_widget(data._internal.layout)
+
+  w:set_widget(m)
   data._internal.w = w
 
   -- Create the rounded corner mask
@@ -193,8 +231,17 @@ local function get_wibox(data, screen)
 
   -- Hide the dock when the mouse leave
   w:connect_signal("mouse::leave",function()
-    w.visible = false
-    data._internal.placeholder.visible = true
+    if not (data._tmp_menu and data._tmp_menu.visible) then
+      data.visible = false
+    end
+  end)
+  data:emit_signal("visible::changed",true)
+
+  -- Bring back the placeholder when hiding
+  data:connect_signal("visible::changed",function(data,val)
+    if not val then
+      data._internal.placeholder.visible = true
+    end
   end)
 
   return w
@@ -202,19 +249,23 @@ end
 
 -- Create the "hidden" wibox that display the first one on command
 local function create_placeholder(data)
-  local screen,dir = get_first_screen() or 1,get_direction(data)
+  local screen,dir = data.screen or get_first_screen() or 1,get_direction(data)
   local h_or_w = (dir == "left" or dir == "right") and "width" or "height"
   local hw_invert = h_or_w == "height" and "width" or "height"
   local placeholder = wibox{ screen = screen, [h_or_w] = 1,[hw_invert] = 1,bg="#00000000", ontop = true,visible=true }
 
-  placeholder:geometry({ [h_or_w] = 1, [hw_invert] = capi.screen[screen].geometry.height -100, x = 0, y = 50})
+  placeholder:geometry({ [h_or_w] = 1, [hw_invert] = capi.screen[screen].geometry.height -100, x = dir == "right" and capi.screen[screen].geometry.width -1 or 0, y = 50})
+
 
   -- Raise of create the main dock wibox
-  placeholder:connect_signal("mouse::enter", function() placeholder.visible = false; get_wibox(data,screen).visible = true end)
+  placeholder:connect_signal("mouse::enter", function()
+    get_wibox(data,screen).visible = true
+    placeholder.visible = false
+  end)
 
   -- Move the placeholder when the wibox is resized
   data:connect_signal(((dir == "left" or dir == "right") and "height" or "width").."::changed",function()
-    placeholder[hw_invert] = data[hw_invert]
+--     placeholder[hw_invert] = data[hw_invert]
     align_wibox(placeholder,dir,screen)
   end)
   data._internal.placeholder = placeholder
@@ -251,6 +302,7 @@ local function create_placeholder(data)
     data._internal._geom_vals = {height=h,width=w}
     data._internal._has_changed = true
   end)
+
 end
 
 local function setup_drawable(data)
@@ -267,7 +319,7 @@ local function setup_drawable(data)
   data.get_x         = function() return 0                                              end
   data.get_y         = function() return 0                                              end
   data.get_width     = function()
-    return internal.orientation == "horizontal" and  internal.layout.fit(internal.layout,9999,9999) or beautiful.default_height
+    return internal.w and internal.w.width or data._internal.layout:fit(9999,9999,true)
   end
   data.get_height    = function()
     if internal.orientation == "horizontal" then
@@ -278,11 +330,22 @@ local function setup_drawable(data)
     end
   end
   data.get_visible   = function() return true                                           end
-  data.get_margins   = function() return {left=0,right=0,top=0,bottom=0}                end
   data.get_direction = get_direction
 
+  local mrgns = margins2(nil,{})
+  data._internal.mrgns = mrgns
+  data.get_margins = function()
+    return data._internal.mrgns or {}
+  end
+
+  function data:set_visible(value)
+    if internal.w then
+      internal.w.visible = value or false
+    end
+  end
+
   -- This widget do not use wibox, so setup correct widget interface
-  data.fit = internal.layout
+  data.fit  = internal.layout
   data.draw = internal.layout
 end
 
@@ -312,6 +375,7 @@ end
 local function new(args)
   local args = args or {}
   local orientation = (not args.position or args.position == "left" or args.position == "right") and "vertical" or "horizontal"
+  local length_inv  = orientation == "vertical" and "width" or "height"
 
   -- The the Radical arguments
   args.internal = args.internal or {}
@@ -320,21 +384,24 @@ local function new(args)
   args.internal.set_position   = args.internal.set_position   or set_position
   args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
   args.internal.setup_item     = args.internal.setup_item     or setup_item
-  args.item_style = args.item_style or item_style
-  args.bg = color("#00000000") --Use the dock bg instead
-  args.item_height = 40
-  args.item_width  = 40
-  args.sub_menu_on = args.sub_menu_on or base.event.BUTTON1
-  args.internal = args.internal or {}
+  args.item_style              = args.item_style              or item_style
+  args.bg                   = color("#00000000") --Use the dock bg instead
+  args.item_height          = 40
+  args.item_width           = 40
+  args.sub_menu_on          = args.sub_menu_on or base.event.BUTTON1
+  args.internal             = args.internal or {}
   args.internal.layout_func = orientation == "vertical" and vertical or horizontal
-  args.layout = args.layout or args.internal.layout_func
-  args.item_style = args.item_style or item.style
-  args.item_layout = args.item_layout or item_layout
+  args.layout               = args.layout or args.internal.layout_func
+  args.item_style           = args.item_style or item.style
+  args.item_layout          = args.item_layout or item_layout
+  args[length_inv]          = args[length_inv] or 40
 
   -- Create the dock
   local ret = base(args)
   ret.set_position = set_position
+  ret.get_position = get_position
   ret.position = args.position or "left"
+  ret.screen = args.screen
 
   -- Add a 1px placeholder to trigger it
   create_placeholder(ret)
