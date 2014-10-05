@@ -6,6 +6,7 @@ local wibox      = require( "wibox"        )
 local checkbox   = require( "radical.widgets.checkbox" )
 local fkey       = require( "radical.widgets.fkey"         )
 local horizontal = require( "radical.item.layout.horizontal" )
+local margins2   = require("radical.margins")
 
 local module = {}
 
@@ -15,11 +16,10 @@ local function create_item(item,data,args)
 
   -- Margins
   local m = wibox.layout.margin(la)
-  m:set_margins (0)
-  m:set_left  ( data.item_style.margins.LEFT   )
-  m:set_right ( data.item_style.margins.RIGHT  )
-  m:set_top   ( data.item_style.margins.TOP    )
-  m:set_bottom( data.item_style.margins.BOTTOM )
+  local mrgns = margins2(m,data.item_style.margins)
+  item.get_margins = function()
+    return mrgns
+  end
 
   local text = wibox.widget.textbox()
   text:set_align("center")

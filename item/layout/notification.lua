@@ -149,11 +149,10 @@ local function create_item(item,data,args)
 
   -- Margins
   local m = wibox.layout.margin(la)
-  m:set_margins (0)
-  m:set_left  ( (item.item_style or data.item_style).margins.LEFT   )
-  m:set_right ( (item.item_style or data.item_style).margins.RIGHT  )
-  m:set_top   ( (item.item_style or data.item_style).margins.TOP    )
-  m:set_bottom( (item.item_style or data.item_style).margins.BOTTOM )
+  local mrgns = margins2(m,(item.item_style or data.item_style).margins)
+  item.get_margins = function()
+    return mrgns
+  end
 
   -- Layout (left)
   local layout = wibox.layout.fixed.horizontal()

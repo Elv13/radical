@@ -7,6 +7,7 @@ local checkbox  = require( "radical.widgets.checkbox"  )
 local fkey      = require( "radical.widgets.fkey"      )
 local underlay  = require( "radical.widgets.underlay"  )
 local theme     = require( "radical.theme"             )
+local margins2  = require("radical.margins")
 
 local module = {}
 
@@ -110,15 +111,15 @@ function module.setup_event(data,item,widget)
   local widget = widget or item.widget
 
   -- Setup data signals
-  widget:connect_signal("button::press",function(_,__,___,id,mod)
+  widget:connect_signal("button::press",function(_,__,___,id,mod,geo)
     local mods_invert = {}
     for k,v in ipairs(mod) do
       mods_invert[v] = i
     end
 
     item.state[4] =  true
-    data:emit_signal("button::press",item,id,mods_invert)
-    item:emit_signal("button::press",data,id,mods_invert)
+    data:emit_signal("button::press",item,id,mods_invert,geo)
+    item:emit_signal("button::press",data,id,mods_invert,geo)
   end)
   widget:connect_signal("button::release",function(wdg,__,___,id,mod,geo)
     local mods_invert = {}
@@ -129,13 +130,13 @@ function module.setup_event(data,item,widget)
     data:emit_signal("button::release",item,id,mods_invert,geo)
     item:emit_signal("button::release",data,id,mods_invert,geo)
   end)
-  widget:connect_signal("mouse::enter",function(b,t)
-    data:emit_signal("mouse::enter",item)
-    item:emit_signal("mouse::enter",data)
+  widget:connect_signal("mouse::enter",function(b,mod,geo)
+    data:emit_signal("mouse::enter",item,mod,geo)
+    item:emit_signal("mouse::enter",data,mod,geo)
   end)
-  widget:connect_signal("mouse::leave",function(b,t)
-    data:emit_signal("mouse::leave",item)
-    item:emit_signal("mouse::leave",data)
+  widget:connect_signal("mouse::leave",function(b,mod,geo)
+    data:emit_signal("mouse::leave",item,mod,geo)
+    item:emit_signal("mouse::leave",data,mod,geo)
   end)
 
   -- Always tracking mouse::move is expensive, only do it when necessary
@@ -172,11 +173,10 @@ local function create_item(item,data,args)
 
   -- Margins
   local m = wibox.layout.margin(la)
-  m:set_margins (0)
-  m:set_left  ( (item.item_style or data.item_style).margins.LEFT   )
-  m:set_right ( (item.item_style or data.item_style).margins.RIGHT  )
-  m:set_top   ( (item.item_style or data.item_style).margins.TOP    )
-  m:set_bottom( (item.item_style or data.item_style).margins.BOTTOM )
+  local mrgns = margins2(m,(item.item_style or data.item_style).margins)
+  item.get_margins = function()
+    return mrgns
+  end
 
   -- Layout (left)
   local layout = wibox.layout.fixed.horizontal()
