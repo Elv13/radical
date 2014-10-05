@@ -14,8 +14,9 @@ local beautiful   = require( "beautiful"    )
 local client      = require( "awful.client" )
 local wibox       = require( "wibox"        )
 local surface     = require( "gears.surface")
-local client_menu =  require("radical.impl.tasklist.client_menu")
+local client_menu = require( "radical.impl.tasklist.client_menu")
 local theme       = require( "radical.theme")
+local rad_client  = require( "radical.impl.common.client")
 
 local sticky,urgent,instances,module = {extensions=require("radical.impl.tasklist.extensions")},{},{},{}
 local _cache = setmetatable({}, { __mode = 'k' })
@@ -54,6 +55,16 @@ module.buttons = {
     if capi.client.focus then capi.client.focus:raise() end
   end
 }
+
+local function display_screenshot(c,geo,visible)
+    if not visible and prev_menu then
+        prev_menu.visible = false
+        return
+    end
+    if not c then return end
+
+    return rad_client.screenshot(c,geo)
+end
 
 local function sticky_callback(c)
   local val = c.sticky
@@ -259,6 +270,10 @@ local function new(screen)
     if module.buttons and module.buttons[button_id] then
       module.buttons[button_id](item.client,menu,item,button_id,mod)
     end
+  end)
+
+  menu:connect_signal("long::hover",function(m,i,mod,geo)
+    display_screenshot(i.client,geo,true)
   end)
 
   return menu,menu._internal.layout
