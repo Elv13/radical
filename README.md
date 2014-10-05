@@ -86,6 +86,14 @@ Arrow also have a few types:
  * radical.base.arrow_type.PRETTY
  * radical.base.arrow_type.CENTERED
 
+Note that both menu and items have a `margins` property to ajust details:
+
+```lua
+    my_menu.margins.left = 12
+    local item = my_menu:add_item {test="Need room"}
+    item.margins.top = 3
+```
+
 ### Item style
 
 Like menus, items can have their own style. Valid values:
@@ -193,6 +201,8 @@ Multiple items can have multiple sets of options.
 | opacity             | Make this menu translucent (require a compositor)  | number (0 to 1)               |
 | icon_transformation | Hijack the icon drawing function                   | function(icon,data,item)      |
 | disable_submenu_icon| Do not show the submenu icon (arrow)               | boolean                       |
+| margins             | Read/Write table (left,right,top and bottom)       | dynamic table                 |
+| visible_row_count   | Number of visible items -(#max-(#total-#filtered)) | number                        |
 
 ###Item options
 
@@ -217,6 +227,7 @@ Multiple items can have multiple sets of options.
 | button4        | Scroll up action                             | function          |
 | button5        | Scroll down action                           | function          |
 | overlay        | See menu.overlay                             | function          |
+| margins        | Read/Write table (left,right,top and bottom) | dynamic table     |
 
 ###Colors options
 

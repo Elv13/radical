@@ -198,17 +198,15 @@ local function new_item(data,args)
   end)
 
   -- Add support for long hover and press
---   local function test()
---     print("test")
---   end
   local main_timer,press_timer = nil
-  item:connect_signal("mouse::enter",function()
+  item:connect_signal("mouse::enter",function(_,m,--[[mod,]]geo)
     if not main_timer then
       main_timer = timer{}
       main_timer.timeout = 1.5
       main_timer:connect_signal("timeout",function()
         item._internal._is_long_hover = true
-        item:emit_signal("long::hover",data,item)
+        item:emit_signal("long::hover",item,mod,geo)
+        data:emit_signal("long::hover",item,mod,geo)
         main_timer:stop()
       end)
     end

@@ -109,6 +109,23 @@ local function filter(data)
   end
 end
 
+-- Get the number of visible rows
+local function get_visible_row_count(data)
+  local visblerow = data.filter_string == "" and data.rowcount or data._internal.visible_item_count
+  if data.max_items and data.max_items < data.rowcount then
+    visblerow = data.max_items
+    if data.filter_string ~= "" then
+      local cur,vis = (data._start_at or 1),0
+      while (data._internal.items[cur] and data._internal.items[cur]) and cur < data.max_items + (data._start_at or 1) do
+        vis = vis + (data._internal.items[cur]._filter_out and 0 or 1)
+        cur = cur +1
+      end
+      visblerow = vis
+    end
+  end
+  return visblerow
+end
+
 ------------------------------------KEYBOARD HANDLING-----------------------------------
 local function activateKeyboard(data)
   if not data then return end
@@ -228,6 +245,25 @@ local function add_suffix_widget(data,widget,args)
   data:emit_signal("suffix_widget::added",widget,args)
 end
 
+-- Sum all widgets height and width
+local function get_widget_fit_sum(data)
+  local h,w = 0,0
+  for k,v in ipairs(data._internal.widgets) do
+    local fw,fh = v.widget:fit(9999,9999)
+    w,h = w + fw,h + fh
+  end
+  return w,h
+end
+
+local function get_widget_fit_width_sum(data)
+  return get_widget_fit_sum(data)
+end
+
+local function get_widget_fit_height_sum(data)
+  local w,h = get_widget_fit_sum(data)
+  return h
+end
+
 local function add_embeded_menu(data,menu)
   add_widget(data,menu._internal.layout)
   menu._embeded_parent = data
@@ -243,7 +279,8 @@ end
 
 ---------------------------------MENU HANDLING----------------------------------
 local function new(args)
-  local internal,args = args.internal or {},args or {}
+  local args = args or {}
+  local internal = args.internal or {}
   if not internal.items then internal.items = {} end
   if not internal.widgets then internal.widgets = {} end
 
@@ -325,10 +362,13 @@ local function new(args)
   theme.setup_colors(data,args)
 
   -- Getters
-  data.get_is_menu       = function(_) return true end
-  data.get_margin        = function(_) return {left=0,bottom=0,right=0,left=0} end
-  data.get_items         = function(_) return internal.items end
-  data.get_rowcount      = function(_) return #internal.items end
+  data.get_is_menu               = function(_) return true end
+  data.get_margin                = function(_) return {left=0,bottom=0,right=0,left=0} end
+  data.get_items                 = function(_) return internal.items end
+  data.get_rowcount              = function(_) return #internal.items end
+  data.get_visible_row_count     = get_visible_row_count
+  data.get_widget_fit_height_sum = get_widget_fit_height_sum
+  data.get_widget_fit_width_sum  = get_widget_fit_width_sum
 
   -- Setters
   data.set_auto_resize  = function(_,val) private_data[""] = val end
