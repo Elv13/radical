@@ -8,6 +8,7 @@ local fkey      = require( "radical.widgets.fkey"      )
 local underlay  = require( "radical.widgets.underlay"  )
 local theme     = require( "radical.theme"             )
 local horizontal= require( "radical.item.layout.horizontal")
+local margins2  = require( "radical.margins"               )
 
 local module = {}
 

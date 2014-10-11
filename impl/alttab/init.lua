@@ -108,6 +108,9 @@ local function new(args)
     icon_transformation = beautiful.alttab_icon_transformation,filter_underlay="Use [Shift] and [Control] to toggle clients",filter_underlay_color=beautiful.menu_bg_normal,
     filter_placeholder="<span fgcolor='".. (beautiful.menu_fg_disabled or beautiful.fg_disabled or "#777777") .."'>Type to filter</span>"})
 
+  currentMenu.margins.top = currentMenu.border_width
+  currentMenu.margins.bottom = currentMenu.border_width
+
   if not auto_release then
     local pref_bg = wibox.widget.background()
     local pref_l = wibox.layout.align.horizontal()

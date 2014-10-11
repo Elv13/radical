@@ -157,12 +157,12 @@ local function setup_drawable(data)
   data.get_margins   = function()
     if not internal._margins then
       local ret = {
-        left   = data.border_width+data.style.margins.LEFT   ,
-        right  = data.border_width+data.style.margins.RIGHT  ,
-        top    = data.border_width+data.style.margins.TOP    ,
-        bottom = data.border_width+data.style.margins.BOTTOM ,
+        left   = data.border_width+(data.style.margins.LEFT   or 0),
+        right  = data.border_width+(data.style.margins.RIGHT  or 0),
+        top    = data.border_width+(data.style.margins.TOP    or 0),
+        bottom = data.border_width+(data.style.margins.BOTTOM or 0),
       }
-      m = margins2(internal.margin,ret)
+      local m = margins2(internal.margin,ret)
       rawset(m,"_reset",m.reset)
       m.reset = function(margins)
         m.defaults = ret
