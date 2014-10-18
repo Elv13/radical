@@ -5,6 +5,7 @@ local cairo      = require( "lgi"          ).cairo
 local wibox      = require( "wibox"        )
 local checkbox   = require( "radical.widgets.checkbox" )
 local fkey       = require( "radical.widgets.fkey"         )
+local util       = require( "awful.util"              )
 local horizontal = require( "radical.item.layout.horizontal" )
 local margins2   = require("radical.margins")
 
@@ -16,7 +17,7 @@ local function create_item(item,data,args)
 
   -- Margins
   local m = wibox.layout.margin(la)
-  local mrgns = margins2(m,data.item_style.margins)
+  local mrgns = margins2(m,util.table.join(data.item_style.margins,data.default_item_margins))
   item.get_margins = function()
     return mrgns
   end

@@ -7,6 +7,7 @@ local checkbox  = require( "radical.widgets.checkbox"  )
 local fkey      = require( "radical.widgets.fkey"      )
 local underlay  = require( "radical.widgets.underlay"  )
 local theme     = require( "radical.theme"             )
+local util      = require( "awful.util"                )
 local margins2  = require("radical.margins")
 
 local module = {}
@@ -162,6 +163,7 @@ end
 
 -- Force the width or compute the minimum space
 local function align_fit(box,w,h)
+  local mar = util.table.join(box._data.item_style.margins,box._data.default_item_margins)
   if box._item.width then return box._item.width - box._data.item_style.margins.LEFT - box._data.item_style.margins.RIGHT,h end
   return box.first:fit(w,h)+wibox.widget.textbox.fit(box.second,w,h)+box.third:fit(w,h),h
 end
@@ -173,7 +175,8 @@ local function create_item(item,data,args)
 
   -- Margins
   local m = wibox.layout.margin(la)
-  local mrgns = margins2(m,(item.item_style or data.item_style).margins)
+--   print("LA",data.default_item_margins.TOP)
+  local mrgns = margins2(m,util.table.join((item.item_style or data.item_style).margins,data.default_item_margins))
   item.get_margins = function()
     return mrgns
   end

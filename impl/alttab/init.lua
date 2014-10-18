@@ -12,6 +12,17 @@ local capi = { client = client, mouse = mouse, screen = screen}
 
 local module,pause_monitoring = {},false
 
+-- Using viewonly to change tag will create an unwanted
+-- focus event in the awful stack. While this module does
+-- not use it, it try to be a good citizen and avoid corrupting
+-- it.
+local lock_history = false
+local function awful_client_history_add(c)
+  if not lock_history then
+    client2.focus.history.add(c)
+  end
+end
+
 -- Keep its own history instead of using awful.client.focus.history
 local focusIdx,focusTable = 1,setmetatable({}, { __mode = 'v' })
 local focusTag = setmetatable({}, { __mode = 'v' })
@@ -89,7 +100,7 @@ local function reload_highlight(i)
     end
     tag_list.highlight(hl)
 
-    i._internal.border_color_back = i.client.border_color
+    i._internal.border_color_back = i._internal.border_color_back or i.client.border_color
     i.client.border_color = beautiful.bg_urgent
   elseif i._internal.border_color_back then
     i.client.border_color = i._internal.border_color_back
@@ -138,20 +149,26 @@ local function new(args)
 
   currentMenu:add_key_hook({}, "Tab", "press", select_next)
   currentMenu:add_key_hook({}, "Shift_L", "press", function()
-    currentMenu._current_item.checked = not currentMenu._current_item.checked
-    client2.toggletag (t, currentMenu._current_item.client)
-    reload_underlay(currentMenu._current_item.client,currentMenu._current_item)
+    local item = currentMenu._current_item
+    item.checked = not item.checked
+    local c = item.client
+    client2.toggletag (t, c)
+    reload_underlay(c,item)
     if not auto_release then
-      reload_highlight(currentMenu._current_item)
+      reload_highlight(item)
+    end
+    if item._internal.border_color_back then
+      c.border_color = item._internal.border_color_back
     end
     return true
   end)
   currentMenu:add_key_hook({}, "Control_L", "press", function()
-    currentMenu._current_item.checked = not currentMenu._current_item.checked
-    client2.movetotag(t, currentMenu._current_item.client)
-    reload_underlay(currentMenu._current_item.client,currentMenu._current_item)
+    local item = currentMenu._current_item
+    item.checked = not item.checked
+    client2.movetotag(t, item.client)
+    reload_underlay(item.client,item)
     if not auto_release then
-      reload_highlight(currentMenu._current_item)
+      reload_highlight(item)
     end
     return true
   end)
@@ -181,7 +198,9 @@ local function new(args)
       button1       = function(a,b,c,d,no_hide)
         local t = focusTag[v] or v:tags()[1]
         if t and t.selected == false and not util.table.hasitem(v:tags(),tag.selected(v.screen)) then
+          lock_history = true
           tag.viewonly(t)
+          lock_history = false
         end
         capi.client.focus = v
         v:raise()
@@ -228,6 +247,10 @@ end
 function module.altTabBack(args)
   new({leap = -1,auto_release = (args or {}).auto_release})
 end
+
+-- Sometime need to lock .add
+capi.client.disconnect_signal("focus", client2.focus.history.add)
+capi.client.connect_signal("focus", awful_client_history_add)
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;

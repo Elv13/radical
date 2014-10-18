@@ -12,6 +12,7 @@ local checkbox   = require( "radical.widgets.checkbox"     )
 local item_style = require( "radical.item.style.arrow_single" )
 -- local vertical   = require( "radical.layout.vertical"      )
 local item_layout= require( "radical.item.layout.horizontal" )
+local margins2   = require("radical.margins"               )
 
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
 
@@ -47,11 +48,11 @@ local function setup_drawable(data)
   local internal = data._internal
   local private_data = internal.private_data
 
-  internal.layout = internal.layout_func or wibox.layout.fixed.horizontal()
-internal.layout._draw = internal.layout.draw
-internal.layout.draw = bg_draw
-internal.layout._data  = data
-  
+  internal.layout       = internal.layout_func or wibox.layout.fixed.horizontal()
+  internal.layout._draw = internal.layout.draw
+  internal.layout.draw  = bg_draw
+  internal.layout._data = data
+
   --Getters
   data.get_x         = function() return 0                                            end
   data.get_y         = function() return 0                                            end
@@ -59,7 +60,16 @@ internal.layout._data  = data
   data.get_height    = function() return beautiful.default_height                     end
   data.get_visible   = function() return true                                         end
   data.get_direction = function() return "left"                                       end
-  data.get_margins   = function() return {left=0,right=0,top=0,bottom=0}              end
+
+  -- Setup the margins
+  local m = wibox.layout.margin()
+  m:set_widget(internal.layout)
+  internal.margin = m
+  local mrgns = margins2(m,data.default_margins or {})
+  data._internal.mrgns = mrgns
+  data.get_margins = function()
+    return data._internal.mrgns or {}
+  end
 
   -- This widget do not use wibox, so setup correct widget interface
   data.fit = internal.layout
@@ -163,7 +173,7 @@ local function new(args)
 --     ret._internal.layout:connect_signal("widget::updated",function()
 --       ret:emit_signal("widget::updated")
 --     end)
-    return ret,ret._internal.layout
+    return ret,ret._internal.margin
 end
 
 function module.flex(args)
@@ -172,7 +182,7 @@ function module.flex(args)
   args.internal.layout_func = wibox.layout.flex.horizontal()
   local data = new(args)
   data._internal.text_fit = function(self,width,height) return width,height end
-  return data
+  return data,data._internal.margin
 end
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })

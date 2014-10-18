@@ -66,6 +66,7 @@ local function new(s)
   if not init then
     capi.tag.connect_signal("property::screen"   , reload )
     capi.tag.connect_signal("property::activated", reload )
+    capi.tag.connect_signal("property::index"    , reload )
   end
 
   tracker.reload = function()

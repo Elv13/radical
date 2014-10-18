@@ -228,12 +228,15 @@ local function new(s)
   local track = tracker(s)
 
   local args = {
-    item_style = beautiful.taglist_theme or radical.item.style.arrow_prefix,
+    item_style = beautiful.taglist_item_style or radical.item.style.arrow_prefix,
+    style      = beautiful.taglist_style,
     select_on  = radical.base.event.NEVER,
     fg         = beautiful.taglist_fg or beautiful.fg_normal,
     bg         = beautiful.taglist_bg or beautiful.bg_normal,
     bg_focus   = beautiful.taglist_bg_selected,
     fg_focus   = beautiful.taglist_fg_selected,
+    default_item_margins = beautiful.taglist_default_item_margins,
+    default_margins      = beautiful.taglist_default_margins                                            ,
 --     fkeys_prefix = true,
   }
   for k,v in ipairs {"hover","used","urgent","cloned","changed","highlight"} do

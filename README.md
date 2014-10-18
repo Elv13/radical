@@ -203,6 +203,8 @@ Multiple items can have multiple sets of options.
 | disable_submenu_icon| Do not show the submenu icon (arrow)               | boolean                       |
 | margins             | Read/Write table (left,right,top and bottom)       | dynamic table                 |
 | visible_row_count   | Number of visible items -(#max-(#total-#filtered)) | number                        |
+| default_item_margins| Default margins for items ({left=1,right=1...})    | array of direction            |
+| default_margins     | Default margins for the menu ({left=1,right=1...}) | array of direction            |
 
 ###Item options
 

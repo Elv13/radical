@@ -33,7 +33,7 @@ local function gen(width,height,bg_color,border_color)
 end
 
 local function widget_draw(self, w, cr, width, height)
-  
+
   local state = self._item.state or {}
   local current_state = state._current_key or ""
   if not state_cache[current_state] then

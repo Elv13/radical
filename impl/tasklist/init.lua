@@ -241,12 +241,16 @@ end
 
 local function new(screen)
   local args = {
-    select_on=radical.base.event.NEVER,
-    disable_markup = true,
-    fg       = beautiful.tasklist_fg or beautiful.fg_normal,
-    bg       = beautiful.tasklist_bg or beautiful.bg_normal,
-    underlay_style = beautiful.tasklist_underlay_style or radical.widgets.underlay.draw_arrow,
-    icon_transformation = beautiful.tasklist_icon_transformation
+    select_on            = radical.base.event.NEVER                                                      ,
+    disable_markup       = true                                                                          ,
+    fg                   = beautiful.tasklist_fg                   or beautiful.fg_normal                ,
+    bg                   = beautiful.tasklist_bg                   or beautiful.bg_normal                ,
+    underlay_style       = beautiful.tasklist_underlay_style       or radical.widgets.underlay.draw_arrow,
+    icon_transformation  = beautiful.tasklist_icon_transformation                                        ,
+    default_item_margins = beautiful.tasklist_default_item_margins                                       ,
+    default_margins      = beautiful.tasklist_default_margins                                            ,
+    item_style           = beautiful.tasklist_item_style                                                 ,
+    style                = beautiful.tasklist_style                                                      ,
   }
   for k,v in ipairs {"hover","urgent","minimized","focus"} do
     args["bg_"..v] = beautiful["tasklist_bg_"..v]
