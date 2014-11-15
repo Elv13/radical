@@ -87,7 +87,7 @@ local function create_item(item,data,args)
     return data._internal.layout.item_fit(data,item,box,w,h)
   end
   if item.checkable then
-    item.get_checked = function()
+    item.get_checked = function(data,item)
       if type(item._private_data.checked) == "function" then
         return item._private_data.checked()
       else

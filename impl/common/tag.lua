@@ -27,10 +27,12 @@ local function createTagList(aScreen,args)
     tag_list = require("radical.impl.taglist")
   end
   local tagList = radical.context {}
+  local ret = {}
   for _, v in ipairs(awful.tag.gettags(aScreen)) do
     args.text,args.icon = v.name,awful.tag.geticon(v)
     local i = tagList:add_item(args)
     i._tag = v
+    ret[v] = i
     i:connect_signal("mouse::enter",function()
       tag_list.highlight(v)
     end)
@@ -40,7 +42,7 @@ local function createTagList(aScreen,args)
       tag_list.highlight(nil)
     end
   end)
-  return tagList
+  return tagList,ret
 end
 
 function module.listTags(args)

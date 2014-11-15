@@ -89,7 +89,7 @@ local function do_gen_menu_top(data, width, height, radius,padding,args)
   cr:set_source( color(args.fg) )
 
   -- Generate the path
-  draw_roundedrect_path(cr, data, width, height, radius,padding,args)
+  draw_roundedrect_path(cr, data, width, height, beautiful.menu_corner_radius or radius,padding,args)
 
   -- Apply
   cr:fill()
@@ -200,7 +200,7 @@ local function draw_border(self,w, cr, width, height)
   cr:set_matrix(matrix)
 
   -- Generate the path
-  draw_roundedrect_path(cr, data, width, height, radius,data.border_width/2)
+  draw_roundedrect_path(cr, data, width, height, beautiful.menu_corner_radius or radius,data.border_width/2)
   cr:set_source(color(beautiful.fg_normal))
   cr:set_line_width(data.border_width)
   cr:stroke()

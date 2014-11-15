@@ -20,6 +20,8 @@ local margins2   = require("radical.margins"               )
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
 local max_size = {height={},width={}}
 
+local default_radius = 10
+
 local dir_to_deg = {left=0,bottom=math.pi/2,right=math.pi,top=3*(math.pi/2)}
 
 local function get_direction(data)
@@ -81,7 +83,7 @@ local function dock_draw(self, w, cr, width, height)
   -- Generate the border surface
   if not self.mask or self.mask_hash ~= width*1000+height then
     local dir,rotation = get_direction(self.data)
-    self.mask = mask(rotation,w.width,w.height,8,1,0,color(self.data.border_color or seld.data.fg),color("#FF000000"))
+    self.mask = mask(rotation,w.width,w.height,(beautiful.dock_corner_radius or default_radius) - 2,1,0,color(self.data.border_color or seld.data.fg),color("#FF000000"))
     self.mask_hash = width*1000+height
   end
   cr:save()
@@ -220,11 +222,11 @@ local function get_wibox(data, screen)
   data._internal.w = w
 
   -- Create the rounded corner mask
-  w:set_bg(cairo.Pattern.create_for_surface(mask(rotation,w.width,w.height,8,1,0,color(beautiful.fg_normal),color(beautiful.bg_dock or beautiful.bg_normal))))
-  w.shape_bounding  = mask(rotation,w.width,w.height,10,0,1,color("#00000000"),color("#FFFFFFFF"))._native
+  w:set_bg(cairo.Pattern.create_for_surface(mask(rotation,w.width,w.height,(beautiful.dock_corner_radius or default_radius)-2,1,0,color(beautiful.fg_normal),color(beautiful.bg_dock or beautiful.bg_normal))))
+  w.shape_bounding  = mask(rotation,w.width,w.height,beautiful.dock_corner_radius or default_radius,0,1,color("#00000000"),color("#FFFFFFFF"))._native
   local function prop_change()
-    w:set_bg(cairo.Pattern.create_for_surface(mask(rotation,w.width,w.height,8,1,0,color(beautiful.fg_normal),color(beautiful.bg_dock or beautiful.bg_normal))))
-    w.shape_bounding  = mask(rotation,w.width,w.height,10,0,1,color("#00000000"),color("#FFFFFFFF"))._native
+    w:set_bg(cairo.Pattern.create_for_surface(mask(rotation,w.width,w.height,(beautiful.dock_corner_radius or default_radius) -2,1,0,color(beautiful.fg_normal),color(beautiful.bg_dock or beautiful.bg_normal))))
+    w.shape_bounding  = mask(rotation,w.width,w.height,beautiful.dock_corner_radius or default_radius,0,1,color("#00000000"),color("#FFFFFFFF"))._native
   end
   w:connect_signal("property::height",prop_change)
   w:connect_signal("property::width" ,prop_change)

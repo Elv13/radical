@@ -18,11 +18,15 @@ local theme     = require( "radical.theme")
 local tracker   = require( "radical.impl.taglist.tracker" )
 local tag_menu  = require( "radical.impl.taglist.tag_menu" )
 
-local CLONED = 100
+local CLONED      = 100
 local HIGHLIGHTED = -2
+local EMPTY       = 412345
+
+local last_idx = EMPTY
 
 theme.register_color(CLONED , "cloned" , "cloned" , true )
 theme.register_color(HIGHLIGHTED , "highlight" , "highlight" , true )
+theme.register_color(EMPTY , "empty" , "empty" , true )
 
 local module,instances = {},{}
 
@@ -54,20 +58,28 @@ local function index_draw(self,w, cr, width, height)
 end
 
 local function create_item(t,s)
-  local menu = instances[s]
+  local menu,ib = instances[s],nil
   if not menu or not t then return end
   local w = wibox.layout.fixed.horizontal()
-  local icon =  tag.geticon(t)
-  local ib = wibox.widget.imagebox()
-  ib:set_image(icon)
-  w:add(ib)
-  local tw = wibox.widget.textbox()
-  tw.draw = index_draw
-  local index = tag.getidx(t)
-  tw:set_markup(" <b>"..(index).."</b> ")
-  w:add(tw)
+  if beautiful.taglist_disable_icon ~= true then
+    local icon = tag.geticon(t)
+    if icon and beautiful.taglist_icon_transformation then
+      icon = beautiful.taglist_icon_transformation(icon,menu,nil)
+    end
+    ib = wibox.widget.imagebox()
+    ib:set_image(icon)
+    w:add(ib)
+  end
+  if beautiful.taglist_disable_index ~= true then
+    local tw = wibox.widget.textbox()
+    tw.draw = index_draw
+    local index = tag.getproperty(t,"index") or tag.getidx(t)
+    tw:set_markup(" <b>"..(index).."</b> ")
+    w:add(tw)
+  end
   local suf_w = wibox.layout.fixed.horizontal()
-  local item = menu:add_item { text = t.name, prefix_widget = w,suffix_widget=suf_w}
+  local item = menu:add_item { text = t.name, prefix_widget = w,suffix_widget=suf_w,bg_normal="#ff0000"--[[beautiful.taglist_bg_unused]]}
+  item.state[EMPTY] = true
   item._internal.icon_w = ib
 --   item:connect_signal("index::changed",function(_,value)
 --     tw:set_markup(" <b>"..(index).."</b> ")
@@ -235,8 +247,11 @@ local function new(s)
     bg         = beautiful.taglist_bg or beautiful.bg_normal,
     bg_focus   = beautiful.taglist_bg_selected,
     fg_focus   = beautiful.taglist_fg_selected,
+    bg_empty   = beautiful.taglist_bg_empty,
+    fg_empty   = beautiful.taglist_fg_empty,
+    spacing    = beautiful.taglist_spacing,
     default_item_margins = beautiful.taglist_default_item_margins,
-    default_margins      = beautiful.taglist_default_margins                                            ,
+    default_margins      = beautiful.taglist_default_margins     ,
 --     fkeys_prefix = true,
   }
   for k,v in ipairs {"hover","used","urgent","cloned","changed","highlight"} do
@@ -268,7 +283,7 @@ end
 
 capi.tag.connect_signal("property::selected" , select)
 capi.tag.connect_signal("property::index2",function(t,i)
-  if t then
+  if t and not beautiful.taglist_disable_index then
     local s = tag.getscreen(t)
     local item = cache[t]
     if item then
@@ -280,6 +295,15 @@ end)
 
 function module.item(t)
   return cache[t]
+end
+
+function module.register_color(col)
+  last_idx = last_idx - 1
+  theme.register_color(last_idx , "color_"..last_idx , "color_"..last_idx , true )
+  for k,v in pairs(instances) do
+    v["bg_color_"..last_idx] = col
+  end
+  return last_idx,"color_"..last_idx
 end
 
 

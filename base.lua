@@ -332,6 +332,7 @@ local function new(args)
       select_on       = args.select_on or module.event.HOVER,
       overlay         = args.overlay or nil,
       opacity         = args.opacity or beautiful.menu_opacity or 1,
+      spacing         = args.spacing or nil, --TODO add to README once merged upstream
       default_margins = args.default_margins or {},
       default_item_margins  = args.default_item_margins or {},
       icon_transformation   = args.icon_transformation or nil,

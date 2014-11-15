@@ -28,7 +28,7 @@ local function new(menu,direction)
   local bg = wibox.widget.base.make_widget()
   bg.direction = direction or module.HORIZONTAL
   bg.fit = fit
-  bg._color = color( menu and menu.separator_color or beautiful.border_color or beautiful.fg_normal)
+  bg._color = color( menu and menu.separator_color or beautiful.menu_border_color or beautiful.menu_fg or beautiful.fg_normal)
   bg.draw = draw
   bg._force_fit = true
   return bg

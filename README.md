@@ -352,6 +352,8 @@ Radical also use the some of the same theme options as awful.menu, plus some:
 | menu_draw_underlay           | Function returning the underlay pixmap | function(array,width)     |
 | menu_icon_transformation     | The function used to draw the icon     | function(image,data,item) |
 | underlay_alpha               | Alpha for underlays                    | Number (0 to 1)           |
+| menu_corner_radius           | Arrow based menu corner radius         | Number (default = 10)     |
+| dock_corner_radius           | The dock menu type corner radius       | Number (default 10)       |
 
 
 Styling can also be done using the icon_transformation option. This feature

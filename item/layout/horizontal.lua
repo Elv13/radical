@@ -69,7 +69,7 @@ function module:setup_checked(item,data)
   if item.checkable then
     item.get_checked = function()
       if type(item._private_data.checked) == "function" then
-        return item._private_data.checked()
+        return item._private_data.checked(data,item)
       else
         return item._private_data.checked
       end

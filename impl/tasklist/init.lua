@@ -137,7 +137,9 @@ end
 local function reload_content(c,b,a)
   local item = _cache[c]
   if item then
-    item.icon = surface(c.icon) or beautiful.tasklist_default_icon
+    if not beautiful.tasklist_disable_icon then
+      item.icon = surface(c.icon) or beautiful.tasklist_default_icon
+    end
     item.text = c.name or "N/A"
   end
 end
@@ -154,7 +156,7 @@ local function create_client_item(c,screen)
 
   -- Too bad, let's create a new one
   local suf_w = wibox.layout.fixed.horizontal()
-  item = menu:add_item{text=c.name,icon=surface(c.icon),suffix_widget=suf_w}
+  item = menu:add_item{text=c.name,icon=(not beautiful.tasklist_disable_icon) and surface(c.icon),suffix_widget=suf_w}
   item.add_suffix = function(w,w2)
     suf_w:add(w2)
   end
@@ -251,6 +253,7 @@ local function new(screen)
     default_margins      = beautiful.tasklist_default_margins                                            ,
     item_style           = beautiful.tasklist_item_style                                                 ,
     style                = beautiful.tasklist_style                                                      ,
+    spacing              = beautiful.tasklist_spacing                                                    ,
   }
   for k,v in ipairs {"hover","urgent","minimized","focus"} do
     args["bg_"..v] = beautiful["tasklist_bg_"..v]

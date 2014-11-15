@@ -16,12 +16,18 @@ local module = {
 
 local state_cache = {}
 
-local function gen(width,height,bg_color,border_color)
+local default_height = 3
+
+local rect = {
+  bottom = function(x,y,width,height) return 0, height-default_height, width , default_height end,
+  top    = function(x,y,width,height) return 0,                     0, width , 3              end,
+}
+
+local function gen(width,height,bg_color,border_color, pos)
   local img = cairo.ImageSurface(cairo.Format.ARGB32, width,height)
   local cr = cairo.Context(img)
-  local rad = corner_radius or 3
   cr:set_source(color(bg_color))
-  cr:rectangle(0,height -4, width , 4)
+  cr:rectangle(rect[pos](0,0,width,height))
   cr:fill()
   return cairo.Pattern.create_for_surface(img)
 end
@@ -41,7 +47,7 @@ local function widget_draw(self, w, cr, width, height)
   --Generate the pixmap
   if not cached then
     local state_name = current_state == "" and "bg" or "bg_"..(base.colors_by_id[current_state] or "")
-    cached = gen(width,height,self._item[state_name],bc)
+    cached = gen(width,height,self._item[state_name],bc,self.holo_pos)
     cache[hash] = cached
   end
 
@@ -65,6 +71,7 @@ local function draw(item,args)
     item.widget.draw = widget_draw
     item.widget._overlay_init = true
     item.widget._item = item
+    item.widget.holo_pos = args.pos or "bottom"
   end
 
   local state = item.state or {}
@@ -79,6 +86,20 @@ local function draw(item,args)
     item.widget:set_fg(item["fg_normal"])
   end
 end
+
+local function draw_top(item,args)
+  return draw(item,{pos="top"})
+end
+
+-- Create an identical module for holo_top
+module.top = setmetatable({
+    draw = draw_top,
+    margins = module.margins
+  },
+  {
+    __call = function(_, ...) return draw_top(...) end
+  }
+)
 
 return setmetatable(module, { __call = function(_, ...) return draw(...) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;

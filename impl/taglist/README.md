@@ -39,3 +39,16 @@ taglist_bg_cloned
 taglist_fg_cloned
 taglist_bg_changed
 taglist_fg_changed
+taglist_default_icon
+taglist_style
+taglist_default_item_margins
+taglist_default_margins
+taglist_disable_index
+taglist_fg_prefix
+taglist_disable_icon
+taglist_icon_transformation
+
+States:
+empty
+cloned
+highlight

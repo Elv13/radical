@@ -53,6 +53,10 @@ local function setup_drawable(data)
   internal.layout.draw  = bg_draw
   internal.layout._data = data
 
+  if internal.layout.set_spacing and data.spacing then
+    internal.layout:set_spacing(data.spacing)
+  end
+
   --Getters
   data.get_x         = function() return 0                                            end
   data.get_y         = function() return 0                                            end
