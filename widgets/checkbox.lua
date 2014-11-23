@@ -46,16 +46,49 @@ local function init()
     isinit = true
 end
 
+local function holo()
+    local size = beautiful.menu_height or 16
+    notcheckedI = cairo.ImageSurface(cairo.Format.ARGB32, size,size)
+    checkedI    = cairo.ImageSurface(cairo.Format.ARGB32, size,size)
+    local cr2         = cairo.Context(notcheckedI)
+    local cr          = cairo.Context(checkedI)
+    cr:set_operator(cairo.Operator.CLEAR)
+    cr2:set_operator(cairo.Operator.CLEAR)
+    cr:paint()
+    cr2:paint()
+    cr:set_operator(cairo.Operator.SOURCE)
+    cr2:set_operator(cairo.Operator.SOURCE)
+    local col = color(beautiful.menu_outline_color or beautiful.menu_border_color or beautiful.border_color)
+    cr:set_source(col)
+    cr2:set_source(col)
+    cr:set_line_width(1)
+    cr2:set_line_width(1)
+    size = size -2
+    cr:arc(size/2+1,size/2+1,size/2,0,math.pi*2)
+    cr:stroke()
+    cr2:arc(size/2+1,size/2+1,size/2,0,math.pi*2)
+    cr2:stroke()
+    size = size - 8
+    cr:set_source(color(beautiful.fg_normal))
+    cr:arc(size/2+5,size/2+5,size/2,0,math.pi*2)
+    cr:fill()
+end
+
+local style = {
+    holo    = holo,
+    default = init,
+}
+
 function module.checked()
     if not isinit then
-        init()
+        style[beautiful.menu_checkbox_style or "default"]()
     end
     return checkedI
 end
 
 function module.unchecked()
     if not isinit then
-        init()
+        style[beautiful.menu_checkbox_style or "default"]()
     end
     return notcheckedI
 end

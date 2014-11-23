@@ -100,7 +100,7 @@ function module:setup_sub_menu_arrow(item,data)
   if (item._private_data.sub_menu_f or item._private_data.sub_menu_m) and not data.disable_submenu_icon then
     if not sub_arrow then
       sub_arrow = wibox.widget.imagebox() --TODO, make global
-      sub_arrow.fit = function(box, w, h) return sub_arrow._image:get_width(),item.height end
+      sub_arrow.fit = function(box, w, h) return (sub_arrow._image and sub_arrow._image:get_width() or 0),item.height end
       sub_arrow:set_image( beautiful.menu_submenu_icon   )
     end
     return sub_arrow

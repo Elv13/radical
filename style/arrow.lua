@@ -138,8 +138,9 @@ local function _set_direction(data,direction)
     data._internal.last_size = hash
   end
 
+  local border_color = color(beautiful.menu_outline_color or beautiful.menu_border_color or beautiful.fg_normal)
   local geometry = (direction == "left" or direction == "right") and {width = height, height = width} or {height = height, width = width}
-  local top_clip_surface        = do_gen_menu_top(data,geometry.width,geometry.height,radius,data.border_width,{bg=beautiful.fg_normal or "#0000ff",fg=data.bg or "#00ffff"})
+  local top_clip_surface        = do_gen_menu_top(data,geometry.width,geometry.height,radius,data.border_width,{bg=border_color or "#0000ff",fg=data.bg or "#00ffff"})
   local top_bounding_surface    = do_gen_menu_top(data,geometry.width,geometry.height,radius,0,{bg="#00000000",fg="#ffffffff"})
 
   local arr_margin = (data.arrow_type == base.arrow_type.NONE) and 0 or arrow_height
@@ -201,7 +202,7 @@ local function draw_border(self,w, cr, width, height)
 
   -- Generate the path
   draw_roundedrect_path(cr, data, width, height, beautiful.menu_corner_radius or radius,data.border_width/2)
-  cr:set_source(color(beautiful.fg_normal))
+  cr:set_source(color(beautiful.menu_outline_color or beautiful.menu_border_color or beautiful.fg_normal))
   cr:set_line_width(data.border_width)
   cr:stroke()
 end
