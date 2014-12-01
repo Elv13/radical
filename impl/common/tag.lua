@@ -26,7 +26,7 @@ local function createTagList(aScreen,args)
   if not tag_list then
     tag_list = require("radical.impl.taglist")
   end
-  local tagList = radical.context {}
+  local tagList = args.menu or radical.context {}
   local ret = {}
   for _, v in ipairs(awful.tag.gettags(aScreen)) do
     args.text,args.icon = v.name,awful.tag.geticon(v)
@@ -45,9 +45,10 @@ local function createTagList(aScreen,args)
   return tagList,ret
 end
 
-function module.listTags(args)
-  if capi.screen.count() == 1 then
-    return createTagList(1,args or {})
+function module.listTags(args, menu)
+  local args = args or {}
+  if capi.screen.count() == 1 or args.screen then
+    return createTagList(args.screen or 1,args or {})
   else
     local screenSelect = radical.context {}
     for i=1, capi.screen.count() do
