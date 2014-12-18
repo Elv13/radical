@@ -288,7 +288,9 @@ capi.tag.connect_signal("property::index2",function(t,i)
     local item = cache[t]
     if item then
       instances[s]:move(item,i)
-      item.tw:set_markup(" <b>"..(i).."</b> ")
+      if item.tw then
+        item.tw:set_markup(" <b>"..(i).."</b> ")
+      end
     end
   end
 end)

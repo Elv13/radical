@@ -21,6 +21,75 @@ local capi = { mouse = mouse, mousegrabber = mousegrabber }
 
 local module={}
 
+-- Generate a cached pixmap starting at pi/2-(2*pi / seg_count)
+-- This mask is then rotated in place where desired
+-- the reason for this is to keep the code simple and allow
+-- a menu rotate "animation" with the scroll wheel
+local function gen_text_mask(data, layer, segs, text)
+
+  -- Step 1: compute the minimal size
+  --TODO limit to the radius
+  local h  = (default.base_radius + layer*default.radius) * (segs < 2 and 2 or 1)
+
+  -- I let the reader make the proof of this: good luck with that
+  local dr = (math.pi*2)/segs
+  local w  = segs < 2 and data.width or 2*math.abs(math.sin((dr)/2)*(data.width/2))
+--   local w = data.width
+
+  -- Step 2: Create the surface
+  local img = cairo.ImageSurface(cairo.Format.ARGB32, w, h)
+  local cr  = cairo.Context(img)
+
+  local border_width= 4
+  local start_angle = -(math.pi/2) - dr/2
+  local end_angle   = -(math.pi/2) + dr/2
+  local cur_angle   = start_angle
+  local cur_rad     = h-border_width
+
+  cr:set_source_rgba(1,1,1,1)
+
+  cr:select_font_face("monospace")
+
+  local matrix = cairo.Matrix()
+  cairo.Matrix.init_translate(matrix,w/2,h)
+
+  for i=1,text:len() do
+    local c = text:sub(i,i)
+
+    -- Step 4: Create the transformation matrix
+    -- TODO use composite
+    local matrix12 = cairo.Matrix()
+    local ex = cr:text_extents(c)
+    cairo.Matrix.init_rotate(matrix12, cur_angle+math.pi/2)
+    matrix12:translate(-ex.width/2,ex.height/2)
+
+    local trext = cairo.Matrix()
+    cairo.Matrix.init_translate(trext,
+      cur_rad*math.cos(cur_angle),
+      cur_rad*math.sin(cur_angle)
+    )
+
+    local res = cairo.Matrix()
+    res:multiply(trext,matrix)
+
+    local res2 = cairo.Matrix()
+    res2:multiply(matrix12,res)
+    cr:set_matrix(res2)
+
+    -- Step 4: Paint
+    cr:text_path(c)
+    cr:fill()
+
+    -- Step 5: update the angle
+    cur_angle = cur_angle + 0.05 --TODO use trigonometry to copute this
+    if cur_angle > end_angle then
+      cur_angle = start_angle
+      cur_rad = cur_rad - border_width - ex.height
+    end
+  end
+  return img
+end
+
 function module.radial_client_select(args)
   --Settings
   local args = args or {}
@@ -88,17 +157,18 @@ function module.radial_client_select(args)
 
   local function gen_arc(layer)
     data.layers[layer].position = (data.layers[layer].position or 0) + 1
+    local sef_count = #data.layers[layer].content
     local position = data.layers[layer].position
     local dat_layer = data.layers[layer]
     local outer_radius = layer*default.radius + default.base_radius
     local inner_radius = outer_radius - default.radius
-    local start_angle  = ((2*math.pi)/(4*layer))*(position-1)
-    local end_angle    = ((2*math.pi)/(4*layer))*(position)
+    local start_angle  = ((2*math.pi)/sef_count)*(position-1)
+    local end_angle    = ((2*math.pi)/sef_count)*(position)
     dat_layer.cr:set_operator(cairo.Operator.SOURCE)
     if data.layers[layer].selected == position then
       dat_layer.cr:set_source  ( color(beautiful.fg_focus)         )
     else
-      dat_layer.cr:set_source_rgb((5+(21-5)/(4*layer)*position)/256,(10+(119-10)/(4*layer)*position)/256,(27+(209-27)/(4*layer)*position)/256)
+      dat_layer.cr:set_source_rgb((5+(21-5)/sef_count*position)/256,(10+(119-10)/sef_count*position)/256,(27+(209-27)/sef_count*position)/256)
     end
     dat_layer.cr:move_to         ( data.width/2, data.height/2                             )
     dat_layer.cr:arc             ( data.width/2,data.height/2,outer_radius,start_angle,end_angle   )
@@ -118,30 +188,33 @@ function module.radial_client_select(args)
     local step = (2*math.pi)/(((math.pi*2*(default.base_radius +  default.radius*layer - 3 - level*12))/4)*0.65) --relation between arc and char width
     local testAngle = start_angle + 0.05
     cr2:select_font_face("monospace")
-    for i=1,text:len() do
-      cr2:set_operator(cairo.Operator.CLEAR)
-      cr2:paint()
-      cr2:set_operator(cairo.Operator.SOURCE)
-      cr2:set_source_rgb(1,1,1)
-      cr2:move_to(0,10)
-      cr2:text_path(text:sub(i,i))
-      cr2:fill()
-      local matrix12 = cairo.Matrix()
-      cairo.Matrix.init_rotate(matrix12, -testAngle )
-      matrix12:translate(-data.width/2+(default.base_radius + default.radius*layer - 3 - level*12)*(math.sin( - testAngle)),-data.height/2+(default.base_radius +  default.radius*layer - 3 - level*12)*(math.cos( -testAngle)))
-      local pattern = cairo.Pattern.create_for_surface(img2,20,20)
-      pattern:set_matrix(matrix12)
-      cr:set_source(pattern)
-      cr:paint()
-      testAngle=testAngle+step
-      if testAngle+step > end_angle - 0.05 then
-        testAngle = start_angle+0.05
-        level = level +1
-        if level > 2 then
-          break
-        end
-      end
-    end
+    local img = gen_text_mask(data,layer,#data.layers[layer].content,text)
+    cr:set_source_surface(img,0,60)
+    cr:paint()
+--     for i=1,text:len() do
+--       cr2:set_operator(cairo.Operator.CLEAR)
+--       cr2:paint()
+--       cr2:set_operator(cairo.Operator.SOURCE)
+--       cr2:set_source_rgb(1,1,1)
+--       cr2:move_to(0,10)
+--       cr2:text_path(text:sub(i,i))
+--       cr2:fill()
+--       local matrix12 = cairo.Matrix()
+--       cairo.Matrix.init_rotate(matrix12, -testAngle )
+--       matrix12:translate(-data.width/2+(default.base_radius + default.radius*layer - 3 - level*12)*(math.sin( - testAngle)),-data.height/2+(default.base_radius +  default.radius*layer - 3 - level*12)*(math.cos( -testAngle)))
+--       local pattern = cairo.Pattern.create_for_surface(img2,20,20)
+--       pattern:set_matrix(matrix12)
+--       cr:set_source(pattern)
+--       cr:paint()
+--       testAngle=testAngle+step
+--       if testAngle+step > end_angle - 0.05 then
+--         testAngle = start_angle+0.05
+--         level = level +1
+--         if level > 2 then
+--           break
+--         end
+--       end
+--     end
   end
 
   local function repaint_layer(idx,content)
@@ -159,7 +232,10 @@ function module.radial_client_select(args)
     else
       real_rad = -real_rad
     end
-    local new_selected = (idx*4 or 1) - math.floor(((real_rad*(idx*4 or 1))/2*math.pi)/10)
+    local count = #(lay.content or {})
+
+    local new_selected = count - math.floor( (real_rad)/(2*math.pi) * count )
+
     if content or (lay.content and new_selected ~= lay.selected) then
       lay.content = content or lay.content
       lay.cr:set_operator(cairo.Operator.CLEAR)
@@ -192,7 +268,10 @@ function module.radial_client_select(args)
         local dr = (2*math.pi)/#data.layers[i].content
 --         print("BLA BLA",k,i)
         local r1 = dr*(k-1)
-        draw_text(cr,"1234567890123456789012345678901234567890123456789012345678901234567890",r1,r1+dr,i)
+--         print(i,k,r1)
+        if i == 2 and k == 1 then
+          draw_text(cr,"1234567890123456789012345678901234567890123456789012345678901234567890",r1,r1+dr,i)
+        end
       end
     end
     cr:set_source_surface(create_inner_circle(),0,0)
@@ -217,6 +296,7 @@ function module.radial_client_select(args)
   end
 
   data:set_layer(1,{
+    {name="test",icon="",func =  function(menu,...)  end },
     {name="test",icon="",func =  function(menu,...)  end },
     {name="test",icon="",func =  function(menu,...)  end },
     {name="test",icon="",func =  function(menu,...)  end },
