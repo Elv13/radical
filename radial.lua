@@ -109,38 +109,9 @@ function module.radial_client_select(args)
     clear_center(layer)
   end
 
-  local function repaint_layer(idx,content)
-    local lay = data.layers[idx]
-    if not lay then
-      data.layers[idx] = {}
-      lay = data.layers[idx]
-      lay.img = cairo.ImageSurface(cairo.Format.ARGB32, data.width, data.height)
-      lay.cr = cairo.Context(lay.img)
-      lay.cr:set_line_width(3)
-    end
-    local real_rad = data.angle or 0
-    if real_rad >= 0 then
-      real_rad = math.pi*2 - real_rad
-    else
-      real_rad = -real_rad
-    end
-    local new_selected = (idx*4 or 1) - math.floor(((real_rad*(idx*4 or 1))/2*math.pi)/10)
-    if content or (lay.content and new_selected ~= lay.selected) then
-      lay.content = content or lay.content
-      lay.cr:set_operator(cairo.Operator.CLEAR)
-      lay.cr:paint()
-      lay.position = 0
-      lay.selected = new_selected
-      for k,v in ipairs(lay.content) do
-          gen_arc(idx,v)
-      end
-      lay.count = #lay.content
-    end
-    return lay.img
-  end
-
   local function draw_text(cr,text, start_angle, end_angle, layer)
-    local text = "1234567890123456789012345678901234567890123456789012345678901234567890"
+    if not text then return end
+
     local img2 = cairo.ImageSurface(cairo.Format.ARGB32, 20, 20)
     local cr2 = cairo.Context(img2)
     local level =0
@@ -173,6 +144,36 @@ function module.radial_client_select(args)
     end
   end
 
+  local function repaint_layer(idx,content)
+    local lay = data.layers[idx]
+    if not lay then
+      data.layers[idx] = {}
+      lay = data.layers[idx]
+      lay.img = cairo.ImageSurface(cairo.Format.ARGB32, data.width, data.height)
+      lay.cr = cairo.Context(lay.img)
+      lay.cr:set_line_width(3)
+    end
+    local real_rad = data.angle or 0
+    if real_rad >= 0 then
+      real_rad = math.pi*2 - real_rad
+    else
+      real_rad = -real_rad
+    end
+    local new_selected = (idx*4 or 1) - math.floor(((real_rad*(idx*4 or 1))/2*math.pi)/10)
+    if content or (lay.content and new_selected ~= lay.selected) then
+      lay.content = content or lay.content
+      lay.cr:set_operator(cairo.Operator.CLEAR)
+      lay.cr:paint()
+      lay.position = 0
+      lay.selected = new_selected
+      for k,v in ipairs(lay.content) do
+          gen_arc(idx,v)
+      end
+      lay.count = #lay.content
+    end
+    return lay.img
+  end
+
   local function compose()
     if not data.compose.img then
       data.compose.img = cairo.ImageSurface(cairo.Format.ARGB32, data.width, data.height)
@@ -186,12 +187,18 @@ function module.radial_client_select(args)
     for i=#data.layers,1,-1 do
       cr:set_source_surface(repaint_layer(i),0,0)
       cr:paint()
+
+      for k,v in ipairs(data.layers[i].content) do
+        local dr = (2*math.pi)/#data.layers[i].content
+--         print("BLA BLA",k,i)
+        local r1 = dr*(k-1)
+        draw_text(cr,"1234567890123456789012345678901234567890123456789012345678901234567890",r1,r1+dr,i)
+      end
     end
     cr:set_source_surface(create_inner_circle(),0,0)
     cr:paint()
     cr:set_source_surface(position_indicator_layer(),0,0)
     cr:paint()
-    draw_text(cr,"",math.pi,3*(math.pi/2),1)
   end
 
   function data:set_layer(idx,content)
