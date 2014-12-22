@@ -10,5 +10,6 @@ return {
     arrow_alt    = require("radical.item.style.arrow_alt"    ),
     arrow_prefix = require("radical.item.style.arrow_prefix" ),
     arrow_single = require("radical.item.style.arrow_single" ),
+    arrow_3d     = require("radical.item.style.arrow_3d"     ),
     slice_prefix = require("radical.item.style.slice_prefix" ),
 }
