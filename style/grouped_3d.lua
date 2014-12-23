@@ -1,0 +1,48 @@
+local setmetatable = setmetatable
+local base = require( "radical.base" )
+local color     = require( "gears.color"      )
+
+local module = {
+  margins = {
+    TOP    = 0 ,
+    BOTTOM = 0 ,
+    LEFT   = 0 ,
+    BOTTOM = 0 ,
+  }
+}
+
+local function rounded_rect(cr,x,y,w,h,radius)
+  cr:save()
+  cr:translate(x,y)
+  cr:move_to(0,radius)
+  cr:arc(radius,radius,radius,math.pi,3*(math.pi/2))
+  cr:arc(w-radius,radius,radius,3*(math.pi/2),math.pi*2)
+  cr:arc(w-radius,h-radius,radius,math.pi*2,math.pi/2)
+  cr:arc(radius,h-radius,radius,math.pi/2,math.pi)
+  cr:close_path()
+  cr:restore()
+end
+
+local function draw2(self,w, cr, width, height)
+  cr:save()
+  cr:set_source_rgba(1,0,0,1)
+  local mx,my = self.left or 0, self.top or 0
+  local mw,mh = width - mx - (self.right or 0), height - my - (self.bottom or 0)
+  rounded_rect(cr,mx,my,mw,mh,6)
+  cr:clip()
+  self.___draw(self,w, cr, width, height)
+  cr:restore()
+end
+
+local function draw(data)
+  if not data._internal then return end
+
+  local m = data._internal.margin
+  if m then
+    m.___draw = m.draw
+    m.draw = draw2
+  end
+end
+
+return setmetatable(module, { __call = function(_, ...) return draw(...) end })
+-- kate: space-indent on; indent-width 2; replace-tabs on;
