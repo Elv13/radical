@@ -137,9 +137,9 @@ end
 local function reload_content(c,b,a)
   local item = _cache[c]
   if item then
-    if not beautiful.tasklist_disable_icon then
-      item.icon = surface(c.icon) or beautiful.tasklist_default_icon
-    end
+--     if not beautiful.tasklist_disable_icon then
+--       item.icon = surface(c.icon) or beautiful.tasklist_default_icon
+--     end
     item.text = c.name or "N/A"
   end
 end
@@ -242,6 +242,7 @@ local function tagged(c,t)
 end
 
 local function new(screen)
+  print("ICIT",beautiful.tasklist_default_item_margins)
   local args = {
     select_on            = radical.base.event.NEVER                                                      ,
     disable_markup       = true                                                                          ,
@@ -254,6 +255,7 @@ local function new(screen)
     item_style           = beautiful.tasklist_item_style                                                 ,
     style                = beautiful.tasklist_style                                                      ,
     spacing              = beautiful.tasklist_spacing                                                    ,
+    icon_per_state       = true                                                                          ,
   }
   for k,v in ipairs {"hover","urgent","minimized","focus"} do
     args["bg_"..v] = beautiful["tasklist_bg_"..v]

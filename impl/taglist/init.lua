@@ -15,6 +15,7 @@ local client    = require( "awful.client" )
 local wibox     = require( "wibox"        )
 local awful     = require( "awful"        )
 local theme     = require( "radical.theme")
+local surface   = require( "gears.surface" )
 local tracker   = require( "radical.impl.taglist.tracker" )
 local tag_menu  = require( "radical.impl.taglist.tag_menu" )
 
@@ -51,45 +52,59 @@ module.buttons = { [1] = awful.tag.viewonly,
 
 local function index_draw(self,w, cr, width, height)
   cr:save()
-  cr:set_source(color(beautiful.taglist_fg_prefix or beautiful.fg_normal))
+  cr:set_source(color(self._color or beautiful.taglist_fg_prefix or beautiful.fg_normal))
   local d = wibox.widget.textbox._draw or wibox.widget.textbox.draw
   d(self,wibox, cr, width, height)
   cr:restore()
 end
 
 local function create_item(t,s)
-  local menu,ib = instances[s],nil
+  local menu,ib,original = instances[s],nil,tag.geticon(t)
   if not menu or not t then return end
   local w = wibox.layout.fixed.horizontal()
   if beautiful.taglist_disable_icon ~= true then
-    local icon = tag.geticon(t)
+    local icon = original
     if icon and beautiful.taglist_icon_transformation then
       icon = beautiful.taglist_icon_transformation(icon,menu,nil)
     end
+
     ib = wibox.widget.imagebox()
     ib:set_image(icon)
+    original = surface(original)
     w:add(ib)
   end
+  local tw = nil
   if beautiful.taglist_disable_index ~= true then
-    local tw = wibox.widget.textbox()
+    tw = wibox.widget.textbox()
     tw.draw = index_draw
     local index = tag.getproperty(t,"index") or tag.getidx(t)
-    tw:set_markup(" <b>"..(index).."</b> ")
+    tw:set_markup((menu.index_prefix or " <b>#")..(index)..(menu.index_suffix or "</b>: "))
     w:add(tw)
   end
   local suf_w = wibox.layout.fixed.horizontal()
   local item = menu:add_item { text = t.name, prefix_widget = w,suffix_widget=suf_w,bg_normal="#ff0000"--[[beautiful.taglist_bg_unused]]}
   item.state[EMPTY] = true
   item._internal.icon_w = ib
---   item:connect_signal("index::changed",function(_,value)
---     tw:set_markup(" <b>"..(index).."</b> ")
---   end)
 
   item.add_suffix = function(_,w2)
     suf_w:add(w2)
   end
   item.add_prefix = function(_,w2)
     w:add(w2)
+  end
+
+  -- Redraw the icon when necessary
+  if menu.icon_per_state == true then
+    item:connect_signal("state::changed",function(i,d,st)
+      if original and beautiful.taglist_icon_transformation then
+        wibox.widget.imagebox.set_image(ib,beautiful.taglist_icon_transformation(original,menu,item))
+        if tw and beautiful.taglist_index_per_state then
+          local current_state = item.state._current_key or nil
+          local state_name = radical.base.colors_by_id[current_state] or "normal"
+          tw._color = beautiful["taglist_index_fg_"..state_name]
+        end
+      end
+    end)
   end
 
 
@@ -252,6 +267,7 @@ local function new(s)
     spacing    = beautiful.taglist_spacing,
     default_item_margins = beautiful.taglist_default_item_margins,
     default_margins      = beautiful.taglist_default_margins     ,
+    icon_per_state       = beautiful.taglist_icon_per_state,
 --     fkeys_prefix = true,
   }
   for k,v in ipairs {"hover","used","urgent","cloned","changed","highlight"} do
@@ -260,6 +276,10 @@ local function new(s)
   end
 
   instances[s] = radical.bar(args)
+
+  --Add some settings
+  rawset(instances[s],"index_prefix",beautiful.taglist_index_prefix)
+  rawset(instances[s],"index_suffix",beautiful.taglist_index_suffix)
 
 
   -- Load the innitial set of tags
@@ -287,9 +307,10 @@ capi.tag.connect_signal("property::index2",function(t,i)
     local s = tag.getscreen(t)
     local item = cache[t]
     if item then
-      instances[s]:move(item,i)
+      local menu = instances[s]
+      menu:move(item,i)
       if item.tw then
-        item.tw:set_markup(" <b>"..(i).."</b> ")
+        item.tw:set_markup((menu.index_prefix or " <b>#")..(i)..(menu.index_suffix or "</b>: "))
       end
     end
   end
