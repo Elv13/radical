@@ -201,6 +201,13 @@ local function create_item(item,data,args)
     return w+3,h
   end
   layout:add(icon)
+  if data.icon_per_state == true then
+    item:connect_signal("state::changed",function(i,d,st)
+      if item._original_icon and data.icon_transformation then
+        wibox.widget.imagebox.set_image(icon,data.icon_transformation(item._original_icon,data,item))
+      end
+    end)
+  end
 
   -- Prefix
   if args.prefix_widget then

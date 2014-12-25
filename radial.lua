@@ -33,12 +33,15 @@ local function gen_text_mask(data, layer, segs, text)
 
   -- I let the reader make the proof of this: good luck with that
   local dr = (math.pi*2)/segs
-  local w  = segs < 2 and data.width or 2*math.abs(math.sin((dr)/2)*(data.width/2))
---   local w = data.width
+  local w  = segs <= 2 and data.width or 2*math.abs(math.sin((dr)/3)*(data.width/2)) + 3
 
   -- Step 2: Create the surface
   local img = cairo.ImageSurface(cairo.Format.ARGB32, w, h)
   local cr  = cairo.Context(img)
+
+--   cr:set_source_rgba(1,0,0,1)
+--   cr:paint()
+--   cr:set_source_rgba(1,1,1,1)
 
   local border_width= 4
   local start_angle = -(math.pi/2) - dr/2
@@ -189,7 +192,7 @@ function module.radial_client_select(args)
     local testAngle = start_angle + 0.05
     cr2:select_font_face("monospace")
     local img = gen_text_mask(data,layer,#data.layers[layer].content,text)
-    cr:set_source_surface(img,0,60)
+    cr:set_source_surface(img,100,60)
     cr:paint()
 --     for i=1,text:len() do
 --       cr2:set_operator(cairo.Operator.CLEAR)
@@ -304,6 +307,8 @@ function module.radial_client_select(args)
   })
 
   data:set_layer(2,{
+    {name="test",icon="",func =  function(menu,...)  end },
+    {name="test",icon="",func =  function(menu,...)  end },
     {name="test",icon="",func =  function(menu,...)  end },
     {name="test",icon="",func =  function(menu,...)  end },
     {name="test",icon="",func =  function(menu,...)  end },

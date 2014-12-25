@@ -334,12 +334,13 @@ local function new(args)
       opacity         = args.opacity or beautiful.menu_opacity or 1,
       spacing         = args.spacing or nil, --TODO add to README once merged upstream
       default_margins = args.default_margins or {},
+      icon_per_state  = args.icon_per_state or false,
       default_item_margins  = args.default_item_margins or {},
       icon_transformation   = args.icon_transformation or nil,
       filter_underlay_style = args.filter_underlay_style or nil,
       filter_underlay_color = args.filter_underlay_color,
       filter_placeholder    = args.filter_placeholder or "",
-      disable_submenu_icon  = args.disable_submenu_icon or false
+      disable_submenu_icon  = args.disable_submenu_icon or false,
     },
     force_private = {
       parent  = true,

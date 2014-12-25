@@ -75,6 +75,10 @@ local function setup_drawable(data)
     return data._internal.mrgns or {}
   end
 
+  if data.style then
+    data.style(data)
+  end
+
   -- This widget do not use wibox, so setup correct widget interface
   data.fit = internal.layout
   data.draw = internal.layout
