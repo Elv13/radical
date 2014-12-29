@@ -242,7 +242,6 @@ local function tagged(c,t)
 end
 
 local function new(screen)
-  print("ICIT",beautiful.tasklist_default_item_margins)
   local args = {
     select_on            = radical.base.event.NEVER                                                      ,
     disable_markup       = true                                                                          ,

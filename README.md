@@ -268,7 +268,9 @@ here is the list:
 |        Name       |                 Description                  |       Arguments       | Return |
 | ----------------- | -------------------------------------------- | --------------------- | ------ |
 | add_item          | Add new item to a menu                       | array of options      | item   |
+| add_items         | Add new items to a menu                      | array of items arrays | array  |
 | add_widget        | Add a new widget instead of an item          | a widget, args        |  ---   |
+| add_widgets       | Add new widgets                              | array of widgets      |  ---   |
 | add_embeded_menu  | Add an inline menu to another menu           | an "embed" menu       |  ---   |
 | add_key_binding   | Add a global key binding to a menu           | mod array, key        |  ---   |
 | add_key_hook      | Add a callback when a key is pressed         | mod, key, event, func |  ---   |

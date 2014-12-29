@@ -117,7 +117,7 @@ local function setup_buttons(data,item,args)
 
   -- Setup sub_menu
   if (item.sub_menu_m or item.sub_menu_f) and data.sub_menu_on >= base.event.BUTTON1 and data.sub_menu_on <= base.event.BUTTON3 then
-    buttons[data.sub_menu_on] = item.widget:set_menu(item.sub_menu_m or item.sub_menu_f,data.sub_menu_on)
+      item.widget:set_menu(item.sub_menu_m or item.sub_menu_f,data.sub_menu_on)
   end
 
   -- Scrool up

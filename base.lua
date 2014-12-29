@@ -200,6 +200,14 @@ local function add_item(data,args)
   return item
 end
 
+local function add_items(data,items)
+  local ret = {}
+  for k,item in ipairs(items) do
+    ret[k] = data:add_item(item)
+  end
+  return ret
+end
+
 
 local function add_widget(data,widget,args)
   args = args or {}
@@ -234,6 +242,12 @@ local function add_widget(data,widget,args)
     local fit_w,fit_h = data._internal.layout:fit(9999,9999)
     data.width = data._internal.width or fit_w
     data.height = fit_h
+  end
+end
+
+local function add_widgets(data,widgets)
+  for k,item in ipairs(widgets) do
+    data:add_widget(item)
   end
 end
 
@@ -356,7 +370,7 @@ local function new(args)
   })
   internal.private_data = private_data
   data.add_item,data.add_widget,data.add_embeded_menu,data._internal,data.add_key_binding = add_item,add_widget,add_embeded_menu,internal,add_key_binding
-  data.add_prefix_widget,data.add_suffix_widget=add_prefix_widget,add_suffix_widget
+  data.add_prefix_widget,data.add_suffix_widget,data.add_items,data.add_widgets=add_prefix_widget,add_suffix_widget,add_items,add_widgets
   theme.setup_colors(data,args)
 
   -- Getters
