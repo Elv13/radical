@@ -3,6 +3,7 @@ local capi = { screen = screen, client=client}
 local awful     = require( "awful"      )
 local beautiful =  require("beautiful")
 local suits = require("awful.layout.suit")
+local wibox = require("wibox")
 local tag_list = nil
 
 local module = {}
@@ -61,7 +62,7 @@ end
 function module.layouts(menu,layouts)
   local cur = awful.layout.get(awful.tag.getscreen(awful.tag.selected(capi.client.focus and capi.client.focus.screen)))
   local screenSelect = menu or radical.context {}
-  local layouts = layouts or fallback_layouts
+  local layouts = layouts or awful.layout.layouts or fallback_layouts
   for i, layout_real in ipairs(layouts) do
     local layout2 = awful.layout.getname(layout_real)
     if layout2 and beautiful["layout_" ..layout2] then
@@ -74,6 +75,44 @@ function module.layouts(menu,layouts)
     end
   end
   return screenSelect
+end
+
+--Update the 
+
+-- Widget to replace the default awesome layoutbox
+function module.layout_item(menu,args)
+  local args = args or {}
+  local ib = wibox.widget.imagebox()
+  local screen = args.screen or 1
+  local sub_menu = nil
+  
+  local function toggle()
+    if not sub_menu then
+      sub_menu = radical.context{
+        filter      = false                             ,
+        item_style  = radical.item.style.rounded        ,
+        item_height = 30                                ,
+        column      = 3                                 ,
+        layout      = radical.layout.grid               ,
+        arrow_type  = radical.base.arrow_type.CENTERED  ,
+      }
+      module.layouts(sub_menu)
+    end
+    sub_menu.visible = not sub_menu.visible
+  end
+  
+  --TODO button 4 and 5
+  local item = menu:add_item{text=args.text,button1=toggle}
+  
+  local function update()
+    local layout = awful.layout.getname(awful.layout.get(screen))
+    local ic = beautiful["layout_small_" ..layout] or beautiful["layout_" ..layout]
+    item.icon = ic
+  end
+  update()
+
+  awful.tag.attached_connect_signal(screen, "property::selected", update)
+  awful.tag.attached_connect_signal(screen, "property::layout"  , update)
 end
 
 return setmetatable(module, { __call = function(_, ...) return module.listTags(...) end })

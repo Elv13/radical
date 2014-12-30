@@ -84,7 +84,8 @@ local function create_item(item,data,args)
   end
   bg.fit = function(box,w,h,...)
 --     args.y = data.height-h-data.margins.top --TODO dead code?
-    return data._internal.layout.item_fit(data,item,box,w,h)
+    local f = data._internal.layout.item_fit or wibox.widget.background.fit
+    return f(data,item,box,w,h)
   end
   if item.checkable then
     item.get_checked = function(data,item)
