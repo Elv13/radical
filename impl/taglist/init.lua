@@ -59,7 +59,7 @@ local function index_draw(self,w, cr, width, height)
 end
 
 local function create_item(t,s)
-  local menu,ib,original = instances[s],nil,tag.geticon(t)
+  local menu,ib,original = instances[s],nil,tag.geticon(t) or beautiful.taglist_default_icon
   if not menu or not t then return end
   local w = wibox.layout.fixed.horizontal()
   if beautiful.taglist_disable_icon ~= true then

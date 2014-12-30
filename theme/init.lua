@@ -10,6 +10,7 @@ local module = {
 local function return_data(tab, key)
   return tab._real_table[key]
 end
+
 local function change_data(tab, key,value)
   if not value and key == rawget(tab,"_current_key") then
     -- Loop the array to find a new current_key
@@ -33,6 +34,7 @@ local function change_data(tab, key,value)
   end
   tab._real_table[key] = value
 end
+
 function module.init_state(item)
   local mt = {__newindex = change_data,__index=return_data}
   return setmetatable({_real_table={},_item=item},mt)
@@ -71,6 +73,18 @@ function module.setup_item_colors(data,item,args)
         return priv["bg_"..k] or data["bg_"..k]
       end)
     end
+  end
+end
+
+--- Apply a set of background and foreground colors from beautiful to `data`
+-- @arg data The menu
+-- @arg namespace The beautiful prefix used for that set of values
+function module.add_colors_from_namespace(data,namespace)
+  local priv = data._internal.private_data
+  for k,v in pairs(theme_colors) do
+    priv["fg_"..k] = beautiful[namespace.."_fg_"..v.beautiful_name] or priv["fg_"..k]
+    priv["bg_"..k] = beautiful[namespace.."_bg_"..v.beautiful_name] or priv["bg_"..k]
+    priv["underlay_bg_"..k] = beautiful[namespace.."_underlay_bg_"..v.beautiful_name] or priv["underlay_bg_"..k]
   end
 end
 

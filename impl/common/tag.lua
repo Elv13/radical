@@ -102,7 +102,7 @@ function module.layout_item(menu,args)
   end
   
   --TODO button 4 and 5
-  local item = menu:add_item{text=args.text,button1=toggle}
+  local item = menu:add_item{text=args.text,button1=toggle,tooltip=args.tooltip}
   
   local function update()
     local layout = awful.layout.getname(awful.layout.get(screen))

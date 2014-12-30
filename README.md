@@ -265,25 +265,26 @@ The colors option are available for both menus and items objects.
 All menus provide a bunch of methods. Most of them have been coverred above, but
 here is the list:
 
-|        Name       |                 Description                  |       Arguments       | Return |
-| ----------------- | -------------------------------------------- | --------------------- | ------ |
-| add_item          | Add new item to a menu                       | array of options      | item   |
-| add_items         | Add new items to a menu                      | array of items arrays | array  |
-| add_widget        | Add a new widget instead of an item          | a widget, args        |  ---   |
-| add_widgets       | Add new widgets                              | array of widgets      |  ---   |
-| add_embeded_menu  | Add an inline menu to another menu           | an "embed" menu       |  ---   |
-| add_key_binding   | Add a global key binding to a menu           | mod array, key        |  ---   |
-| add_key_hook      | Add a callback when a key is pressed         | mod, key, event, func |  ---   |
-| clear             | Remove all items                             |           ---         |  ---   |
-| scroll_down       | If the menu is cropped, scroll down          |           ---         |  ---   |
-| scroll_up         | If the menu is cropped, scroll up            |           ---         |  ---   |
-| hide              | Hide a menu and all sub menus                |           ---         |  ---   |
-| swap              | Swap 2 items                                 | both items            |  ---   |
-| move              | Move an item                                 | the item, the new idx |  ---   |
-| remove            | Remove the item                              | the item              |  ---   |
-| append            | Append an existing (but unused) item         | the item              |  ---   |
-| add_prefix_widget | Add a widget at the beginning of the menu    | the widget            |  ---   |
-| add_suffix_widget | Add a widget at the end of the menu          | the widget            |  ---   |
+|        Name          |                 Description                  |       Arguments       | Return |
+| -------------------- | -------------------------------------------- | --------------------- | ------ |
+| add_item             | Add new item to a menu                       | array of options      | item   |
+| add_items            | Add new items to a menu                      | array of items arrays | array  |
+| add_widget           | Add a new widget instead of an item          | a widget, args        |  ---   |
+| add_widgets          | Add new widgets                              | array of widgets      |  ---   |
+| add_embeded_menu     | Add an inline menu to another menu           | an "embed" menu       |  ---   |
+| add_key_binding      | Add a global key binding to a menu           | mod array, key        |  ---   |
+| add_key_hook         | Add a callback when a key is pressed         | mod, key, event, func |  ---   |
+| clear                | Remove all items                             |           ---         |  ---   |
+| scroll_down          | If the menu is cropped, scroll down          |           ---         |  ---   |
+| scroll_up            | If the menu is cropped, scroll up            |           ---         |  ---   |
+| hide                 | Hide a menu and all sub menus                |           ---         |  ---   |
+| swap                 | Swap 2 items                                 | both items            |  ---   |
+| move                 | Move an item                                 | the item, the new idx |  ---   |
+| remove               | Remove the item                              | the item              |  ---   |
+| append               | Append an existing (but unused) item         | the item              |  ---   |
+| add_prefix_widget    | Add a widget at the beginning of the menu    | the widget            |  ---   |
+| add_suffix_widget    | Add a widget at the end of the menu          | the widget            |  ---   |
+| add_colors_namespace | Use prefixed colors from beautiful           | the namespace name    |  ---   |
 
 
 ###Signals

@@ -283,9 +283,12 @@ local function add_embeded_menu(data,menu)
   menu._embeded_parent = data
 end
 
+local function add_colors_namespace(data,namespace)
+  theme.add_colors_from_namespace(data,namespace)
+end
+
 local function add_key_binding(data,mod,key,func)
   capi.root.keys(util.table.join(capi.root.keys(),aw_key(mod or {}, key, func and func() or function ()
-      print("bob")
       data.visible = not data.visible
   end)))
 end
@@ -369,8 +372,13 @@ local function new(args)
     autogen_signals = true,
   })
   internal.private_data = private_data
+  
+  -- Methods
   data.add_item,data.add_widget,data.add_embeded_menu,data._internal,data.add_key_binding = add_item,add_widget,add_embeded_menu,internal,add_key_binding
   data.add_prefix_widget,data.add_suffix_widget,data.add_items,data.add_widgets=add_prefix_widget,add_suffix_widget,add_items,add_widgets
+  data.add_colors_namespace = add_colors_namespace
+  
+  -- Load colors
   theme.setup_colors(data,args)
 
   -- Getters

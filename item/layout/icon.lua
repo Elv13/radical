@@ -82,10 +82,14 @@ local function create_item(item,data,args)
     subArrow:set_image( beautiful.menu_submenu_icon   )
     lr:add(subArrow)
   end
-  bg.fit = function(box,w,h,...)
+  bg.fit = function(box,w,h)
 --     args.y = data.height-h-data.margins.top --TODO dead code?
-    local f = data._internal.layout.item_fit or wibox.widget.background.fit
-    return f(data,item,box,w,h)
+    if data._internal.layout.item_fit then
+      return data._internal.layout.item_fit(data,item,box,w,h)
+    else
+      return wibox.widget.background.fit(box,w,h)
+    end
+    return 0,0
   end
   if item.checkable then
     item.get_checked = function(data,item)
@@ -115,6 +119,8 @@ local function create_item(item,data,args)
 
   -- Setup events
   horizontal.setup_event(data,item,bg)
+  
+  item.widget = bg
 
   return bg
 end
