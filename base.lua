@@ -430,6 +430,10 @@ local function new(args)
     end
   end
 
+  data.add_colors_group = function(data,section)
+    theme.add_section(data,section,args)
+  end
+
   data.set_layout = function(_,value)
     if value then
       value:setup_key_hooks(data)

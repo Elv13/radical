@@ -42,6 +42,15 @@ end
 
 -- Util to help match colors to states
 local theme_colors = {}
+
+local function load_section(data,priv,section,args)
+  local bg,fg,args = section.."_bg_", section.."_fg_",args or {}
+  for k,v in pairs(theme_colors) do
+    priv[bg..k] = args[bg..v.beautiful_name] or beautiful["menu_"..bg..v.beautiful_name] or beautiful[bg..v.beautiful_name]
+    priv[fg..k] = args[fg..v.beautiful_name] or beautiful["menu_"..fg..v.beautiful_name] or beautiful[fg..v.beautiful_name]
+  end
+end
+
 function module.register_color(state_id,name,beautiful_name,allow_fallback)
   theme_colors[name] = {id=state_id,beautiful_name=beautiful_name,fallback=allow_fallback}
   module.colors_by_id[state_id] = name
@@ -51,10 +60,14 @@ function module.setup_colors(data,args)
   for k,v in pairs(theme_colors) do
       priv["fg_"..k] = args["fg_"..k] or beautiful["menu_fg_"..v.beautiful_name] or beautiful["fg_"..v.beautiful_name] or (v.fallback and beautiful.fg_normal)
       priv["bg_"..k] = args["bg_"..k] or beautiful["menu_bg_"..v.beautiful_name] or beautiful["bg_"..v.beautiful_name] or (v.fallback and beautiful.bg_normal)
-      priv["underlay_bg_"..k] = args["underlay_bg_"..k] or beautiful["menu_underlay_bg_"..v.beautiful_name] or beautiful["underlay_bg_"..v.beautiful_name]
+      --priv["underlay_bg_"..k] = args["underlay_bg_"..k] or beautiful["menu_underlay_bg_"..v.beautiful_name] or beautiful["underlay_bg_"..v.beautiful_name]
+  end
+
+  -- Handle custom sections
+  for _,section in ipairs(priv.section or {}) do
+    load_section(data,priv,section,args)
   end
 end
-
 
 function module.setup_item_colors(data,item,args)
   local priv = item._private_data
@@ -84,8 +97,24 @@ function module.add_colors_from_namespace(data,namespace)
   for k,v in pairs(theme_colors) do
     priv["fg_"..k] = beautiful[namespace.."_fg_"..v.beautiful_name] or priv["fg_"..k]
     priv["bg_"..k] = beautiful[namespace.."_bg_"..v.beautiful_name] or priv["bg_"..k]
-    priv["underlay_bg_"..k] = beautiful[namespace.."_underlay_bg_"..v.beautiful_name] or priv["underlay_bg_"..k]
   end
+  priv["fg"] = beautiful[namespace.."_fg"] or priv["fg"]
+  priv["bg"] = beautiful[namespace.."_bg"] or priv["bg"]
+  priv.namespace = priv.namespace or {}
+  priv.namespace[#priv.namespace+1] = namespace
+end
+
+-- Utils to add new color-able elements of an item
+-- this can be used either for extentions, such as {pre,suf}fixes
+-- or "special" [item_]styles
+
+function module.add_section(data,section,args)
+  local priv = data._internal.private_data
+
+  load_section(data,priv,section,args)
+  
+  priv.section = priv.section or {}
+  priv.section[#priv.section+1] = section
 end
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })

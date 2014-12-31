@@ -143,7 +143,20 @@ local function new_item(data,args)
   item.get_fg = function()
     return data.fg
   end
+
+  item.set_underlay = function(item,underlay)
+    if not item._internal.underlay_init then
+      data:add_colors_group("underlay")
+      item._internal.underlay_init = true
+    end
+
+    item._internal.underlay_content = underlay
+  end
+  item.get_underlay =  function(item)
+    return item._internal.underlay_content
+  end
   item.state         = theme.init_state(item)
+  item.underlay = args.underlay
 
   for i=1,10 do
     item["button"..i] = args["button"..i]

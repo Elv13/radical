@@ -285,6 +285,7 @@ here is the list:
 | add_prefix_widget    | Add a widget at the beginning of the menu    | the widget            |  ---   |
 | add_suffix_widget    | Add a widget at the end of the menu          | the widget            |  ---   |
 | add_colors_namespace | Use prefixed colors from beautiful           | the namespace name    |  ---   |
+| add_colors_group     | Add a new color group (see below for details)| the group name        |  ---   |
 
 
 ###Signals
@@ -365,6 +366,16 @@ Styling can also be done using the icon_transformation option. This feature
 allow masks such as desaturation, tinting, invert or some matrix to be applied
 on the pixmap before it is being drawn. This function take the path/surface as
 only parameter and return the transformed surface.
+
+Other elements can be added to items such as prefix, underlay and siffixes.
+Those elements sometime need extra color groups. The `add_color_group` method
+allow to register such new category. For a common example, the underlay, it
+will be possible to pass `underlay_bg_focus` or `underlay_fg_disabled` colors
+or any other registered states.
+
+Some generic menu can also register beautiful namespaces using the 
+`add_colors_namespace` method. For example, the tasklist namespace can be used
+by adding elements such as `beautiful.tasklist_bg_urgent` to your theme.
 
 ## Extending Radical
 
