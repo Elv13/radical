@@ -25,12 +25,15 @@ end
 
 local function draw2(self,w, cr, width, height)
   cr:save()
-  cr:set_source_rgba(1,0,0,1)
   local mx,my = self.left or 0, self.top or 0
   local mw,mh = width - mx - (self.right or 0), height - my - (self.bottom or 0)
   rounded_rect(cr,mx,my,mw,mh,6)
+  local path = cr:copy_path()
   cr:clip()
   self.___draw(self,w, cr, width, height)
+  cr:append_path(path)
+  cr:set_source(color(self.data.border_color))
+  cr:stroke()
   cr:restore()
 end
 
@@ -41,6 +44,7 @@ local function draw(data)
   if m then
     m.___draw = m.draw
     m.draw = draw2
+    m.data = data
   end
 end
 

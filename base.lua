@@ -358,6 +358,7 @@ local function new(args)
       filter_underlay_color = args.filter_underlay_color,
       filter_placeholder    = args.filter_placeholder or "",
       disable_submenu_icon  = args.disable_submenu_icon or false,
+      item_border_color     = args.item_border_color or nil,
     },
     force_private = {
       parent  = true,

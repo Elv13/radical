@@ -118,6 +118,7 @@ local function new_item(data,args)
       style       = args.style       or data.item_style                                                     ,
       layout      = args.layout      or args.item_layout or nil                                             ,
       overlay     = args.overlay     or data.overlay or nil                                                 ,
+      item_border_color = args.item_border_color or data.item_border_color or nil                           ,
     },
     force_private = {
       visible = true,

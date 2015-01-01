@@ -168,6 +168,7 @@ Multiple items can have multiple sets of options.
 | bg_header           | Header (see widgets section) color                 | String/gradient/pattern       |
 | bg_prefix           | Prefix background for item_styles that support it  | String/gradient/pattern       |
 | border_color        | Border color                                       | String/gradient/pattern       |
+| item_border_color   | Alternative border color for item separation       | String/gradient/pattern       |
 | border_width        | Border width                                       | number                        |
 | item_height         | Default height of items                            | number                        |
 | item_width          | Default width of items                             | number                        |
@@ -200,6 +201,7 @@ Multiple items can have multiple sets of options.
 | overlay             | A layer on top of the item                         | function(data,item,cr,w,h)    |
 | opacity             | Make this menu translucent (require a compositor)  | number (0 to 1)               |
 | icon_transformation | Hijack the icon drawing function                   | function(icon,data,item)      |
+| icon_per_state      | Call icon_transformation when state change         | boolean                       |
 | disable_submenu_icon| Do not show the submenu icon (arrow)               | boolean                       |
 | margins             | Read/Write table (left,right,top and bottom)       | dynamic table                 |
 | visible_row_count   | Number of visible items -(#max-(#total-#filtered)) | number                        |
