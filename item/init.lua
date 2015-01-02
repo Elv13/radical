@@ -108,6 +108,7 @@ local function new_item(data,args)
       bg          = args.bg          or nil                                                                 ,
       fg          = args.fg          or data.fg                                                             , --TODO don't do this
       border_color= args.border_color or data.border_color                                                  ,
+      border_width= args.border_width or data.border_width                                                  ,
       bg_prefix   = args.bg_prefix   or data.bg_prefix                                                      ,
       sub_menu_m  = (args.sub_menu   and type(args.sub_menu) == "table" and args.sub_menu.is_menu) and args.sub_menu or nil,
       sub_menu_f  = (args.sub_menu   and type(args.sub_menu) == "function") and args.sub_menu or nil        ,

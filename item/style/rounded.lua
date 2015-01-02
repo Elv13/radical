@@ -16,10 +16,10 @@ local module = {
 
 local state_cache = {}
 
-local function gen(width,height,bg_color,border_color)
+local function gen(width,height,bg_color,border_color,item)
   local img = cairo.ImageSurface(cairo.Format.ARGB32, width,height)
   local cr = cairo.Context(img)
-  local radius = corner_radius or 3
+  local radius = 3
   cr:set_source(color(bg_color))
   cr:move_to(0,radius)
   cr:arc(radius,radius,radius,math.pi,3*(math.pi/2))
@@ -27,13 +27,20 @@ local function gen(width,height,bg_color,border_color)
   cr:arc(width-radius,height-radius,radius,math.pi*2,math.pi/2)
   cr:arc(radius,height-radius,radius,math.pi/2,math.pi)
   cr:close_path()
-  cr:fill()
+  if item.item_border_color then
+    cr:fill_preserve()
+    cr:set_line_width(item.border_width or 1)
+    cr:set_source(color(item.item_border_color))
+    cr:stroke()
+  else
+    cr:fill()
+  end
   return cairo.Pattern.create_for_surface(img)
 end
 
 local function widget_draw(self, w, cr, width, height)
-
-  local state = self._item.state or {}
+  local item = self._item
+  local state = item.state or {}
   local current_state = state._current_key or ""
   if not state_cache[current_state] then
     state_cache[current_state] = {}
@@ -46,7 +53,7 @@ local function widget_draw(self, w, cr, width, height)
   --Generate the pixmap
   if not cached then
     local state_name = current_state == "" and "bg" or "bg_"..(base.colors_by_id[current_state] or "")
-    cached = gen(width,height,self._item[state_name],bc)
+    cached = gen(width,height,item[state_name],bc,item)
     cache[hash] = cached
   end
 
@@ -56,9 +63,9 @@ local function widget_draw(self, w, cr, width, height)
   end
 
   self:_drawrounded(w, cr, width, height)
-  local overlay = self._item and self._item.overlay
+  local overlay = item and item.overlay
   if overlay then
-    overlay(self._item._menu,self._item,cr,width,height)
+    overlay(item._menu,item,cr,width,height)
   end
 end
 
