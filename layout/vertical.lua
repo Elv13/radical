@@ -254,6 +254,10 @@ local function new(data)
   data._internal.content_layout = l
   data._internal.suf_l,data._internal.pref_l=suf_l,pref_l
 
+--   if data.spacing and l.set_spacing then
+--     l:set_spacing(data.spacing)
+--   end
+
   --SWAP / MOVE / REMOVE
   data:connect_signal("item::swapped",function(_,item1,item2,index1,index2)
     l.widgets[index1],l.widgets[index2] = l.widgets[index2],l.widgets[index1]

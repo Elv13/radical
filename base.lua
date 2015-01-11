@@ -300,7 +300,7 @@ local function new(args)
   local internal = args.internal or {}
   if not internal.items then internal.items = {} end
   if not internal.widgets then internal.widgets = {} end
-
+print(beautiful.menu_border_color)
   -- All the magic in the universe
   local data,private_data = object({
     private_data = {
@@ -328,7 +328,7 @@ local function new(args)
       layout          = args.layout or nil,
       screen          = args.screen or nil,
       style           = args.style  or nil,
-      item_style      = args.item_style or require("radical.item.style.basic"),
+      item_style      = args.item_style or beautiful.menu_item_style or require("radical.item.style.basic"),
       item_layout     = args.item_layout or nil,
       filter          = args.filter ~= false,
       show_filter     = args.show_filter or false,
@@ -358,7 +358,7 @@ local function new(args)
       filter_underlay_color = args.filter_underlay_color,
       filter_placeholder    = args.filter_placeholder or "",
       disable_submenu_icon  = args.disable_submenu_icon or false,
-      item_border_color     = args.item_border_color or nil,
+      item_border_color     = args.item_border_color or beautiful.menu_item_border_color or nil,
     },
     force_private = {
       parent  = true,

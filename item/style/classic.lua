@@ -50,7 +50,7 @@ local function draw(item,args)
     if not focussed then
       focussed,default,alt={},{},{}
     end
-    local bc = item.border_color
+    local bc = item.item_border_color or item.border_color
     focussed[ih] = gen(ih,item.bg_focus,bc)
     default [ih] = gen(ih,item.bg,bc)
   end

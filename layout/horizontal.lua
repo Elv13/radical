@@ -162,6 +162,10 @@ local function new(data)
   l.setup_key_hooks = module.setup_key_hooks
   l.setup_item = module.setup_item
 
+--   if data.spacing and l.set_spacing then
+--     l:set_spacing(data.spacing)
+--   end
+
   data:connect_signal("widget::added",function(_,item,widget)
     wibox.layout.fixed.add(l,item.widget)
     l:emit_signal("widget::updated")

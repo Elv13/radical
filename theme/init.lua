@@ -101,6 +101,7 @@ function module.add_colors_from_namespace(data,namespace)
   priv["fg"] = beautiful[namespace.."_fg"] or priv["fg"]
   priv["bg"] = beautiful[namespace.."_bg"] or priv["bg"]
   priv["border_color"] = beautiful[namespace.."_border_color"] or priv["border_color"]
+  print("ICI",namespace,namespace.."_item_border_color",beautiful[namespace.."_item_border_color"])
   priv["item_border_color"] = beautiful[namespace.."_item_border_color"] or priv["item_border_color"]
   priv.namespace = priv.namespace or {}
   priv.namespace[#priv.namespace+1] = namespace
