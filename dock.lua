@@ -101,7 +101,8 @@ local function align_wibox(w,direction,screen)
   local axis = (direction == "left" or direction == "right") and "height" or "width"
   local offset = axis == "height" and "y" or "x"
   local src_geom = capi.screen[screen].geometry
-  local scr_size = (src_geom[axis] - w[axis]) /2
+  local scr_size = src_geom[offset] + (src_geom[axis] - w[axis]) /2
+
   w[offset] = scr_size
   if direction == "left" then
     w.x = src_geom.x
@@ -140,7 +141,8 @@ local function get_max_size(data,screen)
     local full,wa = capi.screen[screen].geometry[w_or_h],capi.screen[screen].workarea
     local top,bottom = wa[x_or_y],full-(wa.y+wa[w_or_h])
     local biggest = top > bottom and top or bottom
-    res = full - biggest*2 - 52 -- 26px margins
+    --res = full - biggest*2 - 52 -- 26px margins
+    res = wa[w_or_h] - 52 -- 26px margins
     max_size[w_or_h][screen] = res
   end
   return res
@@ -256,7 +258,7 @@ local function create_placeholder(data)
   local hw_invert = h_or_w == "height" and "width" or "height"
   local placeholder = wibox{ screen = screen, [h_or_w] = 1,[hw_invert] = 1,bg="#00000000", ontop = true,visible=true }
 
-  placeholder:geometry({ [h_or_w] = 1, [hw_invert] = capi.screen[screen].geometry.height -100, x = dir == "right" and capi.screen[screen].geometry.width -1 or 0, y = 50})
+  placeholder:geometry({ [h_or_w] = 1, [hw_invert] = capi.screen[screen].geometry.height -100, x = dir == "right" and capi.screen[screen].geometry.width -1 or 0, y = capi.screen[screen].geometry.y + 50})
 
 
   -- Raise of create the main dock wibox
