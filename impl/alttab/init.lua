@@ -113,9 +113,10 @@ local function new(args)
     return
   end
 
-  local t,auto_release = tag.selected(capi.client.focus and capi.client.focus.screen or capi.mouse.screen),args.auto_release
+  local scr = capi.client.focus and capi.client.focus.screen or capi.mouse.screen
+  local t,auto_release = tag.selected(scr),args.auto_release
   local currentMenu = radical.box({filter = true, show_filter=not auto_release, autodiscard = true,
-    disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[capi.client.focus and capi.client.focus.screen or capi.mouse.screen]).geometry.width)/2),
+    disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[scr]).geometry.width)/2),
     icon_transformation = beautiful.alttab_icon_transformation,filter_underlay="Use [Shift] and [Control] to toggle clients",filter_underlay_color=beautiful.menu_bg_normal,
     filter_placeholder="<span fgcolor='".. (beautiful.menu_fg_disabled or beautiful.fg_disabled or "#777777") .."'>Type to filter</span>"})
 
@@ -152,6 +153,7 @@ local function new(args)
     local item = currentMenu._current_item
     item.checked = not item.checked
     local c = item.client
+    if c.screen ~= scr then return end
     client2.toggletag (t, c)
     reload_underlay(c,item)
     if not auto_release then
@@ -165,8 +167,10 @@ local function new(args)
   currentMenu:add_key_hook({}, "Control_L", "press", function()
     local item = currentMenu._current_item
     item.checked = not item.checked
-    client2.movetotag(t, item.client)
-    reload_underlay(item.client,item)
+    local c = item.client
+    if c.screen ~= scr then return end
+    client2.movetotag(t, c)
+    reload_underlay(c,item)
     if not auto_release then
       reload_highlight(item)
     end
@@ -193,8 +197,8 @@ local function new(args)
       suffix_widget = not auto_release and l or nil,
       selected      = capi.client.focus and capi.client.focus == v,
       underlay      = underlays,
-      checkable     = not auto_release,
-      checked       = not auto_release and is_in_tag(t,v) or nil,
+      checkable     = (not auto_release) and v.screen == scr,
+      checked       = v.screen == scr and (not auto_release and is_in_tag(t,v)) or nil,
       button1       = function(a,b,c,d,no_hide)
         local t = focusTag[v] or v:tags()[1]
         if t and t.selected == false and not util.table.hasitem(v:tags(),tag.selected(v.screen)) then
