@@ -223,7 +223,7 @@ local function init()
   end)
   capi.tag.connect_signal("property::icon", function(t)
     local item = cache[t]
-    if item then
+    if item and item._internal.icon_w then
       item._internal.icon_w:set_image(tag.geticon(t) or beautiful.taglist_default_icon)
     end
   end)
