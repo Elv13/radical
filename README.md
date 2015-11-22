@@ -1,6 +1,8 @@
 # Radical menu system for AwesomeWM
 =======================================
 
+**Warning** The upstream Awesome internal widget API changed during summer 2015. Radical master branch is designed to be compatible with version 3.5 of Awesome or git-master older than July. I am currently unavailable to do the (non trivial) work required to port to the new API (and make good use of its improvments). Theirfor, please be patient and stay with a supported version for a few more months if you wish to use Radical.
+
 This is Radical, one of the largest Awesome extension module. It provide un
 unified interface to generate multiple types of menus.
 
@@ -33,7 +35,7 @@ The most simple kind of menus, contexts one, can be created like this:
 ```lua
     local menu = radical.context{}
     menu:add_item {text="Screen 1",button1=function(_menu,item,mods) print("Hello World! ") end}
-    menu:add_item {text="Screen 9",icon=beautiful.path.."Icon/layouts/tileleft.png"}
+    menu:add_item {text="Screen 9",icon= beautiful.awesome_icon}
     menu:add_item {text="Sub Menu",sub_menu = function()
         local smenu = radical.context{}
         smenu:add_item{text="item 1"}
