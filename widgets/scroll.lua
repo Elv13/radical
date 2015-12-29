@@ -50,13 +50,13 @@ local function new(data)
   for k,v in ipairs({"up","down"}) do
     local ib = wibox.widget.imagebox()
     ib:set_image(module[v]())
-    ib.fit = function(tb,width,height)
+    ib.fit = function(tb,context,width,height)
       if scroll_w.visible == false then
         return 0,0
       end
       return width,data.item_height
     end
-    ib.draw = function(self,wibox, cr, width, height)
+    ib.draw = function(self, context, cr, width, height)
       if width > 0 and height > 0 then
         cr:set_source_surface(self._image, width/2 - self._image:get_width()/2, 0)
       end

@@ -50,11 +50,13 @@ module.buttons = { [1] = awful.tag.viewonly,
 
 
 
-local function index_draw(self,w, cr, width, height)
+local function index_draw(self, context, cr, width, height)
   cr:save()
   cr:set_source(color(self._color or beautiful.taglist_fg_prefix or beautiful.fg_normal))
   local d = wibox.widget.textbox._draw or wibox.widget.textbox.draw
-  d(self,wibox, cr, width, height)
+  if d then
+    d(self,context, cr, width, height)
+  end
   cr:restore()
 end
 

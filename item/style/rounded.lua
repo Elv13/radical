@@ -3,6 +3,7 @@ local math = math
 local base = require( "radical.base" )
 local color     = require( "gears.color"      )
 local cairo     = require( "lgi"              ).cairo
+local wibox     = require("wibox"                       )
 local print = print
 
 local module = {
@@ -45,7 +46,7 @@ local function gen(width,height,bg_color,border_color,item,shadow)
   return cairo.Pattern.create_for_surface(img)
 end
 
-local function widget_draw(self, w, cr, width, height,shadow)
+local function widget_draw(self, context, cr, width, height,shadow)
   local item = self._item
   local state = item.state or {}
   local current_state = state._current_key or ""
@@ -69,14 +70,17 @@ local function widget_draw(self, w, cr, width, height,shadow)
     self._last_state = current_state
   end
 
-  self:_drawrounded(w, cr, width, height)
+  if wibox.widget.background.draw then
+    wibox.widget.background.draw(self, context, cr, width, height)
+  end
+
   local overlay = item and item.overlay
   if overlay then
     overlay(item._menu,item,cr,width,height)
   end
 end
 
-local function draw_width_shadow(self, w, cr, width, height)
+local function draw_width_shadow(self, context, cr, width, height)
 
   cr:save()
   cr:reset_clip()
@@ -90,7 +94,7 @@ local function draw_width_shadow(self, w, cr, width, height)
   end
   cr:restore()
 
-  widget_draw(self, w, cr, width, height,true)
+  widget_draw(self, context, cr, width, height,true)
 end
 
 local function common(item,args)
@@ -110,9 +114,9 @@ end
 local function draw(item,args)
   local args = args or {}
 
+  item.widget.draw = widget_draw
+
   if not item.widget._overlay_init then
-    item.widget._drawrounded = item.widget.draw
-    item.widget.draw = widget_draw
     item.widget._overlay_init = true
     item.widget._item = item
   end
@@ -124,9 +128,9 @@ end
 local function shadow(item,args)
   local args = args or {}
 
+  item.widget.draw = draw_width_shadow
+
   if not item.widget._overlay_init then
-    item.widget._drawrounded = item.widget.draw
-    item.widget.draw = draw_width_shadow
     item.widget._overlay_init = true
     item.widget._item = item
   end

@@ -2,6 +2,7 @@ local setmetatable = setmetatable
 local print = print
 local pairs=pairs
 local base      = require( "radical.base"     )
+local wibox     = require("wibox"                       )
 
 local module = {
   margins = {
@@ -12,8 +13,11 @@ local module = {
   }
 }
 
-local function widget_draw23(self, w, cr, width, height)
-  self.__drawbasic(self,w, cr, width, height)
+local function widget_draw23(self, context, cr, width, height)
+  if wibox.widget.background.draw then
+    wibox.widget.background.draw(self, context, cr, width, height)
+  end
+
   local overlay = self._item and self._item.overlay
   if overlay then
     overlay(self._item._menu,self._item,cr,width,height)
@@ -23,11 +27,7 @@ end
 local function draw(item,args)
   local args = args or {}
 
-  if not item.widget._overlay_init and not item.widget._draw then
-    item.widget.__drawbasic = item.widget.draw
-    item.widget.draw = widget_draw23
-    item.widget._overlay_init = true
-  end
+  item.widget.draw = widget_draw23
 
   local state = item.state or {}
   local current_state = state._current_key or nil

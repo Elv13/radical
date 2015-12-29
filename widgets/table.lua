@@ -4,7 +4,7 @@ local color = require("gears.color")
 local ipairs = ipairs
 local print = print
 
-local function textbox_draw(self, w, cr, width, height)
+local function textbox_draw(self, context, cr, width, height)
   cr:save()
   cr:set_source(color(beautiful.menu_border_color or beautiful.border_normal or beautiful.border_color))
   cr:rectangle(0,0,width,1)
@@ -12,14 +12,14 @@ local function textbox_draw(self, w, cr, width, height)
   cr:stroke()
   cr:restore()
   cr:set_source(color(beautiful.menu_fg_normal or beautiful.fg_normal))
-  wibox.widget.textbox.draw(self, w, cr, width, height)
+  wibox.widget.textbox.draw(self, context, cr, width, height)
 end
 
-local function create_textbox(w,col_c,col,has_v_header,row_height)
+local function create_textbox(context,col_c,col,has_v_header,row_height)
   local t = wibox.widget.textbox()
 
-  t.fit = function(s,w2,h)
-    local fw,fh = wibox.widget.textbox.fit(s,w2,h)
+  t.fit = function(s,context,w2,h)
+    local fw,fh = wibox.widget.textbox.fit(s,context,w2,h)
     return (w2/(col_c+2 - col)),row_height or fh
   end
   t.draw = textbox_draw
@@ -27,19 +27,19 @@ local function create_textbox(w,col_c,col,has_v_header,row_height)
   return t
 end
 
-local function create_h_header(main_l,cols,w,args)
+local function create_h_header(main_l,cols,context,args)
   if args.h_header then
     local bg = wibox.widget.background()
     local row_l = wibox.layout.fixed.horizontal()
     bg:set_bg(beautiful.menu_table_bg_header or beautiful.menu_bg_header or beautiful.fg_normal)
     bg:set_widget(row_l)
     if args.v_header then
-      local t = create_textbox(w,cols,1,args.v_header ~= nil,args.row_height)
+      local t = create_textbox(context,cols,1,args.v_header ~= nil,args.row_height)
       t:set_markup("<span color='".. beautiful.bg_normal .."'>--</span>")
       row_l:add(t)
     end
     for i=1,cols do
-      local t = create_textbox(w,cols,i+1,args.v_header ~= nil,args.row_height)
+      local t = create_textbox(context,cols,i+1,args.v_header ~= nil,args.row_height)
       t:set_markup("<span color='".. beautiful.bg_normal .."'>".. (args.h_header[i] or "-") .."</span>")
       row_l:add(t)
     end
@@ -58,9 +58,9 @@ local function new(content,args)
   end
   local main_l = wibox.layout.fixed.vertical()
   local w =200
-  main_l.fit = function(self,width,height)
+  main_l.fit = function(self,context,width,height)
     w = width
-    return wibox.layout.fixed.fit(self,width,height)
+    return wibox.layout.fixed.fit(self,context,width,height)
   end
   create_h_header(main_l,cols,w,args)
 

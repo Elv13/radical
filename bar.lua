@@ -25,13 +25,12 @@ local function set_position(self)
 end
 
 -- Draw the menu background
-local function bg_draw(self, w, cr, width, height)
+local function bg_draw(self, context, cr, width, height)--w, cr, width, height)
   cr:save()
   cr:set_source(color(self._data.bg))
   cr:rectangle(0,0,width,height)
   cr:fill()
   cr:restore()
-  self._draw(self, w, cr, width, height)
 end
 
 local function proxy_draw(_,...)
@@ -49,8 +48,9 @@ local function setup_drawable(data)
   local private_data = internal.private_data
 
   internal.layout       = internal.layout_func or wibox.layout.fixed.horizontal()
-  internal.layout._draw = internal.layout.draw
-  internal.layout.draw  = bg_draw
+
+  --internal.layout.draw  = bg_draw --TODO Dead code?
+
   internal.layout._data = data
 
   if internal.layout.set_spacing and data.spacing then

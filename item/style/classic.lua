@@ -3,6 +3,7 @@ local base      = require( "radical.base"     )
 local color     = require( "gears.color"      )
 local cairo     = require( "lgi"              ).cairo
 local beautiful = require( "beautiful"        )
+local wibox     = require("wibox"                       )
 local print = print
 
 local module = {
@@ -27,8 +28,12 @@ local function gen(item_height,bg_color,border_color)
   return cairo.Pattern.create_for_surface(img)
 end
 
-local function widget_draw(self, w, cr, width, height)
-  self:_draw2(w, cr, width, height)
+local function widget_draw(self, context, cr, width, height)
+
+  if wibox.widget.background.draw then
+    wibox.widget.background.draw(self, context, cr, width, height)
+  end
+
   local overlay = self._item and self._item.overlay
   if overlay then
     overlay(self._item._menu,self._item,cr,width,height)
@@ -39,11 +44,7 @@ local function draw(item,args)
   local args = args or {}
   local col = args.color
 
-  if not item.widget._overlay_init then
-    item.widget._draw2 = item.widget.draw
-    item.widget.draw = widget_draw
-    item.widget._overlay_init = true
-  end
+  item.widget.draw = widget_draw
 
   local ih = item.height or 1
   if not focussed or not focussed[ih] then

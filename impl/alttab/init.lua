@@ -126,8 +126,8 @@ local function new(args)
   if not auto_release then
     local pref_bg = wibox.widget.background()
     local pref_l = wibox.layout.align.horizontal()
-    pref_bg.fit = function(s,w,h)
-      local w2,h2 = wibox.widget.background.fit(s,w,h)
+    pref_bg.fit = function(s,c,w,h)
+      local w2,h2 = wibox.widget.background.fit(s,c,w,h)
       return w2,currentMenu.item_height
     end
     pref_bg:set_bg(currentMenu.bg_alternate)
@@ -136,13 +136,13 @@ local function new(args)
     pref_l:set_first(tb2)
     pref_bg:set_widget(pref_l)
     local pref_menu,pref_menu_l = radical.bar{item_style=radical.item.style.basic}
-    pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+--     pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
     pref_menu:add_item{text="Exclusive"}
-    pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+--     pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
     pref_menu:add_item{text="12 clients"}
-    pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+--     pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
     pref_menu:add_item{text="All Screens"}
-    pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+--     pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
     pref_l:set_third(pref_menu_l)
 
     currentMenu:add_prefix_widget(pref_bg)
@@ -186,7 +186,7 @@ local function new(args)
       l:add( button_group({client = v, field = "sticky"   , focus = false, checked = function() return v.sticky    end, onclick = function() v.sticky    = not v.sticky    end }))
       l:add( button_group({client = v, field = "ontop"    , focus = false, checked = function() return v.ontop     end, onclick = function() v.ontop     = not v.ontop     end }))
       l:add( button_group({client = v, field = "close"    , focus = false, checked = function() return false       end, onclick = function() v:kill()                      end }))
-      l.fit = function (s,w,h) return 5*h,h end
+      l.fit = function (s,c,w,h) return 5*h,h end
     end
 
     local underlays = reload_underlay(v)

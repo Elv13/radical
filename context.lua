@@ -43,7 +43,7 @@ local function set_geometry_real(data)
   local geo = data._internal._next_geometry
   if geo then
     for k,v in pairs(geo) do
-      data.wibox[k] = v
+      data.wibox[k] = math.ceil(v)
     end
   end
   data._internal._next_geometry = nil

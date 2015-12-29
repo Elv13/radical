@@ -78,7 +78,9 @@ local function mask(rotate,width,height,radius,offset,anti,bg,fg)
 end
 
 -- Do not draw over the boder, ever
-local function dock_draw(self, w, cr, width, height)
+local function dock_draw(self, context, cr, width, height)
+
+  local w = context.wibox
 
   -- Generate the border surface
   if not self.mask or self.mask_hash ~= width*1000+height then
@@ -89,7 +91,7 @@ local function dock_draw(self, w, cr, width, height)
   cr:save()
 
   --Draw the border
-  self.__draw(self, w, cr, width, height)
+  --self.__draw(self, context, cr, width, height)
   cr:set_source_surface(self.mask)
   cr:paint()
   cr:restore()
@@ -103,15 +105,15 @@ local function align_wibox(w,direction,screen)
   local src_geom = capi.screen[screen].geometry
   local scr_size = src_geom[offset] + (src_geom[axis] - w[axis]) /2
 
-  w[offset] = scr_size
+  w[offset] = math.ceil(scr_size)
   if direction == "left" then
-    w.x = src_geom.x
+    w.x = math.ceil(src_geom.x)
   elseif direction == "right" then
-    w.x = src_geom.x + src_geom.width - w.width
+    w.x = math.ceil(src_geom.x + src_geom.width - w.width)
   elseif direction == "bottom" then
-    w.y = src_geom.y+src_geom.height-w.height
+    w.y = math.ceil(src_geom.y+src_geom.height-w.height)
   else
-    w.y = src_geom.y
+    w.y = math.ceil(src_geom.y)
   end
 end
 
@@ -163,7 +165,7 @@ local function adapt_size(data,w,h,screen)
   local max = get_max_size(data,screen)
 
   -- Get the current size, then compare and ajust
-  local fit_w,fit_h = data._internal.layout:fit(20,9999,true)
+  local fit_w,fit_h = data._internal.layout:fit({dpi=96},20,9999,true)
   
   -- Get the number of items minus the number of widgets
   -- This can be used to approximate the number of pixel to remove
@@ -323,13 +325,13 @@ local function setup_drawable(data)
   data.get_x         = function() return 0                                              end
   data.get_y         = function() return 0                                              end
   data.get_width     = function()
-    return internal.w and internal.w.width or data._internal.layout:fit(9999,9999,true)
+    return internal.w and internal.w.width or data._internal.layout:fit({dpi=96},9999,9999,true)
   end
   data.get_height    = function()
     if internal.orientation == "horizontal" then
       return beautiful.default_height
     else
-       local w,h = internal.layout.fit(internal.layout,9999,9999)
+       local w,h = internal.layout.fit(internal.layout,{dpi=96},9999,9999)
        return h
     end
   end
@@ -355,7 +357,7 @@ end
 
 local function setup_item(data,item,args)
   -- Add widgets
-  local f = (data._internal.layout.setup_item) or (layout.vertical.setup_item)
+  local f = (data._internal.layout.setup_item) or (vertical.setup_item)
   f(data._internal.layout,data,item,args)
 
   -- Buttons
@@ -397,7 +399,7 @@ local function new(args)
   args.internal.layout_func = orientation == "vertical" and vertical or horizontal
   args.layout               = args.layout or args.internal.layout_func
   args.item_style           = args.item_style or item.style
-  args.item_layout          = args.item_layout or item_layout
+--   args.item_layout          = args.item_layout or item_layout
   args[length_inv]          = args[length_inv] or 40
 
   -- Create the dock

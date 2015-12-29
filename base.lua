@@ -213,8 +213,8 @@ local function add_widget(data,widget,args)
   args = args or {}
   data._internal.has_widget = true
   widget._fit = widget.fit
-  widget.fit = function(self,width,height)
-    local w,h = widget._fit(self,width or 1, height or 1)
+  widget.fit = function(self,context,width,height)
+    local w,h = widget._fit(self, context, width or 1, height or 1)
     return args.width or w,args.height or h
   end
 
@@ -239,7 +239,7 @@ local function add_widget(data,widget,args)
   data._internal.items[#data._internal.items+1] = item
   data:emit_signal("widget::added",item,widget)
   if data.visible then
-    local fit_w,fit_h = data._internal.layout:fit(9999,9999)
+    local fit_w,fit_h = data._internal.layout:fit({dpi=96}, 9999,9999)
     data.width = data._internal.width or fit_w
     data.height = fit_h
   end
@@ -262,18 +262,21 @@ end
 -- Sum all widgets height and width
 local function get_widget_fit_sum(data)
   local h,w = 0,0
+  -- TODO query this from the layout itself
   for k,v in ipairs(data._internal.widgets) do
-    local fw,fh = v.widget:fit(9999,9999)
+    local fw,fh = v.widget:fit({dpi=96},9999,9999)
     w,h = w + fw,h + fh
   end
   return w,h
 end
 
 local function get_widget_fit_width_sum(data)
+  -- TODO query this from the layout itself
   return get_widget_fit_sum(data)
 end
 
 local function get_widget_fit_height_sum(data)
+  -- TODO query this from the layout itself
   local w,h = get_widget_fit_sum(data)
   return h
 end
@@ -406,7 +409,7 @@ print(beautiful.menu_border_color)
   data.set_visible = function(_,value)
     private_data.visible = value
     if value then
-      local fit_w,fit_h = data._internal.layout:fit(9999,9999)
+      local fit_w,fit_h = data._internal.layout:fit({dpi=96}, 9999,9999)
       data.width = internal.width or fit_w
       data.height = fit_h
     elseif data._tmp_menu and data._current_item then

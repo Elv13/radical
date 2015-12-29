@@ -24,7 +24,7 @@ end
 
 local function new(data,item)
   local pref = wibox.widget.textbox()
-  pref.draw = function(self,w, cr, width, height)
+  pref.draw = function(self, context, cr, width, height)
     local padding = height/4
     local key = item._internal.f_key
     if not keys[height]  then
@@ -55,7 +55,7 @@ local function new(data,item)
     cr:set_source_surface((key and key > 12 and keys[height][0]) and keys[height][0] or keys[height][key])
     cr:paint()
   end
-  pref.fit = function(self,width,height)
+  pref.fit = function(self,context,width,height)
     return max_width,data.item_height
   end
   pref:set_markup("<span fgcolor='".. beautiful.bg_normal .."'><tt><b>F11</b></tt></span>")

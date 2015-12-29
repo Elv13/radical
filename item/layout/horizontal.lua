@@ -100,7 +100,7 @@ function module:setup_sub_menu_arrow(item,data)
   if (item._private_data.sub_menu_f or item._private_data.sub_menu_m) and not data.disable_submenu_icon then
     if not sub_arrow then
       sub_arrow = wibox.widget.imagebox() --TODO, make global
-      sub_arrow.fit = function(box, w, h) return (sub_arrow._image and sub_arrow._image:get_width() or 0),item.height end
+      sub_arrow.fit = function(box, context,w, h) return (sub_arrow._image and sub_arrow._image:get_width() or 0),item.height end
       sub_arrow:set_image( beautiful.menu_submenu_icon   )
     end
     return sub_arrow
@@ -157,15 +157,15 @@ function module.setup_event(data,item,widget)
 end
 
 -- Use all the space, let "align_fit" compute the right size
-local function textbox_fit(box,w,h)
+local function textbox_fit(box,context,w,h)
   return w,h
 end
 
 -- Force the width or compute the minimum space
-local function align_fit(box,w,h)
+local function align_fit(box,context,w,h)
   local mar = util.table.join(box._data.item_style.margins,box._data.default_item_margins)
   if box._item.width then return box._item.width - box._data.item_style.margins.LEFT - box._data.item_style.margins.RIGHT,h end
-  return box.first:fit(w,h)+wibox.widget.textbox.fit(box.second,w,h)+box.third:fit(w,h),h
+  return box.first:fit(context,w,h)+wibox.widget.textbox.fit(box.second,context,w,h)+box.third:fit(context,w,h),h
 end
 
 -- Create the actual widget
@@ -217,11 +217,11 @@ local function create_item(item,data,args)
   -- Text
   local tb = wibox.widget.textbox()
   tb.fit = data._internal.text_fit or textbox_fit
-  tb.draw = function(self,w, cr, width, height)
+  tb.draw = function(self, context, cr, width, height)
     if item.underlay then
       module.paint_underlay(data,item,cr,width,height)
     end
-    wibox.widget.textbox.draw(self,w, cr, width, height)
+    wibox.widget.textbox.draw(self, context, cr, width, height)
   end
   tb:set_text(item.text)
   item.set_text = function (_,value)

@@ -32,7 +32,7 @@ local function gen(width,height,bg_color,border_color, pos)
   return cairo.Pattern.create_for_surface(img)
 end
 
-local function widget_draw(self, w, cr, width, height)
+local function widget_draw(self, context, cr, width, height)
 
   local state = self._item.state or {}
   local current_state = state._current_key or ""
@@ -56,7 +56,10 @@ local function widget_draw(self, w, cr, width, height)
     self._last_state = current_state
   end
 
-  self:_drawrounded(w, cr, width, height)
+  if self._drawrounded then
+    self:_drawrounded(context, cr, width, height)
+  end
+
   local overlay = self._item and self._item.overlay
   if overlay then
     overlay(self._item._menu,self._item,cr,width,height)

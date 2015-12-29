@@ -7,7 +7,7 @@ local beautiful = require( "beautiful"  )
 
 local module = {HORIZONTAL=1,VERTICAL=2}
 
-local function draw(self, w, cr, width, height)
+local function draw(self, context, cr, width, height)
   cr:save()
   cr:set_source(self._color)
   if self.direction == module.VERTICAL then
@@ -19,7 +19,7 @@ local function draw(self, w, cr, width, height)
   cr:restore()
 end
 
-local function fit(box, w, h)
+local function fit(box, context, w, h)
   local direction = box.direction or w > h and module.HORIZONTAL or module.VERTICAL
   return direction == module.VERTICAL and 5 or w,direction == module.VERTICAL and h or 5
 end

@@ -15,8 +15,8 @@ local module = {
   }
 }
 
-local function widget_draw(self, w, cr, width, height)
-  self.__drawbasic(self,w, cr, width, height)
+local function widget_draw(self, context, cr, width, height)
+  self.__drawbasic(self,context, cr, width, height)
   cr:set_source(self.col1)
   cr:rectangle(0,3,1,height-6)
   cr:fill()
@@ -37,7 +37,7 @@ local function draw(item,args)
     item.widget.draw = widget_draw
     item.widget._overlay_init = true
     item.widget._item = item
-    
+
     -- Build the 2 item border colors, this item_style doesn't support gradient
     -- or patterns
     item.widget.col1 = color(item.item_border_color or item.border_color or beautiful.border_color)

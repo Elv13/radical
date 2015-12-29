@@ -22,11 +22,11 @@ local function icon_fit(data,...)
   
 end
 
-local function icon_draw(self,w, cr, width, height)
-  local w,h = wibox.widget.imagebox.fit(self,width,height)
+local function icon_draw(self, context, cr, width, height)
+  local w,h = wibox.widget.imagebox.fit(self,context,width,height)
   cr:save()
   cr:translate((width-w)/2,0)
-  wibox.widget.imagebox.draw(self,w, cr, width, height)
+  wibox.widget.imagebox.draw(self, context, cr, width, height)
   cr:restore()
 end
 
@@ -57,10 +57,10 @@ local function create_item(item,data,args)
 
   if data.fkeys_prefix == true then
     local pref = wibox.widget.textbox()
-    pref.draw = function(self,w, cr, width, height)
+    pref.draw = function(self, context, cr, width, height)
       cr:set_source(color(beautiful.fg_normal))
       cr:paint()
-      wibox.widget.textbox.draw(self,w, cr, width, height)
+      wibox.widget.textbox.draw(self, context, cr, width, height)
     end
     l:add(pref)
     m:set_left  ( 0 )
@@ -78,16 +78,16 @@ local function create_item(item,data,args)
   l:add(text_w)
   if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
     local subArrow  = wibox.widget.imagebox() --TODO, make global
-    subArrow.fit = function(box, w, h) return subArrow._image:get_width(),item.height end
+    subArrow.fit = function(box, context, w, h) return subArrow._image:get_width(),item.height end
     subArrow:set_image( beautiful.menu_submenu_icon   )
     lr:add(subArrow)
   end
-  bg.fit = function(box,w,h)
+  bg.fit = function(box, context, w,h)
 --     args.y = data.height-h-data.margins.top --TODO dead code?
     if data._internal.layout.item_fit then
-      return data._internal.layout.item_fit(data,item,box,w,h)
+      return data._internal.layout.item_fit(data,item,box,contextw,h)
     else
-      return wibox.widget.background.fit(box,w,h)
+      return wibox.widget.background.fit(box,context, w,h)
     end
     return 0,0
   end
