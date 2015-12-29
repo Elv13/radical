@@ -199,11 +199,11 @@ local function compute_geo(data,width,height,force_values)
   if data.auto_resize and data._internal.largest_item_w then
     w = data._internal.largest_item_w_v > data.default_width and data._internal.largest_item_w_v or data.default_width
   end
-  
+
   local visblerow = data.visible_row_count
-  
-  local sw,sh = data._internal.suf_l:fit({dpi=96},9999,9999)
-  local pw,ph = data._internal.pref_l:fit({dpi=96},9999,9999)
+
+  local sw,sh = data._internal.suf_l:get_preferred_size()
+  local pw,ph = data._internal.pref_l:get_preferred_size()
   if not data._internal.has_widget then
     return w,(total and total > 0 and total or visblerow*data.item_height) + ph + sh
   else

@@ -165,7 +165,7 @@ local function adapt_size(data,w,h,screen)
   local max = get_max_size(data,screen)
 
   -- Get the current size, then compare and ajust
-  local fit_w,fit_h = data._internal.layout:fit({dpi=96},20,9999,true)
+  local fit_w,fit_h = data._internal.layout:get_preferred_size({dpi=96,force_values=true},beautiful.default_height)
   
   -- Get the number of items minus the number of widgets
   -- This can be used to approximate the number of pixel to remove
@@ -325,13 +325,13 @@ local function setup_drawable(data)
   data.get_x         = function() return 0                                              end
   data.get_y         = function() return 0                                              end
   data.get_width     = function()
-    return internal.w and internal.w.width or data._internal.layout:fit({dpi=96},9999,9999,true)
+    return internal.w and internal.w.width or data._internal.layout:get_preferred_size({force_values=true})
   end
   data.get_height    = function()
     if internal.orientation == "horizontal" then
       return beautiful.default_height
     else
-       local w,h = internal.layout.fit(internal.layout,{dpi=96},9999,9999)
+       local w,h = internal.layout:get_preferred_size()
        return h
     end
   end

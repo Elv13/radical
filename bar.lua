@@ -60,7 +60,7 @@ local function setup_drawable(data)
   --Getters
   data.get_x         = function() return 0                                            end
   data.get_y         = function() return 0                                            end
-  data.get_width     = function() return internal.layout.fit(internal.layout,9999,99) end
+  data.get_width     = function() return internal.layout:get_preferred_size()         end
   data.get_height    = function() return beautiful.default_height                     end
   data.get_visible   = function() return true                                         end
   data.get_direction = function() return "left"                                       end

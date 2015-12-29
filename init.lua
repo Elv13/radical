@@ -57,15 +57,34 @@ local function set_underlay(self,udl,args)
   self:emit_signal("widget::updated")
 end
 
+local function get_preferred_size(self, context, width, height)
+  local context = context or 1
+
+  if type(context) == "number" then
+    context = {dpi=beautiful.xresources.get_dpi(context)}
+  elseif not context.dpi then
+    context.dpi = beautiful.xresources.get_dpi(1)
+  end
+
+  return self:fit(context, width or 9999, height or 9999)
+end
+
 -- Do some monkey patching to extend all wibox.widget
 base._make_widget =base.make_widget
 base.make_widget = function(...)
   local ret = base._make_widget(...)
-  ret.set_tooltip  = set_tooltip
-  ret.set_menu     = set_menu
-  ret.set_underlay = set_underlay
+  ret.set_tooltip        = set_tooltip
+  ret.set_menu           = set_menu
+  ret.set_underlay       = set_underlay
+
+  -- Textboxes already have it
+  if not ret.get_preferred_size then
+    ret.get_preferred_size = get_preferred_size
+  end
+
   return ret
 end
+
 
 local bar = require( "radical.bar"     )
 
