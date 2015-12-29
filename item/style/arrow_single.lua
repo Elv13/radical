@@ -16,7 +16,7 @@ local module = {
 }
 
 
-local function suffix_draw(self, w, cr, width, height)
+local function suffix_draw(self, context, cr, width, height)
   cr:save()
   cr:move_to(height/2,0)
   cr:line_to(width-height/2,0)
@@ -27,7 +27,11 @@ local function suffix_draw(self, w, cr, width, height)
   cr:line_to(height/2,0)
   cr:close_path()
   cr:clip()
-  wibox.widget.background.draw(self, w, cr, width, height)
+
+  if wibox.widget.background.draw then
+    wibox.widget.background.draw(self, context, cr, width, height)
+  end
+
   local overlay = self._item and self._item.overlay
   if overlay then
     overlay(self._item._menu,self._item,cr,width,height)

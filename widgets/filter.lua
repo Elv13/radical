@@ -14,7 +14,7 @@ local function new(data)
   bg:set_bg(data.bg_highlight)
   bg:set_widget(filter_tb)
   filter_tb:set_markup(" <b>".. data.filter_prefix .."</b> "..data.filter_placeholder)
-  filter_tb.fit = function(tb,width,height)
+  filter_tb.fit = function(tb,context,width,height)
     return width,data.item_height
   end
   filter_tb:set_underlay(data.filter_underlay,{alpha=data.filter_underlay_alpha,color=data.filter_underlay_color})

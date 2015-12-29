@@ -15,7 +15,7 @@ local module = {
   }
 }
 
-local function prefix_draw(self, w, cr, width, height)
+local function prefix_draw(self, context, cr, width, height)
   cr:save()
 
   -- This item style require negative padding, this is a little dangerous to
@@ -30,21 +30,27 @@ local function prefix_draw(self, w, cr, width, height)
   cr:reset_clip()
   cr:fill()
   cr:restore()
-  self._draw(self, w, cr, width, height)
+
+  if self._draw then
+    self._draw(self, context, cr, width, height)
+  end
 end
 
-local function prefix_fit(box,w,h)
-  local width,height = box._fit(box,w,h)
+local function prefix_fit(box,context,w,h)
+  local width,height = box._fit(box,context,w,h)
   return width + h/2,height
 end
 
-local function suffix_fit(box,w,h)
-  local width,height = box._fit(box,w,h)
+local function suffix_fit(box,context,w,h)
+  local width,height = box._fit(box,context,w,h)
   return width + h/2 + h/6,height
 end
 
-local function widget_draw(self, w, cr, width, height)
-  self:_drawprefix(w, cr, width, height)
+local function widget_draw(self, context, cr, width, height)
+  if self._drawprefix then
+    self:_drawprefix(context, cr, width, height)
+  end
+
   local overlay = self._item and self._item.overlay
   if overlay then
     overlay(self._item._menu,self._item,cr,width,height)

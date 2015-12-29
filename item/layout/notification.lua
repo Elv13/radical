@@ -75,7 +75,7 @@ function module:setup_sub_menu_arrow(item,data)
   if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
     if not sub_arrow then
       sub_arrow = wibox.widget.imagebox() --TODO, make global
-      sub_arrow.fit = function(box, w, h) return sub_arrow._image:get_width(),item.height end
+      sub_arrow.fit = function(box, context, w, h) return sub_arrow._image:get_width(),item.height end
       sub_arrow:set_image( beautiful.menu_submenu_icon   )
     end
     return sub_arrow
@@ -132,15 +132,15 @@ function module.setup_event(data,item,widget)
 end
 
 -- Use all the space, let "align_fit" compute the right size
-local function textbox_fit(box,w,h)
-  local w2,h2 = wibox.widget.textbox.fit(box,w,h)
+local function textbox_fit(box,context,w,h)
+  local w2,h2 = wibox.widget.textbox.fit(box,context,w,h)
   return w,h2
 end
 
 -- Force the width or compute the minimum space
-local function align_fit(box,w,h)
+local function align_fit(box,context,w,h)
   if box._item.width then return box._item.width - box._data.item_style.margins.LEFT - box._data.item_style.margins.RIGHT,h end
-  return box.first:fit(w,h)+wibox.widget.textbox.fit(box.second,w,h)+box.third:fit(w,h),h
+  return box.first:fit(context,w,h)+wibox.widget.textbox.fit(box.second,context,w,h)+box.third:fit(context,w,h),h
 end
 
 -- Create the actual widget
@@ -207,11 +207,11 @@ local function create_item(item,data,args)
 
   -- Text
   local tb4 = wibox.widget.textbox()
-  tb4.draw = function(self,w, cr, width, height)
+  tb4.draw = function(self, context, cr, width, height)
     if item.underlay then
       module.paint_underlay(data,item,cr,width,height)
     end
-    wibox.widget.textbox.draw(self,w, cr, width, height)
+    wibox.widget.textbox.draw(self, context, cr, width, height)
   end
 
   item.set_text = function (_,value)
@@ -225,7 +225,7 @@ local function create_item(item,data,args)
   item:set_text(item.text or "")
   local tb2 = wibox.widget.textbox()
   tb2:set_text("alternate")
-  tb2.fit = function(s,w,h)
+  tb2.fit = function(s,context,w,h)
     return w,h
   end
 

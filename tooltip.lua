@@ -152,8 +152,8 @@ local function new(widget,text, args)
 
       data.wibox:connect_signal("mouse::leave",hide_tooltip)
       local relative_to_parent = rel_parent(data.wibox,args2,args)
-      data.wibox.x = args2.x or args.x or relative_to_parent.x or capi.mouse.coords().x - data.wibox.width/2 -5
-      data.wibox.y = args2.y or args.y or relative_to_parent.y or ((not vertical) and capi.screen[capi.mouse.screen].geometry.height - 16 - 25 or 16)
+      data.wibox.x = math.floor(args2.x or args.x or relative_to_parent.x or capi.mouse.coords().x - data.wibox.width/2 -5)
+      data.wibox.y = math.floor(args2.y or args.y or relative_to_parent.y or ((not vertical) and capi.screen[capi.mouse.screen].geometry.height - 16 - 25 or 16))
       data.wibox.visible = true
       if args2.parent and args2.parent.drawable and data.drawable ~= args2.parent.drawable then
         data.drawable = args2.parent.drawable

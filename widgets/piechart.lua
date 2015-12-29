@@ -38,7 +38,7 @@ local function compute_sum(data)
   return ret
 end
 
-local function draw(self, w, cr, width, height)
+local function draw(self, context, cr, width, height)
   if not self._data then return end
 
   -- Load from cache

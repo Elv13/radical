@@ -76,8 +76,8 @@ module.get_beg_arrow = function(args)
     return img
 end
 
-local function draw_real(self, w, cr, width, height)
---   wibox.widget.background.draw(self, w, cr, width, height)
+local function draw_real(self, context, cr, width, height)
+--   wibox.widget.background.draw(self, context, cr, width, height)
   cr:save()
 
   -- This item style require negative padding, this is a little dangerous to
@@ -94,9 +94,15 @@ local function draw_real(self, w, cr, width, height)
   cr:reset_clip()
   cr:fill()
   cr:restore()
-  self._draw(self, w, cr, width, height)
 
-  self.widget:draw(w, cr, width, height)
+  if self._draw then
+    self._draw(self, context, cr, width, height)
+  end
+
+  if self.widget.draw then
+    self.widget:draw(context, cr, width, height)
+  end
+
   local overlay = self._item and self._item.overlay
   if overlay then
     overlay(self._item._menu,self._item,cr,width,height)

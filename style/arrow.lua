@@ -189,10 +189,10 @@ local function get_arrow_x(data)
   return data._arrow_x
 end
 
--- Draw the border on top of items, prevent sharp corners from messing with the border
-local function draw_border(self,w, cr, width, height)
-  -- Draw the widget content
-  self.__draw(self,w, cr, width, height)
+-- As the menus have a rounded border, rectangle elements will draw over the
+-- corner border. To fix this, this method re-draw the border on top of the
+-- content
+local function after_draw_children(self, context, cr, width, height)
   local data = self._data
 
   -- Create a matrix to rotate the border
@@ -217,7 +217,7 @@ local function draw(data,args)
     -- Prevent sharp corners from being over the border
     if data._internal.margin then
       data._internal.margin.__draw = data._internal.margin.draw
-      data._internal.margin.draw = draw_border
+      data._internal.margin.after_draw_children = after_draw_children
       if not data._internal.margin._data then
         data._internal.margin._data = data
       end

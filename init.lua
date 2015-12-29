@@ -35,13 +35,13 @@ local function set_menu(self,menu,button)
   return bt
 end
 
-local function _underlay_draw(self,w, cr, width, height)
+local function _underlay_draw(self, context, cr, width, height)
   cr:save()
   local udl = underlay.draw(self._underlay,{height=height,style = self._underlay_style,bg=self._underlay_color})
   cr:set_source_surface(udl,width-udl:get_width()-3)
   cr:paint_with_alpha(self._underlay_alpha or beautiful.underlay_alpha or 0.7)
   cr:restore()
-  self._draw_underlay(self,w, cr, width, height)
+  self._draw_underlay(self, context, cr, width, height)
 end
 
 local function set_underlay(self,udl,args)

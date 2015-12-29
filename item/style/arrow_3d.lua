@@ -28,7 +28,7 @@ local c4 = color("#3b4249dd")
 local padding = 1
 local p2 = 2
 
-local function widget_draw23(self, w, cr, width, height)
+local function widget_draw23(self, context, cr, width, height)
   local overlay = self._item and self._item.overlay
   if overlay then
     overlay(self._item._menu,self._item,cr,width,height)
@@ -62,7 +62,10 @@ local function widget_draw23(self, w, cr, width, height)
   create_path(cr,1,height,1)
   cr:stroke()
   cr:restore()
-  self.__drawbasic(self,w, cr, width, height)
+
+  if self.__drawbasic then
+    self.__drawbasic(self, context, cr, width, height)
+  end
 end
 
 local function new_set_bg(self,bg)
