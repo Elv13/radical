@@ -35,26 +35,73 @@ local function set_menu(self,menu,button)
   return bt
 end
 
-local function _underlay_draw(self, context, cr, width, height)
+local function layer_draw_common(self, context, cr, width, height, typename)
   cr:save()
-  local udl = underlay.draw(self._underlay,{height=height,style = self._underlay_style,bg=self._underlay_color})
+
+  local udl  = underlay.draw(self["_"..typename], {
+      height = height,
+      style  = self["_"..typename.."_style"],
+      bg     = self["_"..typename.."_color"]
+    },
+    context
+  )
+
   cr:set_source_surface(udl,width-udl:get_width()-3)
-  cr:paint_with_alpha(self._underlay_alpha or beautiful.underlay_alpha or 0.7)
+  cr:paint_with_alpha(self["_"..typename.."_alpha"] or beautiful[typename.."_alpha"] or 0.7)
+
   cr:restore()
-  self._draw_underlay(self, context, cr, width, height)
 end
 
-local function set_underlay(self,udl,args)
-  local args = args or {}
-  if not self._draw_underlay then
-    self._draw_underlay = self.draw
-    self.draw = _underlay_draw
+local function draw_underlay(self, context, cr, width, height)
+  layer_draw_common(self, context, cr, width, height, "underlay")
+
+  if self._draw_original then
+    self._draw_original(self, context, cr, width, height)
   end
-  self._underlay = udl
-  self._underlay_style = args.style
-  self._underlay_alpha = args.alpha
-  self._underlay_color = args.color
+end
+
+local function draw_overlay(self, context, cr, width, height)
+  if self._draw_original then
+    self._draw_original(self, context, cr, width, height)
+  end
+
+  layer_draw_common(self, context, cr, width, height, "overlay")
+end
+
+local function set_layer_common(typename, self ,udl ,args)
+  local args = args or {}
+
+  if self.draw and not self._draw_original then
+    self._draw_original = self.draw
+
+    if typename == "underlay" then
+      self.draw = draw_underlay
+    elseif typename == "overlay" then
+      self.draw = draw_overlay
+    end
+
+  elseif typename == "underlay" then
+    self.before_draw_children = draw_underlay
+  elseif typename == "overlay" then
+    self.after_draw_children = draw_overlay
+  end
+
+
+  -- TODO detect if it is a Radical item and get those properties,
+  -- then, delete item.layout implementations
+  self["_"..typename          ] = udl
+  self["_"..typename.."_style"] = args.style
+  self["_"..typename.."_alpha"] = args.alpha
+  self["_"..typename.."_color"] = args.color
   self:emit_signal("widget::updated")
+end
+
+local function set_underlay(...)
+  set_layer_common("underlay",...)
+end
+
+local function set_overlay(...)
+  set_layer_common("overlay",...)
 end
 
 local function get_preferred_size(self, context, width, height)
@@ -76,6 +123,7 @@ base.make_widget = function(...)
   ret.set_tooltip        = set_tooltip
   ret.set_menu           = set_menu
   ret.set_underlay       = set_underlay
+  ret.set_overlay        = set_overlay
 
   -- Textboxes already have it
   if not ret.get_preferred_size then
