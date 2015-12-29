@@ -51,10 +51,13 @@ function module.draw_arrow(cr,x,y,width,height,padding,args)
   cr:restore()
 end
 
-function module.fit(text,args)
+function module.fit(text, args, context)
+  local context = context or {}
   local args = args or {}
   local height = args.height or (beautiful.menu_height)
   local padding = height/4--beautiful.default_height/3
+
+  local dpi = context.dpi or beautiful.xresources.get_dpi(1)
 
   -- Get text height
   if not pango_l[height] then
@@ -68,21 +71,26 @@ function module.fit(text,args)
     pango_l[height]:set_font_description(desc)
   end
 
+  local pango_layout = pango_l[height]
+
+  pango_layout:get_context():set_resolution(dpi)
+  pango_layout:context_changed()
+
   -- Compute full width
   local ret,full_width = {},0
   for k,v in ipairs(type(text) == "table" and text or {text}) do
-    pango_l[height].text = v
-    ret[k] = pango_l[height]:get_pixel_extents().width + height + padding
+    pango_layout.text = v
+    ret[k] = pango_layout:get_pixel_extents().width + height + padding
     full_width = full_width + ret[k]
   end
   return full_width,ret
 end
 
-function module.draw(text,args)
+function module.draw(text, args, context)
   local args = args or {}
   local height = args.height or (beautiful.menu_height)
   local padding = height/4--beautiful.default_height/3
-  local full_width,ret = module.fit(text,args)
+  local full_width,ret = module.fit(text, args, context)
 
   local img = cairo.ImageSurface.create(cairo.Format.ARGB32, full_width+(args.padding_right or 0), height+padding)
   cr = cairo.Context(img)
