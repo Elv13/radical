@@ -109,7 +109,7 @@ function module:setup_item(data,item,args)
       text_w:set_markup(value)
     end
     if data.auto_resize then
-      local fit_w,fit_h = text_w:fit({dpi=96},999,9999)
+      local fit_w,fit_h = text_w:get_preferred_size()
       local is_largest = item == data._internal.largest_item_h
       --TODO find new largest is item is smaller
       if not data._internal.largest_item_h_v or data._internal.largest_item_h_v < fit_h then
@@ -145,7 +145,7 @@ local function new(data)
   end
   local l = wibox.layout.fixed.horizontal()
   l.fit = function(self,context,w,h,force_values) --TODO use the context instead of extra argument
-    local result,r2 = wibox.layout.fixed.fit(self,context,force_values and w or 99999,force_values and h or 99999)
+    local result,r2 = wibox.layout.fixed:get_preferred_size(self,context, force_values and w, force_values and h)
     local w,h
     if data.auto_resize and data._internal.largest_item_h then
       w,h = data.rowcount*(data.item_width or data.default_width),data._internal.largest_item_h_v > data.item_height and data._internal.largest_item_h_v or data.item_height
