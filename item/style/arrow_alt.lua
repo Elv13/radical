@@ -15,7 +15,8 @@ local module = {
     BOTTOM = 2,
     RIGHT  = 20,
     LEFT   = 3
-  }
+  },
+  need_full_repaint = true
 }
 
 local hcode = {"#7777ff","#ff7777","#77ff77","#77ffff","#ffff77"}

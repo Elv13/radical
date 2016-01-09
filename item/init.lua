@@ -210,6 +210,13 @@ local function new_item(data,args)
   -- Listen to signals
   item:connect_signal("state::changed",function()
     item:style()
+
+    -- Some item.style need full widget repaint
+    if item.style.need_full_repaint then
+      --TODO HACK HACK HACK for the repaint, this is really, really stupid
+      data._internal.layout:emit_signal("widget::redraw_needed")
+      --TODO END HACK
+    end
   end)
 
   -- Add support for long hover and press

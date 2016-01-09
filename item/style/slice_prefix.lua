@@ -12,7 +12,8 @@ local module = {
     BOTTOM = 0,
     RIGHT  = 0,
     LEFT   = 0
-  }
+  },
+  need_full_repaint = true
 }
 
 local function prefix_draw(self, context, cr, width, height)

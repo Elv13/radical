@@ -85,7 +85,7 @@ local function create_item(item,data,args)
   bg.fit = function(box, context, w,h)
 --     args.y = data.height-h-data.margins.top --TODO dead code?
     if data._internal.layout.item_fit then
-      return data._internal.layout.item_fit(data,item,box,contextw,h)
+      return data._internal.layout.item_fit(data,item,box,context, w, h)
     else
       return wibox.widget.background.fit(box,context, w,h)
     end

@@ -133,9 +133,9 @@ function module:setup_item(data,item,args)
 end
 
 --Get preferred item geometry
-local function item_fit(data,item,...)
+local function item_fit(data,item,self, content, width, height)
   if not data.visible then return 1,1 end
-  local w, h = item._private_data._fit(...)
+  local w, h = item._private_data._fit(self,content,width,height) --TODO port to new context API
   return data.item_width or 70, item._private_data.height or h
 end
 
@@ -144,8 +144,15 @@ local function new(data)
     base = require( "radical.base" )
   end
   local l = wibox.layout.fixed.horizontal()
-  l.fit = function(self,context,w,h,force_values) --TODO use the context instead of extra argument
-    local result,r2 = wibox.layout.fixed:get_preferred_size(self,context, force_values and w, force_values and h)
+  l._fit = l.fit
+  local new_fit
+  new_fit = function(self,context,w,h,force_values) --TODO use the context instead of extra argument
+
+    -- Get the original fit, the function need to be replaced to avoir a stack overflow
+    l.fit = l._fit
+    local result,r2 = self:get_preferred_size(context, force_values and w, force_values and h)
+    l.fit = new_fit
+
     local w,h
     if data.auto_resize and data._internal.largest_item_h then
       w,h = data.rowcount*(data.item_width or data.default_width),data._internal.largest_item_h_v > data.item_height and data._internal.largest_item_h_v or data.item_height
@@ -155,6 +162,7 @@ local function new(data)
     data:emit_signal("layout_size",w,h)
     return w,h
   end
+  l.fit = new_fit
   l.add = function(l,item)
     return wibox.layout.fixed.add(l,item.widget)
   end
