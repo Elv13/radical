@@ -10,7 +10,8 @@ local module = {
     BOTTOM = 2,
     RIGHT  = 2,
     LEFT   = 4
-  }
+  },
+  need_full_repaint = true
 }
 
 local function create_path(cr,x,height,padding)

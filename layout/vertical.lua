@@ -52,36 +52,14 @@ function module:setup_key_hooks(data)
 end
 
 --Get preferred item geometry
-local function item_fit(data,item,self,width,height)
+local function item_fit(data,item,self,context, width,height)
   local w, h = 0,0--item._internal.cache_w or 1,item._internal.cache_h or 1
   if data.visible then
-    w, h = item._private_data._fit({},self,{},width,height)
+    w, h = item._private_data._fit({},self,context,width,height)
     item._internal.pix_cache = {} --Clear the pimap cache
   end
 
   return w, item.height or h
-end
-
--- As of July 2013, LGI is too slow to redraw big menus at ok speed
--- This do a pixmap cache to allow pre-rendering
-local function cache_pixmap(item)
-  item._internal.pix_cache = {}
-  item.widget._draw = item.widget.draw
-  item.widget.draw = function(self, context, cr, width, height)
-    if not w.visible or item._hidden then return end
-    if item._internal.pix_cache[10*width+7*height+(item.selected and 8888 or 999)] then
-      cr:set_source_surface(item._internal.pix_cache[10*width+7*height+(item.selected and 8888 or 999)])
-      cr:paint()
-    else
-      local img5 = cairo.ImageSurface.create(cairo.Format.ARGB32, width, height)
-      local cr5 = cairo.Context(img5)
-      item.widget._draw(self, context, cr5, width, height)
-      cr:set_source_surface(img5)
-      cr:paint()
-      item._internal.pix_cache[10*width+7*height+(item.selected and 8888 or 999)] = img5
-      return
-    end
-  end
 end
 
 function module:setup_text(item,data,text_w)
@@ -113,8 +91,7 @@ function module:setup_item(data,item,args)
   end
   --Create the background
   local item_layout = item.layout or data.item_layout or horizontal_item_layout
-  item.widget = item_layout(item,data,args)--wibox.widget.background()
-  cache_pixmap(item)
+  item.widget = item_layout(item,data,args)
 
   --Event handling
   if data.select_on == base.event.HOVER then
