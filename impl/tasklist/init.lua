@@ -156,7 +156,20 @@ local function create_client_item(c,screen)
 
   -- Too bad, let's create a new one
   local suf_w = wibox.layout.fixed.horizontal()
-  item = menu:add_item{text=c.name,icon=(not beautiful.tasklist_disable_icon) and surface(c.icon),suffix_widget=suf_w}
+
+  item = menu:add_item{
+    text=c.name,
+    icon=(not beautiful.tasklist_disable_icon) and surface(c.icon),
+    suffix_widget=suf_w
+  }
+
+  item:connect_signal("mouse::enter", function()
+    item.overlay = {"1:23:45", c.pid}
+  end)
+  item:connect_signal("mouse::leave", function()
+    item.overlay = nil
+  end)
+
   item.add_suffix = function(w,w2)
     suf_w:add(w2)
   end
@@ -248,6 +261,9 @@ local function new(screen)
     fg                   = beautiful.tasklist_fg                   or beautiful.fg_normal                ,
     bg                   = beautiful.tasklist_bg                   or beautiful.bg_normal                ,
     underlay_style       = beautiful.tasklist_underlay_style       or radical.widgets.underlay.draw_arrow,
+    overlay_align        = "center"                                                                      ,
+    overlay_alpha        = 1                                                                             ,
+    overlay_bg           = beautiful.tasklist_bg_overlay                                                 ,
     icon_transformation  = beautiful.tasklist_icon_transformation                                        ,
     default_item_margins = beautiful.tasklist_default_item_margins                                       ,
     default_margins      = beautiful.tasklist_default_margins                                            ,

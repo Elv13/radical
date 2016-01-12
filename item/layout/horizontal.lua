@@ -28,15 +28,38 @@ function module:setup_fkey(item,data)
 end
 
 -- Like an overlay, but under
-function module.paint_underlay(data,item,cr,width,height)
+function module.paint_underlay(data,item,cr,width,height, name)
+  name = name or "underlay"
   cr:save()
   local state = item.state or {}
   local current_state = state._current_key or nil
   local state_name = theme.colors_by_id[current_state] or ""
-  local udl = underlay.draw(item.underlay,{style=data.underlay_style,height=height,bg=data["underlay_bg_"..state_name]})
-  cr:set_source_surface(udl,width-udl:get_width()-3)
-  cr:paint_with_alpha(data.underlay_alpha)
+
+  local bg_color = item[name.."_bg_"..state_name] or data[name.."_bg_"..state_name] or data[name.."_bg"]
+  local style    = item[name.."_style"          ] or data[name.."_style"          ]
+  local alpha    = item[name.."_alpha"          ] or data[name.."_alpha"          ]
+  local align    = item[name.."_align"          ] or data[name.."_align"          ]
+
+  local udl = underlay.draw(item[name],{style=data.underlay_style,height=height,bg=bg_color, style = style})
+
+  if align == "center" then
+    local offset = (width-udl:get_width()-6)/2
+    cr:set_source_surface(udl,3 + offset)
+  else
+    cr:set_source_surface(udl,width-udl:get_width()-3)
+  end
+  cr:paint_with_alpha(data[name.."_alpha"])
   cr:restore()
+end
+
+function module.after_draw_children(self, context, cr, width, height)
+  if self._item.overlay then
+    module.paint_underlay(self._data, self._item, cr, width, height, "overlay")
+  end
+
+  if self._item.overlay_draw then
+    self._item.overlay_draw(context,self._item,cr,width,height)
+  end
 end
 
 -- Apply icon transformation
@@ -267,6 +290,7 @@ local function create_item(item,data,args)
   -- Set widget
   item.widget = bg
   bg._item    = item
+  bg._data    = data
 
   -- Tooltip
   item.widget:set_tooltip(item.tooltip)
@@ -298,6 +322,8 @@ local function create_item(item,data,args)
 --   if item.buttons then
 --     bg:buttons(item.buttons)
 --   end
+
+  bg.after_draw_children = module.after_draw_children
 
   return bg
 end

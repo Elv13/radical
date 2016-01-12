@@ -303,7 +303,7 @@ local function new(args)
   local internal = args.internal or {}
   if not internal.items then internal.items = {} end
   if not internal.widgets then internal.widgets = {} end
-print(beautiful.menu_border_color)
+
   -- All the magic in the universe
   local data,private_data = object({
     private_data = {
@@ -341,6 +341,13 @@ print(beautiful.menu_border_color)
       fkeys_prefix    = args.fkeys_prefix or false,
       underlay_alpha  = args.underlay_alpha or beautiful.underlay_alpha  or 0.7,
       underlay_style  = args.underlay_style or nil,
+      underlay_align  = args.underlay_align or nil,
+      underlay_bg     = args.underlay_bg or nil,
+      overlay_alpha   = args.overlay_alpha or beautiful.overlay_alpha  or 0.7,
+      overlay_style   = args.overlay_style or nil,
+      overlay_align   = args.overlay_align or nil,
+      overlay_draw    = args.overlay_draw or nil,
+      overlay_bg      = args.overlay_bg or nil,
       filter_underlay = args.filter_underlay or nil,
       filter_prefix   = args.filter_prefix or "Filter:",
       enable_keyboard = (args.enable_keyboard ~= false),
@@ -351,6 +358,7 @@ print(beautiful.menu_border_color)
       sub_menu_on     = args.sub_menu_on or module.event.SELECTED,
       select_on       = args.select_on or module.event.HOVER,
       overlay         = args.overlay or nil,
+      overlay_draw    = args.overlay_draw or nil,
       opacity         = args.opacity or beautiful.menu_opacity or 1,
       spacing         = args.spacing or nil, --TODO add to README once merged upstream
       default_margins = args.default_margins or {},

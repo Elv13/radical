@@ -114,11 +114,10 @@ local function new_item(data,args)
       sub_menu_f  = (args.sub_menu   and type(args.sub_menu) == "function") and args.sub_menu or nil        ,
       checkable   = args.checkable   or (args.checked ~= nil) or false                                      ,
       checked     = args.checked     or false                                                               ,
-      underlay    = args.underlay    or nil                                                                 ,
       tooltip     = args.tooltip     or nil                                                                 ,
       style       = args.style       or data.item_style                                                     ,
       layout      = args.layout      or args.item_layout or nil                                             ,
-      overlay     = args.overlay     or data.overlay or nil                                                 ,
+      overlay_draw= args.overlay_draw or data.overlay_draw                                                  ,
       item_border_color = args.item_border_color or data.item_border_color or nil                           ,
     },
     force_private = {
@@ -146,19 +145,27 @@ local function new_item(data,args)
     return data.fg
   end
 
-  item.set_underlay = function(item,underlay)
-    if not item._internal.underlay_init then
-      data:add_colors_group("underlay")
-      item._internal.underlay_init = true
-    end
+  -- Setup underlay and overlay
+  for k, name in ipairs {"underlay", "overlay"} do
+    item["set_"..name] = function(item,underlay)
+      if not item._internal.underlay_init then
+        data:add_colors_group(name)
+        item._internal.underlay_init = true
+      end
 
-    item._internal.underlay_content = underlay
+      item._internal[name.."_content"] = underlay
+    end
+    item.get_underlay =  function(item)
+      return item._internal.underlay_content
+    end
+    item[name.."_alpha"] = args[name.."_alpha"]
+    item[name.."_style"] = args[name.."_style"]
+    item[name.."_align"] = args[name.."_align"]
   end
-  item.get_underlay =  function(item)
-    return item._internal.underlay_content
-  end
+
   item.state         = theme.init_state(item)
   item.underlay = args.underlay
+  item.overlay  = args.overlay
 
   for i=1,10 do
     item["button"..i] = args["button"..i]

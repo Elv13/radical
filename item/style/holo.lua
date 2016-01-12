@@ -59,11 +59,6 @@ local function widget_draw(self, context, cr, width, height)
   if self._drawrounded then
     self:_drawrounded(context, cr, width, height)
   end
-
-  local overlay = self._item and self._item.overlay
-  if overlay then
-    overlay(self._item._menu,self._item,cr,width,height)
-  end
 end
 
 local function draw(item,args)

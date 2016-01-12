@@ -19,7 +19,13 @@ local function icon_fit(data,...)
   else
     return w,data.icon_size or h
   end
-  
+
+end
+
+local function after_draw_children(self, context, cr, width, height)
+  if self._item.overlay_draw then
+    self._item.overlay_draw(context,self._item,cr,width,height)
+  end
 end
 
 local function icon_draw(self, context, cr, width, height)
@@ -119,8 +125,11 @@ local function create_item(item,data,args)
 
   -- Setup events
   horizontal.setup_event(data,item,bg)
-  
+
   item.widget = bg
+
+  bg._item = item
+  bg.after_draw_children = horizontal.after_draw_children
 
   return bg
 end

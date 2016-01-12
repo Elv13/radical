@@ -27,18 +27,6 @@ function module:setup_fkey(item,data)
   item.get_f_key = function() return item._internal.f_key end
 end
 
--- Like an overlay, but under
-function module.paint_underlay(data,item,cr,width,height)
-  cr:save()
-  local state = item.state or {}
-  local current_state = state._current_key or nil
-  local state_name = theme.colors_by_id[current_state] or ""
-  local udl = underlay.draw(item.underlay,{style=data.underlay_style,height=height,bg=data["underlay_bg_"..state_name]})
-  cr:set_source_surface(udl,width-udl:get_width()-3)
-  cr:paint_with_alpha(data.underlay_alpha)
-  cr:restore()
-end
-
 -- Show the checkbox
 function module:setup_checked(item,data)
   if item.checkable then
@@ -209,7 +197,7 @@ local function create_item(item,data,args)
   local tb4 = wibox.widget.textbox()
   tb4.draw = function(self, context, cr, width, height)
     if item.underlay then
-      module.paint_underlay(data,item,cr,width,height)
+      horizontal.paint_underlay(data,item,cr,width,height)
     end
     wibox.widget.textbox.draw(self, context, cr, width, height)
   end

@@ -73,11 +73,6 @@ local function widget_draw(self, context, cr, width, height,shadow)
   if wibox.widget.background.draw then
     wibox.widget.background.draw(self, context, cr, width, height)
   end
-
-  local overlay = item and item.overlay
-  if overlay then
-    overlay(item._menu,item,cr,width,height)
-  end
 end
 
 local function draw_width_shadow(self, context, cr, width, height)
