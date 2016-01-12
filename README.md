@@ -192,6 +192,13 @@ Multiple items can have multiple sets of options.
 | filter_string       | Default filter string                              | string                        |
 | fkeys_prefix        | Display F1-F12 indicators for easy navigation      | boolean                       |
 | underlay_alpha      | Underlay (see item options) opacity                | 0-1                           |
+| underlay_style      | Underlay (see item options) opacity                |                               |
+| underlay_align      | Underlay alignment                                 | "left" or "center"            |
+| underlay_bg         | Fallback background color for missing states       | color/gradient/pattern        |
+| overlay_alpha       | Overlay (see item options) opacity                 | 0-1                           |
+| overlay_style       | Overlay (see item options) opacity                 |                               |
+| overlay_align       | Overlay alignment                                  | "left" or "center"            |
+| overlay_bg          | Fallback background color for missing states       | color/gradient/pattern        |
 | filter_prefix       | Text to be shown at begenning of the filter string | string                        |
 | max_items           | Maximum number of items before showing scrollbar   | number                        |
 | enable_keyboard     | Enable or disable keyboard navigation / hooks      | boolean                       |
@@ -212,28 +219,35 @@ Multiple items can have multiple sets of options.
 
 ###Item options
 
-|      Name      |                 Description                  |        Type       |
-| -------------- | -------------------------------------------- | ----------------- |
-| text           | The item text                                | string            |
-| height         | The item height                              | number            |
-| icon           | The item icon                                | string or pattern |
-| sub_menu       | Add a submenu to this item                   | menu or function  |
-| selected       | Select this item                             | boolean           |
-| checkable      | Is the item dual state (a checkbox)          | boolean           |
-| checked        | Is the item checked or not                   | boolean           |
-| underlay       | Text to render at the far-right of the item  | [array of] string |
-| prefix_widget  | Widget to append at the begenning of the item| widget            |
-| suffix_widget  | Widget to append at the end of the item      | widget            |
-| style          | Custom item_style for this item              | item_style        |
-| layout         | Custom item_layout for this item             | item_layout       |
-| tooltip        | A tooltip shown on the side or bottom        | string            |
-| button1        | Left mouse button action                     | function          |
-| button2        | Mid mouse button action                      | function          |
-| button3        | Right mouse button action                    | function          |
-| button4        | Scroll up action                             | function          |
-| button5        | Scroll down action                           | function          |
-| overlay        | See menu.overlay                             | function          |
-| margins        | Read/Write table (left,right,top and bottom) | dynamic table     |
+|      Name      |                 Description                  |        Type        |
+| -------------- | -------------------------------------------- | ------------------ |
+| text           | The item text                                | string             |
+| height         | The item height                              | number             |
+| icon           | The item icon                                | string or pattern  |
+| sub_menu       | Add a submenu to this item                   | menu or function   |
+| selected       | Select this item                             | boolean            |
+| checkable      | Is the item dual state (a checkbox)          | boolean            |
+| checked        | Is the item checked or not                   | boolean            |
+| underlay       | Text to render at the far-right of the item  | [array of] string  |
+| prefix_widget  | Widget to append at the begenning of the item| widget             |
+| suffix_widget  | Widget to append at the end of the item      | widget             |
+| style          | Custom item_style for this item              | item_style         |
+| layout         | Custom item_layout for this item             | item_layout        |
+| tooltip        | A tooltip shown on the side or bottom        | string             |
+| button1        | Left mouse button action                     | function           |
+| button2        | Mid mouse button action                      | function           |
+| button3        | Right mouse button action                    | function           |
+| button4        | Scroll up action                             | function           |
+| button5        | Scroll down action                           | function           |
+| overlay        | See menu.overlay                             | function           |
+| margins        | Read/Write table (left,right,top and bottom) | dynamic table      |
+| underlay_alpha | Underlay (see item options) opacity          | 0-1                |
+| underlay_style | Underlay (see item options) opacity          |                    |
+| underlay_align | Underlay alignment                           | "left" or "center" |
+| overlay_alpha  | Overlay (see item options) opacity           | 0-1                |
+| overlay_style  | Overlay (see item options) opacity           |                    |
+| overlay_align  | Overlay alignment                            | "left" or "center" |
+| overlay_draw   | Draw a custom painter on top of the item     | draw function      |
 
 ###Colors options
 

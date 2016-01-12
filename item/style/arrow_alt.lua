@@ -103,11 +103,6 @@ local function draw_real(self, context, cr, width, height)
   if self.widget.draw then
     self.widget:draw(context, cr, width, height)
   end
-
-  local overlay = self._item and self._item.overlay
-  if overlay then
-    overlay(self._item._menu,self._item,cr,width,height)
-  end
 end
 
 local function draw(item,args)

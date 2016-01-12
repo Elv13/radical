@@ -30,10 +30,6 @@ local padding = 1
 local p2 = 2
 
 local function widget_draw23(self, context, cr, width, height)
-  local overlay = self._item and self._item.overlay
-  if overlay then
-    overlay(self._item._menu,self._item,cr,width,height)
-  end
   cr:save()
   cr:reset_clip()
   cr:set_line_width(1)

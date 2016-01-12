@@ -23,10 +23,6 @@ local function widget_draw(self, context, cr, width, height)
   cr:set_source(self.col2)
   cr:rectangle(width-1,3,1,height-6)
   cr:fill()
-  local overlay = self._item and self._item.overlay
-  if overlay then
-    overlay(self._item._menu,self._item,cr,width,height)
-  end
 end
 
 local function draw(item,args)
