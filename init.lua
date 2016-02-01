@@ -6,9 +6,9 @@ local aw_button = require( "awful.button"      )
 local beautiful = require( "beautiful"         )
 
 -- Define some wibox.widget extensions
-local function set_tooltip(self, text)
+local function set_tooltip(self, text, args)
   if not text then return end
-  self._tooltip = tooltip(self,text)
+  self._tooltip = tooltip(self,text, args)
 end
 
 local function set_menu(self,menu,button)
@@ -25,7 +25,18 @@ local function set_menu(self,menu,button)
       m = menu(self)
     end
     if not m then return end
-    m.parent_geometry = geo
+
+    local dgeo = geo.drawable.drawable:geometry()
+    -- The geometry is a mix of the drawable and widget one
+    local geo2 = {
+      x        = dgeo.x + geo.x,
+      y        = dgeo.y + geo.y,
+      width    = geo.width     ,
+      height   = geo.height    ,
+      drawable = geo.drawable  ,
+    }
+
+    m.parent_geometry = geo2
     m.visible = not m.visible
   end)
   for k, v in pairs(bt) do
