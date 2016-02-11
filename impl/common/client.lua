@@ -4,6 +4,8 @@ local type,math = type,math
 local awful     = require( "awful"      )
 local cairo     = require( "lgi"              ).cairo
 local surface = require("gears.surface")
+local shape = require("gears.shape")
+local util = require("awful.util")
 local module = {}
 
 local function createTagList(aScreen)
@@ -81,31 +83,17 @@ function module.screenshot(clients,geo)
     local img = cairo.ImageSurface(cairo.Format.ARGB32, w, h)
     local cr = cairo.Context(img)
 
-    -- Create a mask
-    cr:arc(10,10,10,0,math.pi*2)
-    cr:fill()
-    cr:arc(w-10,10,10,0,math.pi*2)
-    cr:fill()
-    cr:arc(w-10,h-10,10,0,math.pi*2)
-    cr:fill()
-    cr:arc(10,h-10,10,0,math.pi*2)
-    cr:fill()
-    cr:rectangle(10,0,w-20,h)
-    cr:rectangle(0,10,w,h-20)
-    cr:fill()
-
     -- Create a matrix to scale down the screenshot
     cr:scale(scale+0.05,scale+0.05)
 
     -- Paint the screenshot in the rounded rectangle
     cr:set_source_surface(surface(c.content))
-    cr:set_operator(cairo.Operator.IN)
     cr:paint()
 
     -- Create the item
     local prev_item = prev_menu:add_item({text = "<b>"..c.name.."</b>",icon=img})
     prev_menu.wibox.opacity=0.8
-    prev_item.icon = img
+    prev_item.icon = surface.duplicate_surface(img, shape.rounded_rect, 10)
     prev_item.text  = "<b>"..c.name:gsub('&','&amp;').."</b>"
 
   end

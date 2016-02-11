@@ -1,11 +1,13 @@
 local setmetatable = setmetatable
 local print = print
-local color      = require( "gears.color"  )
-local cairo      = require( "lgi"          ).cairo
-local wibox      = require( "wibox"        )
-local util       = require( "awful.util"   )
-local button     = require( "awful.button" )
-local beautiful  = require( "beautiful"    )
+local color      = require( "gears.color"   )
+local cairo      = require( "lgi"           ).cairo
+local wibox      = require( "wibox"         )
+local util       = require( "awful.util"    )
+local button     = require( "awful.button"  )
+local beautiful  = require( "beautiful"     )
+local shape      = require( "gears.shape"   )
+local surface    = require( "gears.surface" )
 
 local module = {}
 
@@ -13,19 +15,16 @@ local arr_up,arr_down
 local isinit = false
 
 local function init()
-    local size = beautiful.menu_height or 16
-    arr_down = cairo.ImageSurface(cairo.Format.ARGB32, 10,size)
-    arr_up    = cairo.ImageSurface(cairo.Format.ARGB32, 10,size)
-    local cr2         = cairo.Context(arr_down)
-    local cr          = cairo.Context(arr_up)
-    cr:set_source(color(beautiful.fg_normal))
-    cr2:set_source(color(beautiful.fg_normal))
-    for i=1,5 do
-      cr:rectangle(i, (size-11)/2+(11/2)-i, 11-i*2, 1)
-      cr2:rectangle(i, (11)-(11/2)+i, 11-i*2, 1)
-    end
-    cr:fill()
-    cr2:fill()
+    if isinit then return end
+
+    arr_down = surface.load_from_shape(10, 10,
+        shape.transform(shape.isosceles_triangle) : scale(1, 0.5) : rotate_at(5,5, math.pi) : translate(0,5),
+        beautiful.fg_normal
+    )
+    arr_up = surface.load_from_shape(10, 10,
+        shape.transform(shape.isosceles_triangle) : scale(1, 0.5) : translate(0,5),
+        beautiful.fg_normal
+    )
 
     isinit = true
 end

@@ -80,7 +80,7 @@ local function create_item(t,s)
     tw = wibox.widget.textbox()
     tw.draw = index_draw
     local index = tag.getproperty(t,"index") or tag.getidx(t)
-    tw:set_markup((menu.index_prefix or " <b>#")..(index)..(menu.index_suffix or "</b>: "))
+    tw:set_markup((menu.index_prefix or " <b>2#")..(index)..(menu.index_suffix or "</b>: "))
     w:add(tw)
   end
   local suf_w = wibox.layout.fixed.horizontal()
@@ -270,10 +270,13 @@ local function new(s)
     default_item_margins = beautiful.taglist_default_item_margins,
     default_margins      = beautiful.taglist_default_margins     ,
     icon_per_state       = beautiful.taglist_icon_per_state,
+    item_border_color    = beautiful.taglist_item_border_color                                          ,
+    item_border_width    = beautiful.taglist_item_border_width                                          ,
 --     fkeys_prefix = true,
   }
   for k,v in ipairs {"hover","used","urgent","cloned","changed","highlight"} do
     args["bg_"..v] = beautiful["taglist_bg_"..v]
+    args["bgimage_"..v] = beautiful["taglist_bgimage_"..v]
     args["fg_"..v] = beautiful["taglist_fg_"..v]
   end
 

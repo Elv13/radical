@@ -55,6 +55,13 @@ local function load_async(tab,key)
   elseif key == "layout" then
     module.layout = require("radical.item.layout")
     return module.layout
+    --TODO handle colors this way
+--   elseif key:sub(1,7 ) == "get_fg_" then
+--     
+--   elseif key:sub(1,7 ) == "get_bg_" then
+--     
+--   elseif key:sub(1,17) == "get_border_color_" then
+--     
   end
   return rawget(module,key)
 end
@@ -107,8 +114,8 @@ local function new_item(data,args)
       suffix      = args.suffix      or ""                                                                  ,
       bg          = args.bg          or nil                                                                 ,
       fg          = args.fg          or data.fg                                                             , --TODO don't do this
-      border_color= args.border_color or data.border_color                                                  ,
-      border_width= args.border_width or data.border_width                                                  ,
+      border_color= args.border_color or data.item_border_color                                             ,
+      border_width= args.border_width or data.item_border_width                                             ,
       bg_prefix   = args.bg_prefix   or data.bg_prefix                                                      ,
       sub_menu_m  = (args.sub_menu   and type(args.sub_menu) == "table" and args.sub_menu.is_menu) and args.sub_menu or nil,
       sub_menu_f  = (args.sub_menu   and type(args.sub_menu) == "function") and args.sub_menu or nil        ,

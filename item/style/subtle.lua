@@ -3,6 +3,7 @@ local math = math
 local base = require( "radical.base" )
 local color     = require( "gears.color"      )
 local cairo     = require( "lgi"              ).cairo
+local theme     = require( "radical.theme" )
 local print = print
 
 local module = {
@@ -39,7 +40,7 @@ local function gen(w,h,bg_color,border_color)
   return cairo.Pattern.create_for_surface(img)
 end
 
-local function widget_draw(self, context, cr, width, height)
+local function before_draw_children(self, context, cr, width, height)
 
   local state = self._item.state or {}
   local current_state = state._current_key or ""
@@ -62,18 +63,13 @@ local function widget_draw(self, context, cr, width, height)
     self:set_bg(cached)
     self._last_state = current_state
   end
-
-  if self._drawrounded then
-    self:_drawrounded(context, cr, width, height)
-  end
 end
 
 local function draw(item,args)
   local args = args or {}
 
   if not item.widget._overlay_init then
-    item.widget._drawrounded = item.widget.draw
-    item.widget.draw = widget_draw
+    item.widget.before_draw_children = before_draw_children
     item.widget._overlay_init = true
     item.widget._item = item
   end

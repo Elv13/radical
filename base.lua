@@ -331,7 +331,7 @@ local function new(args)
       layout          = args.layout or nil,
       screen          = args.screen or nil,
       style           = args.style  or nil,
-      item_style      = args.item_style or beautiful.menu_item_style or require("radical.item.style.basic"),
+      item_style      = args.item_style or beautiful.menu_default_item_style or require("radical.item.style.basic"),
       item_layout     = args.item_layout or nil,
       filter          = args.filter ~= false,
       show_filter     = args.show_filter or false,
@@ -369,7 +369,9 @@ local function new(args)
       filter_underlay_color = args.filter_underlay_color,
       filter_placeholder    = args.filter_placeholder or "",
       disable_submenu_icon  = args.disable_submenu_icon or false,
-      item_border_color     = args.item_border_color or beautiful.menu_item_border_color or nil,
+      item_border_color     = args.item_border_color or beautiful.menu_item_border_color
+        or args.border_color or beautiful.menu_border_color or beautiful.border_color or nil,
+      item_border_width     = args.item_border_width or beautiful.menu_item_border_width or nil,
     },
     force_private = {
       parent  = true,
@@ -603,6 +605,12 @@ local function new(args)
       internal.items[data._start_at+data.max_items]._hidden = true
       data:emit_signal("_hidden::changed",internal.items[data._start_at+data.max_items])
       filter(data)
+
+      --HACK upstream bug
+      internal.items[data._start_at].widget:emit_signal("widget::layout_changed")
+      internal.items[data._start_at+data.max_items].widget:emit_signal("widget::layout_changed")
+      data._internal.layout:emit_signal("widget::redraw_needed")
+      data._internal.layout:emit_signal("widget::layout_changed")
     end
   end
 
@@ -618,6 +626,12 @@ local function new(args)
       internal.items[data._start_at-1+data.max_items]._hidden = false
       data:emit_signal("_hidden::changed",internal.items[data._start_at-1+data.max_items])
       filter(data)
+
+      --HACK upstream bug
+      internal.items[data._start_at-1].widget:emit_signal("widget::layout_changed")
+      internal.items[data._start_at-1+data.max_items].widget:emit_signal("widget::layout_changed")
+      data._internal.layout:emit_signal("widget::redraw_needed")
+      data._internal.layout:emit_signal("widget::layout_changed")
     end
   end
 

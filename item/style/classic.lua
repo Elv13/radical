@@ -1,10 +1,7 @@
 local setmetatable = setmetatable
-local base      = require( "radical.base"     )
-local color     = require( "gears.color"      )
-local cairo     = require( "lgi"              ).cairo
-local beautiful = require( "beautiful"        )
-local wibox     = require("wibox"                       )
-local print = print
+local color = require( "gears.color"   )
+local wibox = require( "wibox"         )
+local theme = require( "radical.theme" )
 
 local module = {
   margins = {
@@ -15,61 +12,37 @@ local module = {
   }
 }
 
-local focussed,default,alt = nil, nil,{}
-
-local function gen(item_height,bg_color,border_color)
-  local img = cairo.ImageSurface(cairo.Format.ARGB32, 800,item_height)
-  local cr = cairo.Context(img)
-  cr:set_source( color(bg_color) )
-  cr:paint()
-  cr:set_source( color(border_color) )
-  cr:rectangle(0,item_height-1,800,1)
-  cr:fill()
-  return cairo.Pattern.create_for_surface(img)
-end
-
-local function widget_draw(self, context, cr, width, height)
-
-  if wibox.widget.background.draw then
-    wibox.widget.background.draw(self, context, cr, width, height)
+local function horizontal(self, context, cr, width, height)
+  if self._item and self._shape_border_color then
+    cr:set_source(color(self._shape_border_color))
+    cr:rectangle(0, height -1, width, 1)
+    cr:fill()
   end
 end
 
-local function draw(item,args)
-  local args = args or {}
-  local col = args.color
-
-  item.widget.draw = widget_draw
-
-  local ih = item.height or 1
-  if not focussed or not focussed[ih] then
-    if not focussed then
-      focussed,default,alt={},{},{}
-    end
-    local bc = item.item_border_color or item.border_color
-    focussed[ih] = gen(ih,item.bg_focus,bc)
-    default [ih] = gen(ih,item.bg,bc)
-  end
-  if col and (not alt[col] or not alt[col][ih]) then
-    alt[col] = alt[col] or {}
-    alt[col][ih] = gen(ih,color(col),bc)
-  end
-
-  local state = item.state or {}
-  local current_state = state._current_key or nil
-  local state_name = current_state and base.colors_by_id[current_state] or "normal"
-
-  if current_state  == base.item_flags.SELECTED or (item._tmp_menu) then
-    item.widget:set_bg(focussed[ih])
-    item.widget:set_fg(item["fg_focus"])
-  elseif col then
-    item.widget:set_bg(alt[col][ih])
-    item.widget:set_fg(item["fg_"..state_name])
-  else
-    item.widget:set_bg(default[ih])
-    item.widget:set_fg(item["fg"])
+local function vertical(self, context, cr, width, height)
+  if self._item and self._shape_border_color then
+    cr:set_source(color(self._shape_border_color))
+    cr:rectangle(width-1, 0, 1, height)
+    cr:fill()
   end
 end
 
-return setmetatable(module, { __call = function(_, ...) return draw(...) end })
+
+local function draw(item, v)
+  item.widget.border_color = color(item.item_border_color or item.border_color)
+  item.widget.after_draw_children = v and vertical or horizontal
+
+  theme.update_colors(item)
+end
+
+module.vertical = setmetatable({margins={
+    TOP    = 2,
+    BOTTOM = 2,
+    RIGHT  = 4,
+    LEFT   = 4
+  }},{ __call = function(_, item) draw(item,true) end }
+)
+
+return setmetatable(module, { __call = function(_, item) draw(item) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;

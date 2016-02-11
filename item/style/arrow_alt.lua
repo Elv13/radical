@@ -8,6 +8,7 @@ local beautiful = require("beautiful")
 local color = require("gears.color")
 local cairo = require("lgi").cairo
 local wibox = require("wibox")
+local theme     = require( "radical.theme" )
 
 local module = {
   margins = {
