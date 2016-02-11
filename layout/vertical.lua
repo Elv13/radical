@@ -193,8 +193,6 @@ end
 local function new(data)
     base = base or require( "radical.base" )
 
-    local real_l = wibox.layout.fixed.vertical()
-
     local function real_fit(self,context,o_w,o_h,force_values)
         if not data.visible then return 1,1 end
         local w,h = compute_geo(data,o_w,o_h,force_values)
@@ -211,7 +209,8 @@ local function new(data)
         data._internal.scroll_w = scroll(data)
     end
 
-    real_l : setup {
+    -- Define the item layout
+    local real_l = wibox.widget.base.make_widget_declarative {
         -- Widgets
         {
             -- The prefix section, used for the scroll widgets and custom prefixes
@@ -247,7 +246,6 @@ local function new(data)
         },
 
         -- Attributes
-        id              = "real_l"                   ,
         layout          = wibox.layout.fixed.vertical,
 
         -- Methods
@@ -263,8 +261,8 @@ local function new(data)
     data._internal.filter_tb      = real_l:get_children_by_id( "filter_widget"  )[1]
 
     -- Set the overloaded methods
-    real_l.real_l.fit = real_fit
-    real_l.real_l.add = real_add
+    real_l.fit = real_fit
+    real_l.add = real_add
 
     local l = data._internal.content_layout
 
@@ -304,7 +302,7 @@ local function new(data)
         return width,height
     end
 
-    return real_l.real_l
+    return real_l
 end
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })

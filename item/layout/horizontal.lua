@@ -209,29 +209,9 @@ end
 
 -- Create the actual widget
 local function create_item(item,data,args)
-  -- Background
-  local bg = wibox.widget.background()
-
-  -- Margins
-  local m = wibox.layout.margin(la)
---   print("LA",data.default_item_margins.TOP)
-  local mrgns = margins2(m,util.table.join((item.item_style or data.item_style).margins,data.default_item_margins))
-  item.get_margins = function()
-    return mrgns
-  end
-
-  -- Layout (left)
-  local layout = wibox.layout.fixed.horizontal()
-  bg:set_widget(m)
-
-  -- Layout (right)
-  local right = wibox.layout.fixed.horizontal()
 
   -- F keys
   module:setup_fkey(item,data)
-  if data.fkeys_prefix == true then
-    layout:add(fkey(data,item))
-  end
 
   -- Icon
   local icon = module:setup_icon(item,data)
@@ -239,18 +219,13 @@ local function create_item(item,data,args)
     local w,h = wibox.widget.imagebox.fit(...)
     return w+3,h
   end
-  layout:add(icon)
+
   if data.icon_per_state == true then
     item:connect_signal("state::changed",function(i,d,st)
       if item._original_icon and data.icon_transformation then
         wibox.widget.imagebox.set_image(icon,data.icon_transformation(item._original_icon,data,item))
       end
     end)
-  end
-
-  -- Prefix
-  if args.prefix_widget then
-    layout:add(args.prefix_widget)
   end
 
   -- Text
@@ -272,44 +247,8 @@ local function create_item(item,data,args)
     item._private_data.text = value
   end
 
-  -- Checkbox
-  local ck = module:setup_checked(item,data)
-  if ck then
-    right:add(ck)
-  end
-
   -- Hover
   module:setup_hover(item,data)
-
-  -- Sub_arrow
-  local ar = module:setup_sub_menu_arrow(item,data)
-  if ar then
-    right:add(ar)
-  end
-
-  -- Suffix
-  if args.suffix_widget then
-    right:add(args.suffix_widget)
-  end
-
-  -- Layout (align)
-  local align = wibox.layout.align.horizontal()
-  align:set_middle( tb     )
-  align:set_left  ( layout )
-  align:set_right ( right  )
-  m:set_widget    ( align  )
-  align._item = item
-  align._data = data
-  align.fit   = data._internal.align_fit or align_fit
-  item._internal.align = align
-
-  -- Set widget
-  item.widget = bg
-  bg._item    = item
-  bg._data    = data
-
-  -- Tooltip
-  item.widget:set_tooltip(item.tooltip)
 
   -- Overlay
   item.set_overlay = function(_,value)
@@ -317,33 +256,96 @@ local function create_item(item,data,args)
     item.widget:emit_signal("widget::updated")
   end
 
-  item._internal.text_w = tb
-  item._internal.icon_w = icon
-  item._internal.margin_w = m
+    -- Define the item layout
+    item.widget = wibox.widget.base.make_widget_declarative {
+        -- Widgets
+        {
+            -- Widget
+            {
+                -- This is where the content is placed
 
-  -- Draw
-  local item_style = item.style or data.item_style
-  item_style(item,{})
-  item.widget:set_fg(item._private_data.fg)
+                -- Widgets
+                {
+                    -- The prefixes
 
-  -- Setup events
-  module.setup_event(data,item)
+                    -- Widget
+                    data.fkeys_prefix and fkey(data,item) or nil,
+                    icon                                        ,
+                    args.prefix_widget                          ,
 
-  -- Setup dynamic underlay
+                    -- Attributes
+                    layout = wibox.layout.fixed.horizontal
+                },
+                tb,
+                {
+                    -- Suffixes
+
+                    -- Widget
+                    module:setup_checked(item,data)       ,
+                    module:setup_sub_menu_arrow(item,data),
+                    args.suffix_widget                    ,
+
+                    -- Attributes
+                    layout = wibox.layout.fixed.horizontal
+                },
+
+                -- Attributes
+                _item  = item                         ,
+                _data  = data                         ,
+                id     = "main_align"                 ,
+                layout = wibox.layout.align.horizontal,
+            },
+
+            -- Attributes
+            id     = "main_margin"      ,
+            layout = wibox.layout.margin,
+        },
+
+        -- Attributes
+        fg      = item._private_data.fg  ,
+        tooltip = item.tooltip           ,
+        _item   = item                   ,
+        _data   = data                   ,
+        widget  = wibox.widget.background,
+    }
+
+    -- Make some widgets easier to access
+    item._internal.margin_w = item.widget:get_children_by_id("main_margin")[1]
+    item._internal.align    = item.widget:get_children_by_id("main_align" )[1]
+
+    -- Override some methods
+    item.widget._after_draw_children = item.widget.after_draw_children
+    item.widget.after_draw_children  = module.after_draw_children
+    item._internal.align.fit         = data._internal.align_fit or align_fit
+    item._internal.text_w            = tb
+    item._internal.icon_w            = icon
+
+    -- Export the margin
+    local mrgns = margins2(
+        item._internal.margin_w,
+        util.table.join(
+            (item.item_style or data.item_style).margins,data.default_item_margins
+        )
+    )
+
+    function item:get_margins()
+        return mrgns
+    end
+
+    -- Draw
+    local item_style = item.style or data.item_style
+    item_style(item,{})
+
     -- Setup dynamic underlay
-  item:connect_signal("underlay::changed",function(_,udl)
-    bg:emit_signal("widget::updated")
-  end)
+    item:connect_signal("underlay::changed",function(_,udl)
+        item.widget:emit_signal("widget::updated")
+    end)
 
---   if item.buttons then
---     bg:buttons(item.buttons)
---   end
+    -- Setup events
+    module.setup_event(data,item)
 
-  bg._after_draw_children = bg.after_draw_children
-  bg.after_draw_children  = module.after_draw_children
-
-  return bg
+    return item.widget
 end
 
 return setmetatable(module, { __call = function(_, ...) return create_item(...) end })
--- kate: space-indent on; indent-width 2; replace-tabs on;
+-- kate: space-indent on; indent-width 4; replace-tabs on;
