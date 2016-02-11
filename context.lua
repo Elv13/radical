@@ -1,6 +1,6 @@
 local base = require( "radical.base" )
 local print = print
-local unpack = unpack
+local unpack = unpack or table.unpack
 local debug = debug
 local rawset = rawset
 local type = type
@@ -23,15 +23,22 @@ local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber }
 local function get_direction(data)
   local parent_geometry = data.parent_geometry --Local cache to avoid always calling the object hooks
   if not parent_geometry or not parent_geometry.drawable then return "bottom" end
+
+  -- The border width is not included in the geometry
+  local bw = data.wibox.border_width or 0
+
   local drawable_geom = parent_geometry.drawable.drawable.geometry(parent_geometry.drawable.drawable)
+
+  drawable_geom.x, drawable_geom.height = drawable_geom.x - bw, drawable_geom.height + 2*bw
+
   if parent_geometry.y+parent_geometry.height < drawable_geom.height then --Vertical wibox
-    if drawable_geom.x > capi.screen[capi.mouse.screen].geometry.width - (drawable_geom.x+drawable_geom.width) then
+    if drawable_geom.x >= capi.screen[capi.mouse.screen].geometry.width - (drawable_geom.x+drawable_geom.width) then
       return "right"
     else
       return "left"
     end
   else --Horizontal wibox
-    if drawable_geom.y > capi.screen[capi.mouse.screen].geometry.height - (drawable_geom.y+drawable_geom.height) then
+    if drawable_geom.y >= capi.screen[capi.mouse.screen].geometry.height - (drawable_geom.y+drawable_geom.height) then
       return "bottom"
     else
       return "top"
@@ -55,12 +62,14 @@ end
 local function change_geometry_idle(data, x, y, w, h)
   data._internal._next_geometry = data._internal._next_geometry or {}
   local geo = data._internal._next_geometry
-  geo.x      = x or geo.x
-  geo.y      = y or geo.y
-  geo.width  = w or geo.width
-  geo.height = h or geo.height
+
+  -- The border_width is not included in the geometry
+  geo.x      = x and (x - data.wibox.border_width) or geo.x
+  geo.y      = y and (y - data.wibox.border_width) or geo.y
+  geo.width  = w and (w - data.wibox.border_width) or geo.width
+  geo.height = h and (h - data.wibox.border_width) or geo.height
   if not data._internal._need_geometry_reload then
-    glib.idle_add(glib.PRIORITY_HIGH_IDLE, function() set_geometry_real(data) end)
+    glib.idle_add(0, function() set_geometry_real(data) end)
     data._internal._need_geometry_reload = true
   end
 end
@@ -90,9 +99,14 @@ local function set_position(self)
   elseif parent then
     local drawable_geom = parent.drawable.drawable.geometry(parent.drawable.drawable)
     if (self.direction == "left") or (self.direction == "right") then
-      ret = {x=drawable_geom.x+((self.direction == "right") and - self.width or drawable_geom.width),y=drawable_geom.y+parent.y--[[+((self.arrow_type ~= base.arrow_type.NONE) and parent.height/2-(self.arrow_x or 20)-6 or 0)]]}
+      ret = {
+        x=drawable_geom.x+((self.direction == "right") and - self.width or drawable_geom.width),
+        y=drawable_geom.y+parent.y--[[+((self.arrow_type ~= base.arrow_type.NONE) and parent.height/2-(self.arrow_x or 20)-6 or 0)]]
+      }
     else
-      ret = {x=drawable_geom.x+parent.x-((self.arrow_type ~= base.arrow_type.NONE) and (self.arrow_x or 20)+11-parent.width/2 or 0),y=(self.direction == "bottom") and drawable_geom.y-self.height or drawable_geom.y+drawable_geom.height}
+      ret = {
+        x=drawable_geom.x+parent.x-((self.arrow_type ~= base.arrow_type.NONE) and (self.arrow_x or 20)+11-parent.width/2 or 0),
+        y=(self.direction == "bottom") and drawable_geom.y-self.height or drawable_geom.y+drawable_geom.height}
     end
   elseif prefx ~= 0 or prefy ~= 0 then
     ret = capi.mouse.coords()
@@ -145,6 +159,8 @@ local function setup_drawable(data)
   internal.w:set_widget(internal.margin)
   internal.w:set_fg(data.fg)
   internal.w.opacity = data.opacity
+  internal.w.border_color = data.border_color or beautiful.menu_outline_color or beautiful.menu_border_color or beautiful.fg_normal
+  internal.w:set_bg(data.bg)
 
   --Getters
   data.get_wibox     = function() return internal.w end
@@ -276,7 +292,7 @@ local function new(args)
     args.internal.set_position   = args.internal.set_position or set_position
     args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
     args.internal.setup_item     = args.internal.setup_item or setup_item
-    args.style = args.style or arrow_style
+    args.style = args.style or beautiful.menu_default_style or  arrow_style
     local ret = base(args)
     ret:connect_signal("clear::menu",function(_,vis)
       ret._internal.layout:reset()

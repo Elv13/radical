@@ -20,7 +20,7 @@ local rad_client  = require( "radical.impl.common.client")
 
 local sticky,urgent,instances,module = {extensions=require("radical.impl.tasklist.extensions")},{},{},{}
 local _cache = setmetatable({}, { __mode = 'k' })
-local MINIMIZED = 101
+local MINIMIZED = 6.5
 theme.register_color(MINIMIZED , "minimized" , "tasklist_minimized" , true )
 
 -- Default button implementation
@@ -63,7 +63,18 @@ local function display_screenshot(c,geo,visible)
     end
     if not c then return end
 
-    return rad_client.screenshot(c,geo)
+    local dgeo = geo.drawable.drawable:geometry()
+
+    -- The geometry is a mix of the drawable and widget one
+    local geo2 = {
+      x        = dgeo.x + geo.x,
+      y        = dgeo.y + geo.y,
+      width    = geo.width     ,
+      height   = geo.height    ,
+      drawable = geo.drawable  ,
+    }
+
+    return rad_client.screenshot(c,geo2)
 end
 
 local function sticky_callback(c)
@@ -162,6 +173,11 @@ local function create_client_item(c,screen)
     icon=(not beautiful.tasklist_disable_icon) and surface(c.icon),
     suffix_widget=suf_w
   }
+  item.state[radical.base.item_flags.USED] = true
+
+  if c.minimized then
+    item.state[MINIMIZED] = true
+  end
 
   item:connect_signal("mouse::enter", function()
     item.overlay = {"1:23:45", c.pid}
@@ -271,10 +287,14 @@ local function new(screen)
     style                = beautiful.tasklist_style                                                      ,
     spacing              = beautiful.tasklist_spacing                                                    ,
     icon_per_state       = true                                                                          ,
+    item_border_color    = beautiful.tasklist_item_border_color                                          ,
+    item_border_width    = beautiful.tasklist_item_border_width                                          ,
   }
-  for k,v in ipairs {"hover","urgent","minimized","focus"} do
+  for k,v in ipairs {"hover","urgent","minimized","focus","used"} do
     args["bg_"..v] = beautiful["tasklist_bg_"..v]
+    args["bgimage_"..v] = beautiful["tasklist_bgimage_"..v]
     args["fg_"..v] = beautiful["tasklist_fg_"..v]
+    args["border_color_"..v] = beautiful["tasklist_border_color_"..v]
     args["underlay_bg_"..v] = beautiful["tasklist_underlay_bg_"..v]
   end
   local menu = radical.flexbar(args)

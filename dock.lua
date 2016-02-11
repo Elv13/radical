@@ -199,7 +199,8 @@ local function adapt_size(data,w,h,screen)
     data.icon_size = w
   end
   data._internal._geom_vals = nil
-  return w,h
+
+  return w == 0 and 1 or w, h == 0 and 1 or h
 end
 
 -- Create the auto hiding wibox

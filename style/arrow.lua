@@ -1,10 +1,11 @@
 local setmetatable = setmetatable
 local beautiful = require( "beautiful"        )
 local color     = require( "gears.color"      )
+local surface   = require( "gears.surface"    )
 local cairo     = require( "lgi"              ).cairo
 local base = require( "radical.base" )
 local glib = require("lgi").GLib
-local margins = require("radical.margins")
+local shape = require( "gears.shape" )
 
 local module = {
   margins = {
@@ -23,8 +24,8 @@ local arrow_height = 13
 local angles = {
   top    = 0           , -- 0
   bottom = math.pi     , -- 180
-  right  = 3*math.pi/2 , -- 270
-  left   = math.pi/2   , -- 90
+  left   = 3*math.pi/2 , -- 270
+  right  = math.pi/2   , -- 90
 }
 
 -- If width and height need to be swapped
@@ -35,73 +36,11 @@ local swaps = {
   left  =  true ,
 }
 
-local function rotate(img, geometry, angle,swap_size)
-  -- Swap height ans width
-  geometry = swap_size and {width = geometry.height, height=geometry.width} or geometry
-
-  -- Create a rotation matrix
-  local matrix,pattern,img2 = cairo.Matrix(),cairo.Pattern.create_for_surface(img),cairo.ImageSurface(cairo.Format.ARGB32, geometry.width, geometry.height)
-  cairo.Matrix.init_rotate(matrix,angle)
-
-  -- Apply necessary transformations
-  matrix:translate((angle == math.pi/2) and 0 or -geometry.width, (angle == 3*(math.pi/2)) and 0 or -geometry.height)
-  pattern:set_matrix(matrix)
-
-  -- Paint the new image
-  local cr2 = cairo.Context(img2)
-  cr2:set_source(pattern)
-  cr2:paint()
-  return img2
-end
-
--- Generate a rounded cairo path with the arrow
-local function draw_roundedrect_path(cr, data, width, height, radius,padding)
-  local no_arrow    = data.arrow_type == base.arrow_type.NONE
-  local top_padding = (no_arrow) and 0 or arrow_height
-  local arrow_x     = data._arrow_x or 20
-
-  --Begin the rounded rect
-  cr:move_to(padding,radius)
-  cr:arc(radius      , radius+top_padding               , (radius-padding) , math.pi       , 3*(math.pi/2))
-
-  -- Draw the arrow
-  if not no_arrow then
-    cr:line_to(arrow_x                , top_padding+padding)
-    cr:line_to(arrow_x+arrow_height   , padding            )
-    cr:line_to(arrow_x+2*arrow_height , top_padding+padding)
-  end
-
-  -- Complete the rounded rect
-  cr:arc(width-radius, radius+top_padding               , (radius-padding) , 3*(math.pi/2) , math.pi*2   )
-  cr:arc(width-radius, height-(radius-padding)-padding  , (radius-padding) , math.pi*2     , math.pi/2   )
-  cr:arc(radius      , height-(radius-padding)-padding  , (radius-padding) , math.pi/2     , math.pi     )
-  cr:close_path()
-end
-
-local function do_gen_menu_top(data, width, height, radius,padding,args)
-  local img = cairo.ImageSurface(cairo.Format.ARGB32, width,height)
-  local cr = cairo.Context(img)
-
-  -- Clear the surface
-  cr:set_operator(cairo.Operator.SOURCE)
-  cr:set_source( color(args.bg) )
-  cr:paint()
-  cr:set_source( color(args.fg) )
-
-  -- Generate the path
-  draw_roundedrect_path(cr, data, width, height, beautiful.menu_corner_radius or radius,padding,args)
-
-  -- Apply
-  cr:fill()
-  return img
-end
-
+-- Generate the arrow position
 local function gen_arrow_x(data,direction)
   local at = data.arrow_type
   local par_center_x = data.parent_geometry and (data.parent_geometry.x + data.parent_geometry.width/2) or -1
-  local par_center_y = data.parent_geometry and (data.parent_geometry.y + data.parent_geometry.height/2) or -1
   local menu_beg_x = data.x
-  local menu_end_x = data.x + data.width
 
   if at == base.arrow_type.PRETTY or not at then
     if direction == "left" then
@@ -125,9 +64,38 @@ local function gen_arrow_x(data,direction)
   end
 end
 
+-- Generate a rounded cairo path with the arrow
+local function draw_roundedrect_path(cr, width, height, radius, data, padding, angle, swap_size)
+  local no_arrow      = data.arrow_type == base.arrow_type.NONE
+  local padding       = padding or 0
+  local arrow_offset  = no_arrow and 0 or padding/2
+  local width, height = width - 2*padding - (swap_size and arrow_offset or 0), height - 2*padding - (swap_size and 0 or arrow_offset)
+
+  if swap_size then
+    width, height = height - arrow_offset, width
+  end
+
+  -- Use rounded rext for sub-menu and
+  local s = shape.transform(no_arrow and shape.rounded_rect or shape.infobubble)
+
+  -- Apply transformations
+  s = s : rotate_at(width / 2, height / 2, angle)
+  if padding > 0 then
+    s = s : translate(padding + (swap_size and arrow_offset or 0), padding + (angle == 0 and arrow_offset or 0))
+  end
+
+  -- Avoid a race condition
+  if (not data._arrow_x) and (not no_arrow) then
+    gen_arrow_x(data, data.direction)
+  end
+
+  -- the (swap_size and 2 or 1) indicate a bug elsewhere
+  s(cr, width, height, radius, arrow_height - arrow_offset, (data._arrow_x or 20) - arrow_offset*(swap_size and 2 or 1))
+
+end
+
 local function _set_direction(data,direction)
-  local height,width = data.height,data.width
-  local hash = height*1000+width
+  local hash = data.height*1000 + data.width
 
   -- Try not to waste time for nothing
   if data._internal._last_direction == direction..(hash) then return end
@@ -138,27 +106,13 @@ local function _set_direction(data,direction)
     data._internal.last_size = hash
   end
 
-  local border_color = color(beautiful.menu_outline_color or beautiful.menu_border_color or beautiful.fg_normal)
-  local geometry = (direction == "left" or direction == "right") and {width = height, height = width} or {height = height, width = width}
-  local top_clip_surface        = do_gen_menu_top(data,geometry.width,geometry.height,radius,data.border_width,{bg=border_color or "#0000ff",fg=data.bg or "#00ffff"})
-  local top_bounding_surface    = do_gen_menu_top(data,geometry.width,geometry.height,radius,0,{bg="#00000000",fg="#ffffffff"})
-
-  local arr_margin = (data.arrow_type == base.arrow_type.NONE) and 0 or arrow_height
   local angle, swap = angles[direction],swaps[direction]
 
-  --TODO this could be simplified by appling the transform before drawing the bounding mask
-  if angle ~= 0 then
-    top_bounding_surface = rotate(top_bounding_surface,geometry,angle,swap)
-    top_clip_surface     = rotate(top_clip_surface,geometry,angle,swap)
-  end
-
-  -- Set the bounding mask
-  data.wibox.shape_bounding = top_bounding_surface._native
-  data.wibox:set_bg(cairo.Pattern.create_for_surface(top_clip_surface))
   data._internal._need_direction_reload = false
   data._internal._last_direction = direction..(hash)
 
-
+  surface.apply_shape_bounding(data.wibox, draw_roundedrect_path, radius, data, 0, angle, swap)
+--   surface.apply_shape_clip    (data.wibox, draw_roundedrect_path, radius, data, data.border_width, angle, swap)
 end
 
 -- Try to avoid useless repaint, this function is heavy
@@ -184,7 +138,7 @@ local function get_arrow_x(data)
   local hash = height*1000+width
   if not data._arrow_x or data._internal.last_size ~= hash then
     gen_arrow_x(data,direction)
---     data._internal.last_size = hash
+    data._internal.last_size = hash
   end
   return data._arrow_x
 end
@@ -195,17 +149,18 @@ end
 local function after_draw_children(self, context, cr, width, height)
   local data = self._data
 
-  -- Create a matrix to rotate the border
-  local matrix = cairo.Matrix()
-  cairo.Matrix.init_rotate(matrix,angles[data.direction])
-  cr:set_matrix(matrix)
+  local dir = data.direction
+  local angle, swap = angles[dir], swaps[dir]
+
+  cr:translate(data.border_width/2,data.border_width/2)
 
   -- Generate the path
-  draw_roundedrect_path(cr, data, width, height, beautiful.menu_corner_radius or radius,data.border_width/2)
+  draw_roundedrect_path(cr, width, height, beautiful.menu_corner_radius or radius, data, data.border_width/2, angle, swap)
   cr:set_source(color(beautiful.menu_outline_color or beautiful.menu_border_color or beautiful.fg_normal))
   cr:set_line_width(data.border_width)
   cr:stroke()
 end
+
 
 local function draw(data,args)
   local args = args or {}
@@ -217,7 +172,12 @@ local function draw(data,args)
     -- Prevent sharp corners from being over the border
     if data._internal.margin then
       data._internal.margin.__draw = data._internal.margin.draw
+
+      --TODO eventually restart work on upstreaming this, for now it pull too
+      -- much trouble along with it
+      data._internal.margin._data = data
       data._internal.margin.after_draw_children = after_draw_children
+
       if not data._internal.margin._data then
         data._internal.margin._data = data
       end

@@ -6,21 +6,26 @@ local cairo = require("lgi").cairo
 local pango = require("lgi").Pango
 local pangocairo = require("lgi").PangoCairo
 local beautiful = require("beautiful")
+local shape = require("gears.shape")
 
 local module = {}
 
 local pango_l,pango_crx = {},{}
 
+--TODO using the current cairo path extents, it would be possible to merge the 2 function
+-- and have an abstract underlay that work with most shapes
+
 local function draw_item(cr,x,y,width,height,padding,args)
   cr:save()
   cr:rectangle(x,y,width+padding,height+padding)
   cr:clip()
+
+  local s = shape.transform(shape.rounded_bar) : translate(x + padding, y + padding/4)
+  s(cr, width - 2*padding, height - padding/2)
+
   cr:set_source(color(args.bg or beautiful.bg_underlay or beautiful.bg_alternate))
-  cr:arc(x + (height-padding)/2 + 2, y + (height-padding)/2 + padding/4 + (args.margins or 0), (height-padding)/2+(args.padding or 0)/2,0,2*math.pi)
   cr:fill()
-  cr:arc(x + width - (height-padding)/2 - 2, y + (height-padding)/2 + padding/4 + (args.margins or 0), (height-padding)/2+(args.padding or 0)/2,0,2*math.pi)
-  cr:rectangle(x + (height-padding)/2+2, y + padding/4 + (args.margins or 0)-(args.padding or 0)/2,width - (height),(height-padding)+(args.padding or 0))
-  cr:fill()
+
   cr:set_source(color(args.fg or beautiful.bg_normal))
   cr:set_operator(cairo.Operator.CLEAR)
   cr:move_to(x+height/2 + 2,y+padding/4 + (args.margins or 0)-(args.padding or 0)/2)
@@ -34,14 +39,10 @@ function module.draw_arrow(cr,x,y,width,height,padding,args)
   cr:clip()
   padding=padding/2
   local mid = (height-2*padding)/2
-  cr:move_to(x+mid      ,padding)
-  cr:line_to(x+width-mid,padding)
-  cr:line_to(x+width         ,mid+padding)
-  cr:line_to(x+width-mid,height-padding)
-  cr:line_to(x+mid      ,height-padding)
-  cr:line_to(x+0             ,mid+padding)
-  cr:line_to(x+mid      ,padding)
-  cr:close_path()
+
+  local s = shape.transform(shape.hexagon) : translate(x, padding)
+  s(cr, width, height - 2*padding)
+
   cr:set_source(color(args.bg or beautiful.bg_underlay or beautiful.bg_alternate))
   cr:fill()
   cr:set_source(color(args.fg or beautiful.bg_normal))

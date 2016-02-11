@@ -156,6 +156,9 @@ local function setup_item(data,item,args)
 
   -- Setup buttons
   setup_buttons(data,item,args)
+
+  -- Tooltip
+  item.widget:set_tooltip(item.tooltip)
 end
 
 local function new(args)

@@ -1,8 +1,10 @@
 local setmetatable,math = setmetatable,math
-local beautiful = require( "beautiful"    )
-local wibox     = require( "wibox"        )
-local cairo     = require( "lgi"          ).cairo
+local beautiful = require( "beautiful"      )
+local surface   = require( "gears.surface"  )
+local wibox     = require( "wibox"          )
+local cairo     = require( "lgi"            ).cairo
 local object    = require( "radical.object" )
+local shape     = require( "gears.shape"    )
 local capi = { screen = screen ,
                mouse  = mouse  }
 local module={}
@@ -41,8 +43,9 @@ local function init(data,widget,args)
   if widget and not data.init then
     data.init = true
 
+    -- Setup the wibox
     local vertical = (args.direction == "left") or (args.direction == "right")
-    local w,extents = data.wibox or wibox({position="free"}),widget._layout:get_pixel_extents()
+    local w,extents = data.wibox or wibox{},widget._layout:get_pixel_extents()
     extents.width = extents.width + 60
     w.visible = false
     w.width   = extents.width
@@ -50,48 +53,19 @@ local function init(data,widget,args)
     w.ontop   = true
     w:set_bg(beautiful.tooltip_bg or beautiful.bg_normal or "")
 
-    local img = cairo.ImageSurface(cairo.Format.A1, extents.width, vertical and 20 or 25)
-    local cr = cairo.Context(img)
-    --Clear the surface
-    cr:set_source_rgba( 0, 0, 0, 0 )
-    cr:paint()
-
-    --Draw the corner
-    cr:set_source_rgba( 1, 1, 1, 1 )
-    if not (vertical) then
-        cr:arc(20-(vertical and 5 or 0), 20/2 + (5), 20/2 - 1,0,2*math.pi)
-    end
-    cr:arc(extents.width-20+(2*(vertical and 5 or 0)), 20/2 + (vertical and 0 or 5), 20/2 - 1,0,2*math.pi)
-
-    --Draw arrow
-    if not (vertical) then
-        for i=0,(5) do
-            cr:rectangle(extents.width/2 - 5 + i ,5-i, 1, i)
-            cr:rectangle(extents.width/2 + 5 - i ,5-i, 1, i)
-        end
+    -- Pick the right shape
+    local s = nil
+    if args.direction == "bottom" then
+      s = shape.infobubble
+    elseif args.direction == "top" then
+      s = shape.transform(shape.infobubble) : rotate_at(w.width/2, w.height/2, math.pi)
+    elseif args.direction == "left" then
+      s = shape.transform(shape.rectangular_tag) : rotate_at(w.width/2, w.height/2, math.pi)
     else
-        for i=0,(12) do
-            cr:rectangle(i, (20/2) - i, i, i*2)
-        end
+      s = shape.rectangular_tag
     end
-    cr:rectangle(20-((vertical) and 5 or 0),vertical and 0 or 5, extents.width-40+((vertical) and 14 or 0 ), 20)
-    cr:fill()
 
-
-    w:set_fg(beautiful.fg_normal)
-
-    if args.direction == "left" or args.direction == "top" then --Mirror
-      local matrix,pattern = cairo.Matrix(),cairo.Pattern.create_for_surface(img)
-      cairo.Matrix.init_rotate(matrix,math.pi)
-      matrix:translate(-extents.width,-((vertical) and 20 or 25))
-      pattern:set_matrix(matrix)
-      local img2 = cairo.ImageSurface(cairo.Format.A1, extents.width, vertical and 20 or 25)
-      local cr2 = cairo.Context(img2)
-      cr2:set_source(pattern)
-      cr2:paint()
-      img = img2
-    end
-    w.shape_bounding  = img._native
+    surface.apply_shape_bounding(w, s, w.height/2 - 2.5, 5)
 
     data.wibox = w
   end
@@ -105,6 +79,16 @@ local function set_text(self,text)
   end
   init(self,self._w,self._args)
 end
+
+local function set_markup(self,text)
+  self.init = nil
+  self._text = text
+  if self._w then
+    self._w:set_markup(self._text)
+  end
+  init(self,self._w,self._args)
+end
+
 
 local function new(widget,text, args)
   local args,data = args or  {},object({
@@ -135,7 +119,13 @@ local function new(widget,text, args)
 
     local vertical,textw = (args.direction == "left") or (args.direction == "right"),wibox.widget.textbox()
     textw.align = "center"
-    textw:set_markup("<b>".. data._text .."</b>")
+
+    if not args.is_markup then
+      textw:set_markup("<b>".. data._text .."</b>")
+    else
+      textw:set_markup(data._text)
+    end
+
     data._w = textw
     init(data,textw,args)
 

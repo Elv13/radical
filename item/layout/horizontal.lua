@@ -8,7 +8,9 @@ local fkey      = require( "radical.widgets.fkey"      )
 local underlay  = require( "radical.widgets.underlay"  )
 local theme     = require( "radical.theme"             )
 local util      = require( "awful.util"                )
-local margins2  = require("radical.margins")
+local margins2  = require( "radical.margins")
+local shape     = require( "gears.shape"   )
+local surface   = require( "gears.surface" )
 
 local module = {}
 
@@ -59,6 +61,11 @@ function module.after_draw_children(self, context, cr, width, height)
 
   if self._item.overlay_draw then
     self._item.overlay_draw(context,self._item,cr,width,height)
+  end
+
+  -- Draw the border, if any
+  if self._after_draw_children then
+    self._after_draw_children(self, context, cr, width, height)
   end
 end
 
@@ -124,7 +131,16 @@ function module:setup_sub_menu_arrow(item,data)
     if not sub_arrow then
       sub_arrow = wibox.widget.imagebox() --TODO, make global
       sub_arrow.fit = function(box, context,w, h) return (sub_arrow._image and sub_arrow._image:get_width() or 0),item.height end
-      sub_arrow:set_image( beautiful.menu_submenu_icon   )
+
+      if beautiful.menu_submenu_icon then
+        sub_arrow:set_image( beautiful.menu_submenu_icon   )
+      else
+        local h = data.item_height
+        sub_arrow:set_image(surface.load_from_shape(7, h,
+          shape.transform(shape.isosceles_triangle) : rotate_at(3.5,h/2,math.pi/2),
+          beautiful.menu_fg_normal or beautiful.menu_fg or beautiful.fg_normal
+        ))
+      end
     end
     return sub_arrow
   end
@@ -323,7 +339,8 @@ local function create_item(item,data,args)
 --     bg:buttons(item.buttons)
 --   end
 
-  bg.after_draw_children = module.after_draw_children
+  bg._after_draw_children = bg.after_draw_children
+  bg.after_draw_children  = module.after_draw_children
 
   return bg
 end
