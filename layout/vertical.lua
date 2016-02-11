@@ -191,78 +191,121 @@ local function compute_geo(data,width,height,force_values)
 end
 
 local function new(data)
-  if not base then
-    base = require( "radical.base" )
-  end
-  local l = wibox.layout.fixed.vertical()
-  local real_l = wibox.layout.fixed.vertical()
-  local pref_l,suf_l = wibox.layout.fixed.vertical(),wibox.layout.fixed.vertical()
-  real_l:add(pref_l)
-  if data.max_items then
-    data._internal.scroll_w = scroll(data)
-    pref_l:add(data._internal.scroll_w["up"])
-  end
-  real_l:add(l)
-  real_l:add(suf_l)
-  if data.show_filter then
-    if data.max_items then
-      suf_l:add(data._internal.scroll_w["down"])
-    end
-    local filter_tb = filter(data)
-    suf_l:add(filter_tb)
-    data._internal.filter_tb = filter_tb.widget
-  else
-    if data.max_items then
-      suf_l:add(data._internal.scroll_w["down"])
-    end
-  end
-  real_l.fit = function(self,context,o_w,o_h,force_values)
-    if not data.visible then return 1,1 end
-    local w,h = compute_geo(data,o_w,o_h,force_values)
-    data:emit_signal("layout_size",w,h)
-    return w,h
-  end
-  real_l.add = function(real_l,item)
-    return wibox.layout.fixed.add(l,item.widget)
-  end
-  real_l.item_fit = item_fit
-  real_l.setup_key_hooks = module.setup_key_hooks
-  real_l.setup_item = module.setup_item
-  data._internal.content_layout = l
-  data._internal.suf_l,data._internal.pref_l=suf_l,pref_l
+    base = base or require( "radical.base" )
 
---   if data.spacing and l.set_spacing then
---     l:set_spacing(data.spacing)
---   end
+    local real_l = wibox.layout.fixed.vertical()
 
-  --SWAP / MOVE / REMOVE
-  data:connect_signal("item::swapped",function(_,item1,item2,index1,index2)
-    l:swap(index1, index2)
-  end)
-  data:connect_signal("item::moved",function(_,item,new_idx,old_idx)
-    local w = l:get_children()[old_idx]
-    l:remove(old_idx)
-    l:insert(new_idx, w)
-  end)
-  data:connect_signal("item::removed",function(_,item,old_idx)
-    l:remove(old_idx)
-  end)
-  data:connect_signal("item::appended",function(_,item)
-    l:add(item.widget)
-  end)
-  data:connect_signal("widget::added",function(_,item,widget)
-    wibox.layout.fixed.add(l,item.widget)
-    l:emit_signal("widget::updated")
-  end)
-  data:connect_signal("prefix_widget::added",function(_,widget,args)
-    pref_l:insert(1,widget)
-  end)
-  data:connect_signal("suffix_widget::added",function(_,widget,args)
-    suf_l:add(widget)
-  end)
-  data._internal.text_fit = function(self,context,width,height) return width,height end
-  return real_l
+    local function real_fit(self,context,o_w,o_h,force_values)
+        if not data.visible then return 1,1 end
+        local w,h = compute_geo(data,o_w,o_h,force_values)
+        data:emit_signal("layout_size",w,h)
+        return w,h
+    end
+
+    local function real_add(self, item)
+        return wibox.layout.fixed.add(data._internal.content_layout, item.widget)
+    end
+
+    -- Create the scroll widgets
+    if data.max_items then
+        data._internal.scroll_w = scroll(data)
+    end
+
+    real_l : setup {
+        -- Widgets
+        {
+            -- The prefix section, used for the scroll widgets and custom prefixes
+
+            -- Widgets
+            data._internal.scroll_w and data._internal.scroll_w["up"] or nil,
+
+            -- Attributes
+            id     = "prefix_layout",
+            layout = wibox.layout.fixed.vertical
+        },
+        {
+            -- The main layout (where items are added)
+
+            -- Attributes
+            id      = "content_layout",
+            spacing = data.spacing and data.spacing or 0,
+            layout  = wibox.layout.fixed.vertical       ,
+        },
+        {
+            -- The suffix section, used for the scroll widgets and custom suffixes
+
+            -- Widgets
+            data._internal.scroll_w and data._internal.scroll_w["down"] or nil,
+            data.show_filter and {
+                id     = "filter_widget",
+                widget = filter(data) --FIXME for some reason it doesn't show up
+            } or nil,
+
+            -- Attributes
+            id     = "suffix_layout"            ,
+            layout = wibox.layout.fixed.vertical,
+        },
+
+        -- Attributes
+        id              = "real_l"                   ,
+        layout          = wibox.layout.fixed.vertical,
+
+        -- Methods
+        item_fit        = item_fit              ,
+        setup_key_hooks = module.setup_key_hooks,
+        setup_item      = module.setup_item     ,
+    }
+
+    -- Set the important widgets
+    data._internal.content_layout = real_l:get_children_by_id( "content_layout" )[1]
+    data._internal.suf_l          = real_l:get_children_by_id( "suffix_layout"  )[1]
+    data._internal.pref_l         = real_l:get_children_by_id( "prefix_layout"  )[1]
+    data._internal.filter_tb      = real_l:get_children_by_id( "filter_widget"  )[1]
+
+    -- Set the overloaded methods
+    real_l.real_l.fit = real_fit
+    real_l.real_l.add = real_add
+
+    local l = data._internal.content_layout
+
+    --SWAP / MOVE / REMOVE
+    data:connect_signal("item::swapped",function(_,item1,item2,index1,index2)
+        l:swap(index1, index2)
+    end)
+
+    data:connect_signal("item::moved",function(_,item,new_idx,old_idx)
+        local w = l:get_children()[old_idx]
+        l:remove(old_idx)
+        l:insert(new_idx, w)
+    end)
+
+    data:connect_signal("item::removed",function(_,item,old_idx)
+        l:remove(old_idx)
+    end)
+
+    data:connect_signal("item::appended",function(_,item)
+        l:add(item.widget)
+    end)
+
+    data:connect_signal("widget::added",function(_,item,widget)
+        wibox.layout.fixed.add(l,item.widget)
+        l:emit_signal("widget::updated")
+    end)
+
+    data:connect_signal("prefix_widget::added",function(_,widget,args)
+        data._internal.pref_l:insert(1,widget)
+    end)
+
+    data:connect_signal("suffix_widget::added",function(_,widget,args)
+        data._internal.suf_l:add(widget)
+    end)
+
+    data._internal.text_fit = function(self, context, width, height)
+        return width,height
+    end
+
+    return real_l.real_l
 end
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
--- kate: space-indent on; indent-width 2; replace-tabs on;
+-- kate: space-indent on; indent-width 4; replace-tabs on;
