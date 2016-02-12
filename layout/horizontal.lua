@@ -140,46 +140,53 @@ local function item_fit(data,item,self, content, width, height)
 end
 
 local function new(data)
-  if not base then
-    base = require( "radical.base" )
-  end
-  local l = wibox.layout.fixed.horizontal()
-  l._fit = l.fit
-  local new_fit
-  new_fit = function(self,context,w,h,force_values) --TODO use the context instead of extra argument
-
-    -- Get the original fit, the function need to be replaced to avoir a stack overflow
-    l.fit = l._fit
-    local result,r2 = self:get_preferred_size(context, force_values and w, force_values and h)
-    l.fit = new_fit
-
-    local w,h
-    if data.auto_resize and data._internal.largest_item_h then
-      w,h = data.rowcount*(data.item_width or data.default_width),data._internal.largest_item_h_v > data.item_height and data._internal.largest_item_h_v or data.item_height
-    else
-      w,h = data.rowcount*(data.item_width or data.default_width),data.item_height
+    if not base then
+        base = require( "radical.base" )
     end
-    data:emit_signal("layout_size",w,h)
-    return w,h
-  end
-  l.fit = new_fit
-  l.add = function(l,item)
-    return wibox.layout.fixed.add(l,item.widget)
-  end
-  l.item_fit = item_fit
-  l.setup_key_hooks = module.setup_key_hooks
-  l.setup_item = module.setup_item
 
-  if data.spacing and l.set_spacing then
-    l:set_spacing(data.spacing)
-  end
+    -- Define the item layout
+    local real_l = wibox.widget.base.make_widget_declarative {
+        spacing         = data.spacing                 ,
+        item_fit        = item_fit                     ,
+        setup_key_hooks = module.setup_key_hooks       ,
+        setup_item      = module.setup_item            ,
+        layout          = wibox.layout.fixed.horizontal,
+    }
 
-  data:connect_signal("widget::added",function(_,item,widget)
-    wibox.layout.fixed.add(l,item.widget)
-    l:emit_signal("widget::updated")
-  end)
-  return l
+    data:connect_signal("widget::added",function(_,item,widget)
+        wibox.layout.fixed.add(real_l, item.widget)
+        real_l:emit_signal("widget::updated")
+    end)
+
+    function real_l:add(item)
+        return wibox.layout.fixed.add(self, item.widget)
+    end
+
+    -- Hack fit
+    local new_fit
+    new_fit = function(self,context,w,h,force_values) --TODO use the context instead of extra argument
+        -- Get the original fit, the function need to be replaced to avoir a stack overflow
+        real_l.fit = real_l._fit
+        local result,r2 = self:get_preferred_size(context, force_values and w, force_values and h)
+        real_l.fit = new_fit
+
+        local w,h
+        if data.auto_resize and data._internal.largest_item_h then
+            w,h = data.rowcount*(data.item_width or data.default_width),data._internal.largest_item_h_v > data.item_height and data._internal.largest_item_h_v or data.item_height
+        else
+            w,h = data.rowcount*(data.item_width or data.default_width),data.item_height
+        end
+
+        data:emit_signal("layout_size",w,h)
+
+        return w,h
+    end
+
+    real_l._fit = real_l.fit
+    real_l.fit  = new_fit
+
+    return real_l
 end
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
--- kate: space-indent on; indent-width 2; replace-tabs on;
+-- kate: space-indent on; indent-width 4; replace-tabs on;
