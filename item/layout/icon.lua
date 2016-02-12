@@ -32,13 +32,6 @@ end
 
 local function create_item(item,data,args)
 
-    -- Setup margins
-    local mrgns = margins2(m,util.table.join(data.item_style.margins,data.default_item_margins))
-
-    function item:get_margins()
-        return mrgns
-    end
-
     if data.fkeys_prefix == true then
         local pref = wibox.widget.textbox()
 
@@ -121,7 +114,8 @@ local function create_item(item,data,args)
                 },
                 layout = wibox.layout.align.vertical
             },
-            left = data.fkeys_prefix and 0 or nil,
+            left   = data.fkeys_prefix and 0 or nil,
+            id     = "main_margin",
             layout = wibox.layout.margin,
         },
 
@@ -133,10 +127,21 @@ local function create_item(item,data,args)
 
     item.widget             = w
     item._internal.icon_w   = icon
+    item._internal.margin_w = item.widget:get_children_by_id("main_margin")[1]
     item._internal.text_w   = item.widget:get_children_by_id("main_text")[1]
     item._private_data._fit = wibox.widget.background.fit
     w.after_draw_children   = horizontal.after_draw_children
     w.fit                   = bg_fit
+
+    -- Setup margins
+    local mrgns = margins2(
+        item._internal.margin_w,
+        util.table.join(data.item_style.margins,data.default_item_margins)
+    )
+
+    function item:get_margins()
+        return mrgns
+    end
 
     -- Setup events
     horizontal.setup_event(data,item,w)
