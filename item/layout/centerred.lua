@@ -1,45 +1,48 @@
 local setmetatable = setmetatable
-local beautiful  = require( "beautiful"    )
-local color      = require( "gears.color"  )
-local cairo      = require( "lgi"          ).cairo
 local wibox      = require( "wibox"        )
-local checkbox   = require( "radical.widgets.checkbox" )
-local fkey       = require( "radical.widgets.fkey"         )
 local util       = require( "awful.util"              )
 local horizontal = require( "radical.item.layout.horizontal" )
 local margins2   = require("radical.margins")
 
-local module = {}
-
 local function create_item(item,data,args)
-  -- Background
-  local bg = wibox.widget.background()
 
-  -- Margins
-  local m = wibox.layout.margin(la)
-  local mrgns = margins2(m,util.table.join(data.item_style.margins,data.default_item_margins))
-  item.get_margins = function()
-    return mrgns
-  end
+    -- Define the item layout
+    local w = wibox.widget.base.make_widget_declarative {
+        {
+            {
+                nil,
+                {
+                    id     = "main_text"         ,
+                    align  = "center"            ,
+                    widget = wibox.widget.textbox,
+                },
+                nil,
+                layout = wibox.layout.align.horizontal,
+            },
+            id     = "main_margin",
+            layout = wibox.layout.margin
+        },
+        widget = wibox.widget.background,
+    }
 
-  local text = wibox.widget.textbox()
-  text:set_align("center")
+    item._internal.margin_w = item.widget:get_children_by_id("main_margin")[1]
+    item._internal.text_w   = item.widget:get_children_by_id("main_text"  )[1]
 
-  -- Layout
-  local align = wibox.layout.align.horizontal()
-  align:set_middle( text )
-  m:set_widget(align)
-  bg:set_widget(m)
+    -- Margins
+    local mrgns = margins2(
+        item._internal.margin_w,
+        util.table.join(data.item_style.margins,data.default_item_margins)
+    )
 
-  item._internal.text_w = text
-  item._internal.icon_w = nil
-  item._internal.margin_w = m
+    function item:get_margins()
+        return mrgns
+    end
 
-  -- Setup events
-  horizontal.setup_event(data,item,bg)
+    -- Setup events
+    horizontal.setup_event(data, item, w)
 
-  return bg
+    return w
 end
 
-return setmetatable(module, { __call = function(_, ...) return create_item(...) end })
--- kate: space-indent on; indent-width 2; replace-tabs on;
+return setmetatable({}, { __call = function(_, ...) return create_item(...) end })
+-- kate: space-indent on; indent-width 4; replace-tabs on;
