@@ -22,12 +22,6 @@ local function icon_fit(data,...)
 
 end
 
-local function after_draw_children(self, context, cr, width, height)
-  if self._item.overlay_draw then
-    self._item.overlay_draw(context,self._item,cr,width,height)
-  end
-end
-
 local function icon_draw(self, context, cr, width, height)
   local w,h = wibox.widget.imagebox.fit(self,context,width,height)
   cr:save()
@@ -37,102 +31,118 @@ local function icon_draw(self, context, cr, width, height)
 end
 
 local function create_item(item,data,args)
-  --Create the background
-  local bg = wibox.widget.background()
-  bg:set_fg(item._private_data.fg)
 
-  --Create the main item layout
-  local l,la,lr = wibox.layout.fixed.vertical(),wibox.layout.align.vertical(),wibox.layout.fixed.horizontal()
-  local m = wibox.layout.margin(la)
-  local mrgns = margins2(m,util.table.join(data.item_style.margins,data.default_item_margins))
-  item.get_margins = function()
-    return mrgns
-  end
+    -- Setup margins
+    local mrgns = margins2(m,util.table.join(data.item_style.margins,data.default_item_margins))
 
-  local text_w = wibox.widget.textbox()
-  text_w:set_align("center")
-  item._private_data._fit = wibox.widget.background.fit
---   m.fit = function(...)
---       if item.visible == false or item._filter_out == true then
---         return 0,0
---       end
---       local w,h = data._internal.layout.item_fit(data,item,...)
---       print("item_fit",w,h)
---       return data._internal.layout.item_fit(data,item,...)
---   end
-
-  if data.fkeys_prefix == true then
-    local pref = wibox.widget.textbox()
-    pref.draw = function(self, context, cr, width, height)
-      cr:set_source(color(beautiful.fg_normal))
-      cr:paint()
-      wibox.widget.textbox.draw(self, context, cr, width, height)
+    function item:get_margins()
+        return mrgns
     end
-    l:add(pref)
-    m:set_left  ( 0 )
-  end
 
-  if args.prefix_widget then
-    l:add(args.prefix_widget)
-  end
+    if data.fkeys_prefix == true then
+        local pref = wibox.widget.textbox()
 
-  local icon = horizontal.setup_icon(horizontal,item,data)
-  icon.fit = function(...) return icon_fit(data,...) end
-  icon.draw = icon_draw
-
-  l:add(icon)
-  l:add(text_w)
-  if item._private_data.sub_menu_f or item._private_data.sub_menu_m then
-    local subArrow  = wibox.widget.imagebox() --TODO, make global
-    subArrow.fit = function(box, context, w, h) return subArrow._image:get_width(),item.height end
-    subArrow:set_image( beautiful.menu_submenu_icon   )
-    lr:add(subArrow)
-  end
-  bg.fit = function(box, context, w,h)
---     args.y = data.height-h-data.margins.top --TODO dead code?
-    if data._internal.layout.item_fit then
-      return data._internal.layout.item_fit(data,item,box,context, w, h)
-    else
-      return wibox.widget.background.fit(box,context, w,h)
+        function pref:draw(context, cr, width, height)
+            cr:set_source(color(beautiful.fg_normal))
+            cr:paint()
+            wibox.widget.textbox.draw(self, context, cr, width, height)
+        end
     end
-    return 0,0
-  end
-  if item.checkable then
-    item.get_checked = function(data,item)
-      if type(item._private_data.checked) == "function" then
-        return item._private_data.checked()
-      else
-        return item._private_data.checked
-      end
+
+    local icon = horizontal.setup_icon(horizontal,item,data)
+    icon.fit   = function(...) return icon_fit(data,...) end
+    icon.draw  = icon_draw
+
+    local has_children = item._private_data.sub_menu_f or item._private_data.sub_menu_m
+
+    if has_children then
+        local subArrow  = wibox.widget.imagebox() --TODO, make global
+
+        function subArrow:fit(context, w, h)
+            return subArrow._image:get_width(),item.height
+        end
+
+        subArrow:set_image( beautiful.menu_submenu_icon   )
     end
-    local ck = wibox.widget.imagebox()
-    ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
-    lr:add(ck)
-    item.set_checked = function (_,value)
-      item._private_data.checked = value
-      ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
+
+    local function bg_fit(box, context, w,h)
+        if data._internal.layout.item_fit then
+            return data._internal.layout.item_fit(data,item,box,context, w, h)
+        else
+            return wibox.widget.background.fit(box,context, w,h)
+        end
+
+        return 0,0
     end
-  end
-  if args.suffix_widget then
-    lr:add(args.suffix_widget)
-  end
-  la:set_top(l)
-  la:set_bottom(lr)
-  bg:set_widget(m)
 
-  item._internal.text_w = text_w
-  item._internal.icon_w = icon
+    if item.checkable then
+        function item.get_checked(data,item)
+            if type(item._private_data.checked) == "function" then
+                return item._private_data.checked()
+            else
+                return item._private_data.checked
+            end
+        end
 
-  -- Setup events
-  horizontal.setup_event(data,item,bg)
+        local ck = wibox.widget.imagebox()
+        ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
 
-  item.widget = bg
+        function item:set_checked(value)
+            item._private_data.checked = value
+            ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
+        end
+    end
 
-  bg._item = item
-  bg.after_draw_children = horizontal.after_draw_children
+    local w = wibox.widget.base.make_widget_declarative {
+        {
+            {
+                {
+                    data.fkeys_prefix and pref or nil,
+                    args.prefix_widget               ,
+                    icon,
+                    {
+                        align  = "center"            ,
+                        id     = "main_text"         ,
+                        widget = wibox.widget.textbox,
+                    },
+                    layout = wibox.layout.fixed.vertical,
+                },
+                nil, -- Center
+                {
+                    -- Suffix
 
-  return bg
+                    -- Widgets
+                    has_children   and subArrow or nil    ,
+                    item.checkable and ck       or nil    ,
+                    args.suffix_widget                    ,
+
+                    -- Attributes
+                    layout = wibox.layout.fixed.horizontal,
+                },
+                layout = wibox.layout.align.vertical
+            },
+            left = data.fkeys_prefix and 0 or nil,
+            layout = wibox.layout.margin,
+        },
+
+        -- Attributes
+        fg     = item._private_data.fg,
+        _item  = item,
+        widget = wibox.widget.background
+    }
+
+    item.widget             = w
+    item._internal.icon_w   = icon
+    item._internal.text_w   = item.widget:get_children_by_id("main_text")[1]
+    item._private_data._fit = wibox.widget.background.fit
+    w.after_draw_children   = horizontal.after_draw_children
+    w.fit                   = bg_fit
+
+    -- Setup events
+    horizontal.setup_event(data,item,w)
+
+    return w
 end
 
 return setmetatable(module, { __call = function(_, ...) return create_item(...) end })
--- kate: space-indent on; indent-width 2; replace-tabs on;
+-- kate: space-indent on; indent-width 4; replace-tabs on;
