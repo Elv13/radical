@@ -47,11 +47,14 @@ local function init()
 end
 
 local function holo()
-    local size = beautiful.menu_height or 16
+    local size = beautiful.menu_height - 2 or 16
     notcheckedI = cairo.ImageSurface(cairo.Format.ARGB32, size,size)
     checkedI    = cairo.ImageSurface(cairo.Format.ARGB32, size,size)
     local cr2         = cairo.Context(notcheckedI)
     local cr          = cairo.Context(checkedI)
+    cr:translate(1,1)
+    cr2:translate(1,1)
+    size = size - 2
     cr:set_operator(cairo.Operator.CLEAR)
     cr2:set_operator(cairo.Operator.CLEAR)
     cr:paint()
