@@ -5,101 +5,13 @@ local util      = require( "awful.util"       )
 local button    = require( "awful.button"     )
 local checkbox  = require( "radical.widgets.checkbox" )
 local wibox     = require( "wibox" )
+local common    = require( "radical.common"           )
 local item_layout = require("radical.item.layout.icon")
-local base = nil
 
 local module = {}
 
-local function left(data)
-  if data._current_item._tmp_menu then
-    data = data._current_item._tmp_menu
-    data.items.selected = true
-    return true,data
-  end
-end
-
-local function right(data)
-  if data.parent_geometry.is_menu then
-    for k,v in ipairs(data.items) do
-      if v._tmp_menu == data or v.sub_menu_m == data then
-        v.selected = true
-      end
-    end
-    data.visible = false
-    data = data.parent_geometry
-    return true,data
-  end
-end
-
-local function up(data)
-  data.previous_item.selected = true
-end
-
-local function down(data)
-  data.next_item.selected = true
-end
-
-function module:setup_key_hooks(data)
-  data:add_key_hook({}, "Up"      , "press", up    )
-  data:add_key_hook({}, "&"       , "press", up    )
-  data:add_key_hook({}, "Down"    , "press", down  )
-  data:add_key_hook({}, "KP_Enter", "press", down  )
-  data:add_key_hook({}, "Left"    , "press", left  )
-  data:add_key_hook({}, "\""      , "press", left  )
-  data:add_key_hook({}, "Right"   , "press", right )
-  data:add_key_hook({}, "#"       , "press", right )
-end
-
-local function setup_event(data,item,args)
-  --Event handling
-  if data.select_on == base.event.HOVER then
-    item.widget:connect_signal("mouse::enter", function() item.selected = true end)
-    item.widget:connect_signal("mouse::leave", function() item.selected = false end)
-  end
-  data._internal.layout:add(item)
-  local buttons = {}
-  for i=1,10 do
-    if args["button"..i] then
-      buttons[#buttons+1] = button({},i,args["button"..i])
-    end
-  end
-  if not buttons[3] then --Hide on right click
-    buttons[#buttons+1] = button({},3,function()
-      data.visible = false
-      if data.parent_geometry and data.parent_geometry.is_menu then
-        data.parent_geometry.visible = false
-      end
-    end)
-  end
-
-  --Be sure to always hide sub menus, even when data.visible is set manually
-  data:connect_signal("visible::changed",function(_,vis)
-    if data._tmp_menu and data.visible == false then
-      data._tmp_menu.visible = false
-    end
-  end)
-  data:connect_signal("parent_geometry::changed",function(_,vis)
-    local fit_w,fit_h = data._internal.layout:fit()
-    data.height = fit_h
-    if data.style then
-      data.style(data)
-    end
-  end)
-  item.widget:buttons( util.table.join(unpack(buttons)))
-end
-
 function module:setup_item(data,item,args)
-  local bg = item_layout(item,data,args)
-
-  -- Set size
-  local fit_w,fit_h = data._internal.layout:fit()
-  data.width = fit_w
-  data.height = fit_h
-  if data.style then
-    data.style(data)
-  end
   local text_w = item._internal.text_w
-  local icon_w = item._internal.icon_w
 
   -- Setup text
   item.set_text = function (_,value)
@@ -118,49 +30,28 @@ function module:setup_item(data,item,args)
       end
     end
   end
-  item.set_icon = function (_,value)
-    icon_w:set_image(value)
-  end
+
   item:set_text(item._private_data.text)
 
-  -- Setup tooltip
-  bg:set_tooltip(item.tooltip)
-
-  -- Set widget
-  item.widget = bg
-  data.item_style(item,{})
-  setup_event(data,item,args)
 end
 
 --Get preferred item geometry
 local function item_fit(data,item,self, content, width, height)
   if not data.visible then return 1,1 end
   local w, h = item._private_data._fit(self,content,width,height) --TODO port to new context API
-  return data.item_width or 70, item._private_data.height or h
+  return data.item_width or 70, item._private_data.height or h --TODO broken
 end
 
 local function new(data)
-    if not base then
-        base = require( "radical.base" )
-    end
 
     -- Define the item layout
     local real_l = wibox.widget.base.make_widget_declarative {
         spacing         = data.spacing                 ,
         item_fit        = item_fit                     ,
-        setup_key_hooks = module.setup_key_hooks       ,
+        setup_key_hooks = common.setup_key_hooks       ,
         setup_item      = module.setup_item            ,
         layout          = wibox.layout.fixed.horizontal,
     }
-
-    data:connect_signal("widget::added",function(_,item,widget)
-        wibox.layout.fixed.add(real_l, item.widget)
-        real_l:emit_signal("widget::updated")
-    end)
-
-    function real_l:add(item)
-        return wibox.layout.fixed.add(self, item.widget)
-    end
 
     -- Hack fit
     local new_fit

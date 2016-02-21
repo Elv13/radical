@@ -10,6 +10,7 @@ local object       = require( "radical.object"          )
 local vertical     = require( "radical.layout.vertical" )
 local theme        = require( "radical.theme"           )
 local item_mod     = require( "radical.item"            )
+local common       = require( "radical.common"          )
 
 local capi = { mouse = mouse, screen = screen , keygrabber = keygrabber, root=root, }
 
@@ -97,7 +98,7 @@ local function filter(data)
       end
     end
     data._total_item_height = visible_counter
-    local w,h = data._internal.layout:fit()
+
     -- Make sure to select an item
     if data._current_item and data._current_item._filter_out then
       local n = data.next_item
@@ -105,7 +106,7 @@ local function filter(data)
         n.selected = true
       end
     end
-    data.height = h
+
   end
 end
 
@@ -163,12 +164,10 @@ local function activateKeyboard(data)
       end
 
       if (key == 'Return') and data._current_item and data._current_item.button1 then
-        if data.sub_menu_on == module.event.BUTTON1 then
-          item_mod.execute_sub_menu(data,data._current_item)
-        else
           data._current_item.button1(data,data._current_item)
-          data.visible = false
-        end
+          if data.sub_menu_on ~= module.event.BUTTON1 then
+            data.visible = false
+          end
       elseif key == 'Escape' or (key == 'Tab' and data.filter_string == "") then
         data.visible = false
         capi.keygrabber.stop()
@@ -187,7 +186,6 @@ local function activateKeyboard(data)
   end
 end
 
-
 ---------------------------------ITEM HANDLING----------------------------------
 local function add_item(data,args)
   local item = item_mod(data,args)
@@ -195,6 +193,32 @@ local function add_item(data,args)
   if args.selected == true then
     item.selected = true
   end
+
+  -- Show sub-menu
+  if item._private_data.sub_menu_f  or item._private_data.sub_menu_m then
+    if data.sub_menu_on == module.event.SELECTED then
+      item.widget:set_menu(
+        function()
+          local sub_menu = item._private_data.sub_menu_m
+
+          if not sub_menu and item._private_data.sub_menu_f then
+            sub_menu = item._private_data.sub_menu_f(item.widget)
+          end
+
+          if sub_menu and (item._private_data.sub_menu_f or sub_menu.rowcount > 0) then
+            sub_menu.arrow_type = module.arrow_type.NONE
+            sub_menu.parent_item = item
+            item._tmp_menu = sub_menu
+            data._tmp_menu = sub_menu
+          end
+
+          return sub_menu
+        end,
+        "mouse::enter"
+      )
+    end
+  end
+
   item.index = data.rowcount
   data:emit_signal("item::added",item)
   return item
@@ -233,16 +257,10 @@ local function add_widget(data,widget,args)
   })
   item._private_data = private_data
   item._internal = {}
-  item.get_y = function() return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height end --Hack around missing :fit call for last item
 
   data._internal.widgets[#data._internal.widgets+1] = item
   data._internal.items[#data._internal.items+1] = item
   data:emit_signal("widget::added",item,widget)
-  if data.visible then
-    local fit_w,fit_h = data._internal.layout:get_preferred_size()
-    data.width = data._internal.width or fit_w
-    data.height = fit_h
-  end
 end
 
 local function add_widgets(data,widgets)
@@ -360,8 +378,8 @@ local function new(args)
       overlay         = args.overlay or nil,
       overlay_draw    = args.overlay_draw or nil,
       opacity         = args.opacity or beautiful.menu_opacity or 1,
-      spacing         = args.spacing or nil, --TODO add to README once merged upstream
-      default_margins = args.default_margins or {},
+      spacing         = args.spacing or nil,
+      default_margins = args.default_margins or beautiful.menu_default_margins or {},
       icon_per_state  = args.icon_per_state or false,
       default_item_margins  = args.default_item_margins or {},
       icon_transformation   = args.icon_transformation or nil,
@@ -407,33 +425,21 @@ local function new(args)
   -- Setters
   data.set_auto_resize  = function(_,val) private_data[""] = val end
   data.set_parent_geometry = function(_,value)
-    private_data.parent_geometry = value
-    if data._internal.get_direction then
-      data.direction = data._internal.get_direction(data)
-    end
-    if data._internal.set_position then
-      data._internal.set_position(data)
-    end
+    private_data.parent_geometry = value --TODO delete
   end
 
   data.set_visible = function(_,value)
     private_data.visible = value
-    if value then
-      local fit_w,fit_h = data._internal.layout:get_preferred_size()
-      data.width = internal.width or fit_w
-      data.height = fit_h
-    elseif data._tmp_menu and data._current_item then
---       data._tmp_menu = nil
+    if data._tmp_menu and data._current_item then
       data._current_item._tmp_menu = nil
---       data._current_item.selected = false
       data.item_style(data._current_item,{})
     end
     if internal.has_changed and data.style then
       data.style(data,{arrow_x=20,margin=internal.margin})
     end
---     if not internal.parent_geometry and data._internal.set_position then
+    if internal.set_position then
       internal.set_position(data)
---     end
+    end
     if internal.set_visible then
       internal:set_visible(value)
     end
@@ -441,6 +447,11 @@ local function new(args)
       activateKeyboard(data)
     elseif data.parent_geometry and not data.parent_geometry.is_menu and data.enable_keyboard then
       capi.keygrabber.stop()
+    end
+
+    -- Hide the sub menus when hiding
+    if data._tmp_menu and not value then
+      data._tmp_menu.visible = false
     end
   end
 
@@ -450,7 +461,8 @@ local function new(args)
 
   data.set_layout = function(_,value)
     if value then
-      value:setup_key_hooks(data)
+      local f = value.setup_key_hooks or common.setup_key_hooks
+      f(value, data)
     end
     private_data.layout = value
   end
@@ -637,8 +649,9 @@ local function new(args)
 
   function data:hide()
     data.visible = false
-    if data.parent_geometry and data.parent_geometry.is_menu then
-      local parent = data.parent_geometry
+
+    if data.parent_geometry and data.parent_geometry.parent_menu then
+      local parent = data.parent_geometry.parent_menu
       while parent do
         parent.visible = false
         parent = parent.parent_geometry and parent.parent_geometry.is_menu and parent.parent_geometry
@@ -647,7 +660,8 @@ local function new(args)
   end
 
   if private_data.layout then
-    private_data.layout:setup_key_hooks(data)
+    local f = private_data.layout.setup_key_hooks or common.setup_key_hooks
+    f(value, data)
   end
 
   data._internal.setup_drawable(data)

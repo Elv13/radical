@@ -11,11 +11,32 @@ local function set_tooltip(self, text, args)
   self._tooltip = tooltip(self,text, args)
 end
 
-local function set_menu(self,menu,button)
+--- Set a menu for widget "self".
+-- This function is available for all widgets.
+-- Any signals can be used as trigger, the common ones are:
+--
+-- * "button::press" (default) Left mouse button (normal click_
+-- * "mouse::enter" When the mouse enter the widget
+--
+-- @param self A widget (implicit parameter)
+-- @param menu A radical menu or a function returning one (for lazy-loading)
+-- @tparam[opt="button1::pressed"] string event The event trigger for showing
+--  the menu.
+-- @tparam[opt=1] button_id The mouse button 1 (1= left, 3=right)
+local function set_menu(self,menu, event, button_id)
   if not menu then return end
-  local b = button or 1
-  local current,bt = self:buttons(),aw_button({},b,function(geo)
+  local event = event or "button::pressed"
+  local button_id = button_id or 1
+
+
+  local function trigger(_, geo)
+    local geo = geo or _
     local m =  menu
+
+    if self._data and self._data.is_menu then
+      geo.parent_menu = self._data
+    end
+
     if type(menu) == "function" then
       if self._tmp_menu and self._tmp_menu.visible then
         self._tmp_menu.visible = false
@@ -26,21 +47,19 @@ local function set_menu(self,menu,button)
     end
     if not m then return end
 
-    local dgeo = geo.drawable.drawable:geometry()
-    -- The geometry is a mix of the drawable and widget one
-    local geo2 = {
-      x        = dgeo.x + geo.x,
-      y        = dgeo.y + geo.y,
-      width    = geo.width     ,
-      height   = geo.height    ,
-      drawable = geo.drawable  ,
-    }
+    m.parent_geometry = geo
+    m._internal.w:move_by_parent(geo)
 
-    m.parent_geometry = geo2
     m.visible = not m.visible
-  end)
-  for k, v in pairs(bt) do
-    current[type(k) == "number" and (#current+1) or k] = v
+  end
+
+  if event == "button::pressed" then
+    local current,bt = self:buttons(),aw_button({},b,trigger)
+    for k, v in pairs(bt) do
+      current[type(k) == "number" and (#current+1) or k] = v
+    end
+  else
+    self:connect_signal(event, trigger)
   end
   self._menu = menu
   return bt

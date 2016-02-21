@@ -66,20 +66,6 @@ local function load_async(tab,key)
   return rawget(module,key)
 end
 
-function module.execute_sub_menu(data,item)
-  if (item._private_data.sub_menu_f  or item._private_data.sub_menu_m) then
-    local sub_menu = item._private_data.sub_menu_m or item._private_data.sub_menu_f(data,item)
-    if sub_menu and (item._private_data.sub_menu_f or sub_menu.rowcount > 0) then
-      sub_menu.arrow_type = module.arrow_type.NONE
-      sub_menu.parent_item = item
-      sub_menu.parent_geometry = data
-      sub_menu.visible = true
-      item._tmp_menu = sub_menu
-      data._tmp_menu = sub_menu
-    end
-  end
-end
-
 local function hide_sub_menu(item,data)
   if item._tmp_menu then
     item._tmp_menu.visible = false
@@ -212,13 +198,16 @@ local function new_item(data,args)
       item.state[module.item_flags.SELECTED] = nil
       return
     end
-
-    -- Select the new one
-    if data.sub_menu_on == module.event.SELECTED and (current_item ~= item or not item._tmp_menu)then
-      module.execute_sub_menu(data,item)
-    end
     item.state[module.item_flags.SELECTED] = true
     data._current_item = item
+  end
+
+  item.set_icon = function (_,value)
+    local icon_w = item._internal.icon_w
+
+    if not icon_w then return end
+
+    icon_w:set_image(value)
   end
 
   -- Listen to signals

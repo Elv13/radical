@@ -98,10 +98,6 @@ function module.screenshot(clients,geo)
 
   end
 
-  if geo then
-    prev_menu.parent_geometry = geo
-  end
-
   prev_menu.visible = true
   return prev_menu
 end
