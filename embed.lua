@@ -56,9 +56,6 @@ local function new(args)
       local l = ret._internal.content_layout or ret._internal.layout
       l:reset()
     end)
-    ret:connect_signal("_hidden::changed",function(_,item)
-      item.widget:emit_signal("widget::updated")
-    end)
     return ret
 end
 

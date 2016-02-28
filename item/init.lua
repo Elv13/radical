@@ -135,9 +135,9 @@ local function new_item(data,args)
   item._private_data = private_data
   item._internal     = args._internal or {}
   theme.setup_item_colors(data,item,args)
-  item.get_y = function()
-    return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height --Hack around missing :fit call for last item
-  end
+--   item.get_y = function()
+--     return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height --Hack around missing :fit call for last item
+--   end
   item.get_height = function()
     return args.height or data.item_height or beautiful.menu_height or 30
   end
@@ -152,10 +152,6 @@ local function new_item(data,args)
 
   for i=1,10 do
     item["button"..i] = args["button"..i]
-  end
-
-  if data.max_items ~= nil and data.rowcount >= data.max_items then-- and (data._start_at or 0)
-    item._hidden = true
   end
 
   -- Use _internal to avoid the radical.object trigger
