@@ -164,10 +164,6 @@ function module.setup_item_move_events(data)
         l:reset()
     end)
 
-    data:connect_signal("_hidden::changed",function(_,item)
-        item.widget:emit_signal("widget::updated")
-    end)
-
 end
 
 function module.setup_state_events(data, item)
@@ -216,6 +212,11 @@ function module.setup_item(data,item,args)
     -- Setup the infoshapes
     if item._internal.infoshapes then
         item.infoshapes = item._internal.infoshapes
+    end
+
+    -- Hide items after the maximum is reached
+    if data.max_items ~= nil and data.rowcount > data.max_items then-- and (data._start_at or 0)
+        item.widget:set_visible(false)
     end
 
     item.widget:emit_signal("widget::updated")

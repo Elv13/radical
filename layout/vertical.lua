@@ -23,7 +23,7 @@ function module:setup_item(data,item,args)
     item._private_data._fit = wibox.widget.background.fit
     if item._internal.margin_w then
         item._internal.margin_w.fit = function(...)
-            if (item.visible == false or item._filter_out == true or item._hidden == true) then
+            if (item.visible == false or item._filter_out == true or item.widget.visible == false) then
                 return 0,0
             end
             return item_fit(data,item,...)
@@ -128,8 +128,6 @@ local function new(data)
 
     -- Set the overloaded methods
     real_l.fit = real_fit
-
-    local l = data._internal.content_layout
 
     return real_l
 end

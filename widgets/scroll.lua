@@ -8,6 +8,8 @@ local button     = require( "awful.button"  )
 local beautiful  = require( "beautiful"     )
 local shape      = require( "gears.shape"   )
 local surface    = require( "gears.surface" )
+local theme      = require( "radical.theme" )
+local rad_item   = require( "radical.item"  )
 
 local module = {}
 
@@ -66,10 +68,11 @@ local function new(data)
     scroll_w[v].visible = true
     data.item_style({widget=scroll_w[v]},{color=data.bg_highlight})
     scroll_w[v]:connect_signal("mouse::enter",function()
-      data.item_style({widget=scroll_w[v]},{color=data.bg_alternate or beautiful.bg_focus})
+      --FIXME once the theme use a metatable chain, this should start working again
+      theme.update_colors({widget=scroll_w[v]},rad_item.item_flags.HOVER)
     end)
     scroll_w[v]:connect_signal("mouse::leave",function()
-      data.item_style({widget=scroll_w[v]},{color=data.bg_highlight})
+      theme.update_colors({widget=scroll_w[v]},rad_item.item_flags.NONE)
     end)
     scroll_w[v]:buttons( util.table.join( button({ }, 1, function()
       data["scroll_"..v](data)

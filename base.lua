@@ -91,7 +91,7 @@ local function filter(data)
       if tmp ~= v._filter_out then
         v.widget:emit_signal("widget::updated")
       end
-      if (not v._filter_out) and (not v._hidden) then
+      if (not v._filter_out) and (not v.widget.visible == false) then
         visible_counter = visible_counter + v.height
         data._internal.visible_item_count = data._internal.visible_item_count +1
         v.f_key = data._internal.visible_item_count
@@ -475,14 +475,14 @@ local function new(args)
 
   data.get_previous_item = function(_)
     local candidate,idx = internal.items[(data.current_index or 0)-1],(data.current_index or 0)-1
-    while candidate and (candidate._hidden or candidate._filter_out) and idx > 0 do
+    while candidate and (candidate.widget.visible == false or candidate._filter_out) and idx > 0 do
       candidate,idx = internal.items[idx - 1],idx-1
     end
     return (candidate or internal.items[data.rowcount])
   end
   data.get_next_item     = function(_)
     local candidate,idx = internal.items[(data.current_index or 0)+1],(data.current_index or 0)+1
-    while candidate and (candidate._hidden or candidate._filter_out) and idx <= data.rowcount do
+    while candidate and (candidate.widget.visible == false or candidate._filter_out) and idx <= data.rowcount do
       candidate,idx = internal.items[idx + 1],idx+1
     end
     return (candidate or internal.items[1])
@@ -602,9 +602,9 @@ local function new(args)
         current_item:set_selected(false,true)
       end
       data._start_at  = (data._start_at or 1) - 1
-      internal.items[data._start_at]._hidden = false
+      internal.items[data._start_at].widget:set_visible(false)
       data:emit_signal("_hidden::changed",internal.items[data._start_at])
-      internal.items[data._start_at+data.max_items]._hidden = true
+      internal.items[data._start_at+data.max_items].widget:set_visible(true)
       data:emit_signal("_hidden::changed",internal.items[data._start_at+data.max_items])
       filter(data)
 
@@ -623,9 +623,9 @@ local function new(args)
         current_item:set_selected(false,true)
       end
       data._start_at  = (data._start_at or 1) + 1
-      internal.items[data._start_at-1]._hidden = true
+      internal.items[data._start_at-1].widget:set_visible(true)
       data:emit_signal("_hidden::changed",internal.items[data._start_at-1])
-      internal.items[data._start_at-1+data.max_items]._hidden = false
+      internal.items[data._start_at-1+data.max_items].widget:set_visible(false)
       data:emit_signal("_hidden::changed",internal.items[data._start_at-1+data.max_items])
       filter(data)
 

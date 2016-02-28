@@ -13,9 +13,9 @@ local function return_data(tab, key)
 end
 
 -- Common method to set foreground and background color dependeing on state
-function module.update_colors(item)
+function module.update_colors(item, current_state_override)
   local state = item.state or {}
-  local current_state = state._current_key or nil
+  local current_state = current_state_override or state._current_key or nil
 
   local state_name = base.colors_by_id[current_state]
 
