@@ -75,6 +75,15 @@ local function hide_sub_menu(item,data)
   end
 end
 
+local function set_infoshapes(item, shapes)
+    if item.widget and item.widget.get_children_by_id then
+        local infoshape_widget = item.widget:get_children_by_id("infoshapes")[1]
+        if infoshape_widget then
+            infoshape_widget:set_infoshapes(shapes)
+        end
+    end
+end
+
 -- local registered_items = {}
 -- local is_watching = false
 -- local mouse_tracker = object{}
@@ -110,6 +119,7 @@ local function new_item(data,args)
       tooltip     = args.tooltip     or nil                                                                 ,
       style       = args.style       or data.item_style                                                     ,
       layout      = args.layout      or args.item_layout or nil                                             ,
+      infoshapes  = args.infoshapes  or nil                                                                 ,
       overlay_draw= args.overlay_draw or data.overlay_draw                                                  ,
       item_border_color = args.item_border_color or data.item_border_color or nil                           ,
     },
@@ -138,27 +148,7 @@ local function new_item(data,args)
     return data.fg
   end
 
-  -- Setup underlay and overlay
-  for k, name in ipairs {"underlay", "overlay"} do
-    item["set_"..name] = function(item,underlay)
-      if not item._internal.underlay_init then
-        data:add_colors_group(name)
-        item._internal.underlay_init = true
-      end
-
-      item._internal[name.."_content"] = underlay
-    end
-    item.get_underlay =  function(item)
-      return item._internal.underlay_content
-    end
-    item[name.."_alpha"] = args[name.."_alpha"]
-    item[name.."_style"] = args[name.."_style"]
-    item[name.."_align"] = args[name.."_align"]
-  end
-
   item.state         = theme.init_state(item)
-  item.underlay = args.underlay
-  item.overlay  = args.overlay
 
   for i=1,10 do
     item["button"..i] = args["button"..i]
@@ -201,6 +191,9 @@ local function new_item(data,args)
     item.state[module.item_flags.SELECTED] = true
     data._current_item = item
   end
+
+  -- Overlay and underlay
+  item.set_infoshapes = set_infoshapes
 
   item.set_icon = function (_,value)
     local icon_w = item._internal.icon_w

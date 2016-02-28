@@ -96,7 +96,6 @@ function module.setup_colors(data,args)
         or beautiful["menu_border_color_"..v.beautiful_name]
         or beautiful["border_color_"..v.beautiful_name]
         or (v.fallback and beautiful.border_color)
-      --priv["underlay_bg_"..k] = args["underlay_bg_"..k] or beautiful["menu_underlay_bg_"..v.beautiful_name] or beautiful["underlay_bg_"..v.beautiful_name]
   end
 
   -- Handle custom sections

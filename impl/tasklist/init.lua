@@ -17,6 +17,7 @@ local surface     = require( "gears.surface")
 local client_menu = require( "radical.impl.tasklist.client_menu")
 local theme       = require( "radical.theme")
 local rad_client  = require( "radical.impl.common.client")
+local shape = require("gears.shape")
 
 local sticky,urgent,instances,module = {extensions=require("radical.impl.tasklist.extensions")},{},{},{}
 local _cache = setmetatable({}, { __mode = 'k' })
@@ -126,22 +127,45 @@ local function unmanage_callback(c)
   _cache[c] = nil
 end
 
+local infoshape_template = {
+    ontop = {
+        text  = "ontop",
+        shape = shape.hexagon,
+        bg    =  beautiful.tasklist_bg_underlay,
+    },
+    float = {
+        text  = "float",
+        shape = shape.hexagon,
+        bg    =  beautiful.tasklist_bg_underlay,
+    },
+    sticky = {
+        text  = "sticky",
+        shape = shape.hexagon,
+        bg    =  beautiful.tasklist_bg_underlay,
+    },
+}
+
 -- Reload <float> <ontop> and <sticky> labels
-local function reload_underlay(c)
-  local udl,item = {},_cache[c]
-  if item then
-    if c.ontop then
-      udl[#udl+1] = "ontop"
+local function reload_infoshapes(c)
+    local item = _cache[c]
+
+    local infoshapes = {}
+
+    if item then
+        if c.ontop then
+            infoshapes[#infoshapes+1] = infoshape_template.ontop
+        end
+        if client.floating.get(c) then
+            infoshapes[#infoshapes+1] = infoshape_template.float
+        end
+        if c.sticky then
+            infoshapes[#infoshapes+1] = infoshape_template.sticky
+        end
+
+        item.infoshapes = infoshapes
+
+        item.widget:emit_signal("widget::updated")
     end
-    if client.floating.get(c) then
-      udl[#udl+1] = "float"
-    end
-    if c.sticky then
-      udl[#udl+1] = "sticky"
-    end
-    item.underlay = udl
-    item.widget:emit_signal("widget::updated")
-  end
 end
 
 -- Reload title and icon
@@ -180,10 +204,13 @@ local function create_client_item(c,screen)
   end
 
   item:connect_signal("mouse::enter", function()
-    item.overlay = {"1:23:45", c.pid}
+    item.infoshapes = {
+        {text = "1:23:45", bg = beautiful.tasklist_bg_overlay, align = "center"},
+        {text = c.pid    , bg = beautiful.tasklist_bg_overlay, align = "center"}
+    }
   end)
   item:connect_signal("mouse::leave", function()
-    item.overlay = nil
+    item.infoshapes = {}
   end)
 
   item.add_suffix = function(w,w2)
@@ -198,7 +225,7 @@ end
 local function add_client(c,screen)
   if not (c.skip_taskbar or c.hidden or c.type == "splash" or c.type == "dock" or c.type == "desktop") and c.screen == screen then
     local ret = create_client_item(c,screen)
-    reload_underlay(c)
+    reload_infoshapes(c)
     if capi.client.focus == c then
       ret.selected = true
     end
@@ -276,10 +303,7 @@ local function new(screen)
     disable_markup       = true                                                                          ,
     fg                   = beautiful.tasklist_fg                   or beautiful.fg_normal                ,
     bg                   = beautiful.tasklist_bg                   or beautiful.bg_normal                ,
-    underlay_style       = beautiful.tasklist_underlay_style       or radical.widgets.underlay.draw_arrow,
-    overlay_align        = "center"                                                                      ,
-    overlay_alpha        = 1                                                                             ,
-    overlay_bg           = beautiful.tasklist_bg_overlay                                                 ,
+--     overlay_bg           = beautiful.tasklist_bg_overlay                                                 ,
     icon_transformation  = beautiful.tasklist_icon_transformation                                        ,
     default_item_margins = beautiful.tasklist_default_item_margins                                       ,
     default_margins      = beautiful.tasklist_default_margins                                            ,
@@ -333,9 +357,9 @@ capi.client.connect_signal("property::urgent"   , urgent_callback    )
 capi.client.connect_signal("unmanage"           , unmanage_callback  )
 capi.client.connect_signal("focus"              , focus              )
 capi.client.connect_signal("unfocus"            , unfocus            )
-capi.client.connect_signal("property::sticky"   , reload_underlay    )
-capi.client.connect_signal("property::ontop"    , reload_underlay    )
-capi.client.connect_signal("property::floating" , reload_underlay    )
+capi.client.connect_signal("property::sticky"   , reload_infoshapes    )
+capi.client.connect_signal("property::ontop"    , reload_infoshapes    )
+capi.client.connect_signal("property::floating" , reload_infoshapes    )
 capi.client.connect_signal("property::name"     , reload_content     )
 capi.client.connect_signal("property::icon"     , reload_content     )
 capi.client.connect_signal("property::minimized", minimize_callback  )

@@ -1,19 +1,18 @@
 local setmetatable = setmetatable
-local beautiful = require( "beautiful"    )
-local color     = require( "gears.color"  )
-local cairo     = require( "lgi"          ).cairo
-local wibox     = require( "wibox"        )
-local checkbox  = require( "radical.widgets.checkbox"  )
-local fkey      = require( "radical.widgets.fkey"      )
-local underlay  = require( "radical.widgets.underlay"  )
-local theme     = require( "radical.theme"             )
-local util      = require( "awful.util"                )
-local margins2  = require( "radical.margins")
-local shape     = require( "gears.shape"   )
-local surface   = require( "gears.surface" )
+local beautiful    = require( "beautiful"                  )
+local color        = require( "gears.color"                )
+local cairo        = require( "lgi"                        ).cairo
+local wibox        = require( "wibox"                      )
+local checkbox     = require( "radical.widgets.checkbox"   )
+local fkey         = require( "radical.widgets.fkey"       )
+local infoshapes   = require( "radical.widgets.infoshapes" )
+local theme        = require( "radical.theme"              )
+local util         = require( "awful.util"                 )
+local margins2     = require( "radical.margins"            )
+local shape        = require( "gears.shape"                )
+local surface      = require( "gears.surface"              )
 
 local module = {}
-
 
 -- Add [F1], [F2] ... to items
 function module:setup_fkey(item,data)
@@ -29,44 +28,11 @@ function module:setup_fkey(item,data)
   item.get_f_key = function() return item._internal.f_key end
 end
 
--- Like an overlay, but under
-function module.paint_underlay(data,item,cr,width,height, name)
-  name = name or "underlay"
-  cr:save()
-  local state = item.state or {}
-  local current_state = state._current_key or nil
-  local state_name = theme.colors_by_id[current_state] or ""
-
-  local bg_color = item[name.."_bg_"..state_name] or data[name.."_bg_"..state_name] or data[name.."_bg"]
-  local style    = item[name.."_style"          ] or data[name.."_style"          ]
-  local alpha    = item[name.."_alpha"          ] or data[name.."_alpha"          ]
-  local align    = item[name.."_align"          ] or data[name.."_align"          ]
-
-  local udl = underlay.draw(item[name],{style=data.underlay_style,height=height,bg=bg_color, style = style})
-
-  if align == "center" then
-    local offset = (width-udl:get_width()-6)/2
-    cr:set_source_surface(udl,3 + offset)
-  else
-    cr:set_source_surface(udl,width-udl:get_width()-3)
-  end
-  cr:paint_with_alpha(data[name.."_alpha"])
-  cr:restore()
-end
-
 function module.after_draw_children(self, context, cr, width, height)
-  if self._item.overlay then
-    module.paint_underlay(self._data, self._item, cr, width, height, "overlay")
-  end
-
-  if self._item.overlay_draw then
-    self._item.overlay_draw(context,self._item,cr,width,height)
-  end
-
-  -- Draw the border, if any
-  if self._after_draw_children then
-    self._after_draw_children(self, context, cr, width, height)
-  end
+    --TODO get rid of this, use the stack container
+    if self._item.overlay_draw then
+        self._item.overlay_draw(context,self._item,cr,width,height)
+    end
 end
 
 -- Apply icon transformation
@@ -195,18 +161,6 @@ function module.setup_event(data,item,widget)
 --   end)
 end
 
--- Use all the space, let "align_fit" compute the right size
-local function textbox_fit(box,context,w,h)
-  return w,h
-end
-
--- Force the width or compute the minimum space
-local function align_fit(box,context,w,h)
-  local mar = util.table.join(box._data.item_style.margins,box._data.default_item_margins)
-  if box._item.width then return box._item.width - box._data.item_style.margins.LEFT - box._data.item_style.margins.RIGHT,h end
-  return box.first:fit(context,w,h)+wibox.widget.textbox.fit(box.second,context,w,h)+box.third:fit(context,w,h),h
-end
-
 -- Create the actual widget
 local function create_item(item,data,args)
 
@@ -230,13 +184,7 @@ local function create_item(item,data,args)
 
   -- Text
   local tb = wibox.widget.textbox()
-  tb.fit = data._internal.text_fit or textbox_fit
-  tb.draw = function(self, context, cr, width, height)
-    if item.underlay then
-      module.paint_underlay(data,item,cr,width,height)
-    end
-    wibox.widget.textbox.draw(self, context, cr, width, height)
-  end
+
   tb:set_text(item.text)
   item.set_text = function (_,value)
     if data.disable_markup then
@@ -260,6 +208,7 @@ local function create_item(item,data,args)
     item.widget = wibox.widget.base.make_widget_declarative {
         -- Widgets
         {
+
             -- Widget
             {
                 -- This is where the content is placed
@@ -276,7 +225,16 @@ local function create_item(item,data,args)
                     -- Attributes
                     layout = wibox.layout.fixed.horizontal
                 },
-                tb,
+                {
+                    -- Underlay and overlay
+                    tb,
+
+                    -- Attributes
+                    widget     = infoshapes,
+                    spacing    = 10,
+                    infoshapes = item.infoshapes,
+                    id         = "infoshapes",
+                },
                 {
                     -- Suffixes
 
@@ -314,9 +272,6 @@ local function create_item(item,data,args)
     item._internal.align    = item.widget:get_children_by_id("main_align" )[1]
 
     -- Override some methods
-    item.widget._after_draw_children = item.widget.after_draw_children
-    item.widget.after_draw_children  = module.after_draw_children
-    item._internal.align.fit         = data._internal.align_fit or align_fit
     item._internal.text_w            = tb
     item._internal.icon_w            = icon
 
@@ -335,11 +290,6 @@ local function create_item(item,data,args)
     -- Draw
     local item_style = item.style or data.item_style
     item_style(item,{})
-
-    -- Setup dynamic underlay
-    item:connect_signal("underlay::changed",function(_,udl)
-        item.widget:emit_signal("widget::updated")
-    end)
 
     -- Setup events
     module.setup_event(data,item)
