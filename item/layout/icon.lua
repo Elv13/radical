@@ -1,13 +1,11 @@
 local setmetatable = setmetatable
-local beautiful  = require( "beautiful"    )
-local color      = require( "gears.color"  )
-local cairo      = require( "lgi"          ).cairo
-local wibox      = require( "wibox"        )
-local checkbox   = require( "radical.widgets.checkbox" )
-local fkey       = require( "radical.widgets.fkey"         )
-local horizontal = require( "radical.item.layout.horizontal" )
-local util       = require( "awful.util"                )
-local margins2   = require("radical.margins")
+local beautiful    = require( "beautiful"                      )
+local color        = require( "gears.color"                    )
+local wibox        = require( "wibox"                          )
+local checkbox     = require( "radical.widgets.checkbox"       )
+local horizontal   = require( "radical.item.layout.horizontal" )
+local util         = require( "awful.util"                     )
+local margins2     = require( "radical.margins"                )
 
 local module = {}
 

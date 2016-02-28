@@ -8,6 +8,7 @@ local beautiful    = require( "beautiful"    )
 
 local module = {}
 
+--TODO broken
 local function new(data)
   local filter_tb = wibox.widget.textbox()
   local bg = wibox.widget.background()
@@ -17,7 +18,7 @@ local function new(data)
   filter_tb.fit = function(tb,context,width,height)
     return width,data.item_height
   end
-  filter_tb:set_underlay(data.filter_underlay,{alpha=data.filter_underlay_alpha,color=data.filter_underlay_color})
+--   filter_tb:set_underlay(data.filter_underlay,{alpha=data.filter_underlay_alpha,color=data.filter_underlay_color})
   data:connect_signal("filter_string::changed",function()
     local is_empty = data.filter_string == ""
     filter_tb:set_markup(" <b>".. data.filter_prefix .."</b> "..(is_empty and data.filter_placeholder or data.filter_string))

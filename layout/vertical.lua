@@ -19,32 +19,6 @@ local function item_fit(data,item,self,context, width,height)
     return w, item.height or h
 end
 
-function module.setup_text(item,data,text_w)
-    local text_w = item._internal.text_w
-    if not text_w then return end
-
-    text_w.draw = function(self,context, cr, width, height)
-        if item.underlay then
-            horizontal_item_layout.paint_underlay(data,item,cr,width,height)
-        end
-        wibox.widget.textbox.draw(self, context, cr, width, height)
-    end
-    text_w.fit = function(self,context,width,height) return width,height end
-
-    item.set_text = function (_,value)
-        if data.disable_markup then
-            text_w:set_text(value)
-        else
-            text_w:set_markup(value)
-        end
-        item._private_data.text = value
-    end
-
-    item:set_text(item._private_data.text)
-
-    return text_w
-end
-
 function module:setup_item(data,item,args)
     item._private_data._fit = wibox.widget.background.fit
     if item._internal.margin_w then
@@ -55,9 +29,6 @@ function module:setup_item(data,item,args)
             return item_fit(data,item,...)
         end
     end
-
-    -- Text need to take as much space as possible, override default
-    module.setup_text(item,data)
 
     -- Compute the minimum width
     if data.auto_resize and item._internal.margin_w then

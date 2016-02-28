@@ -81,15 +81,15 @@ local function is_in_tag(t,c)
   return false
 end
 
-local function reload_underlay(client,item)
-  local underlays = {}
+local function reload_infoshapes(client,item)
+  local infoshapes = {}
   for k,v in ipairs(client:tags()) do
-    underlays[#underlays+1] = v.name
+    infoshapes[#infoshapes+1] = {text = v.name}
   end
   if item then
-    item.underlay = underlays
+    item.infoshapes = infoshapes
   end
-  return underlays
+  return infoshapes
 end
 
 local function reload_highlight(i)
@@ -155,7 +155,7 @@ local function new(args)
     local c = item.client
     if c.screen ~= scr then return end
     client2.toggletag (t, c)
-    reload_underlay(c,item)
+    reload_infoshapes(c,item)
     if not auto_release then
       reload_highlight(item)
     end
@@ -170,7 +170,7 @@ local function new(args)
     local c = item.client
     if c.screen ~= scr then return end
     client2.movetotag(t, c)
-    reload_underlay(c,item)
+    reload_infoshapes(c,item)
     if not auto_release then
       reload_highlight(item)
     end
@@ -185,18 +185,18 @@ local function new(args)
       l:add( button_group({client = v, field = "maximized", focus = false, checked = function() return v.maximized end, onclick = function() v.maximized = not v.maximized end }))
       l:add( button_group({client = v, field = "sticky"   , focus = false, checked = function() return v.sticky    end, onclick = function() v.sticky    = not v.sticky    end }))
       l:add( button_group({client = v, field = "ontop"    , focus = false, checked = function() return v.ontop     end, onclick = function() v.ontop     = not v.ontop     end }))
-      l:add( button_group({client = v, field = "close"    , focus = false, checked = function() return false       end, onclick = function() v:kill()                      end }))
+      l:add( button_group({client = v, field = "close"    , focus = false, checked = function() return false       end, onclick = function() v:kill(); currentMenu.visible = false; end }))
       l.fit = function (s,c,w,h) return 5*h,h end
     end
 
-    local underlays = reload_underlay(v)
+    local underlays = reload_infoshapes(v)
 
     local i = currentMenu:add_item({
       text          = v.name,
       icon          = v.icon or module.default_icon,
       suffix_widget = not auto_release and l or nil,
       selected      = capi.client.focus and capi.client.focus == v,
-      underlay      = underlays,
+      infoshapes    = underlays,
       checkable     = (not auto_release) and v.screen == scr,
       checked       = v.screen == scr and (not auto_release and is_in_tag(t,v)) or nil,
       button1       = function(a,b,c,d,no_hide)

@@ -213,7 +213,13 @@ function module.setup_item(data,item,args)
         data._internal.scroll_w["down"]:emit_signal("widget::updated")
     end
 
+    -- Setup the infoshapes
+    if item._internal.infoshapes then
+        item.infoshapes = item._internal.infoshapes
+    end
+
     item.widget:emit_signal("widget::updated")
 end
 
 return module
+-- kate: space-indent on; indent-width 4; replace-tabs on;

@@ -146,13 +146,6 @@ mytextbox:set_tooltip("foo bar")
 
 ```
 
-### "Underlay"
-
-The "underlay" is the opposite of an overlay. Think of it as a background label.
-Radical add this option to all Awesome widget by calling the `set_underlay`
-method. The first argument is the text (or table of string) and the second is
-an array with the `style`, `color` and `alpha` keys.
-
 ## Options
 
 Radical offer a (very, very) wide range of options to allow the creation of rich
@@ -189,14 +182,6 @@ Multiple items can have multiple sets of options.
 | show_filter         | Show a filter widget at the bottom                 | boolean                       |
 | filter_string       | Default filter string                              | string                        |
 | fkeys_prefix        | Display F1-F12 indicators for easy navigation      | boolean                       |
-| underlay_alpha      | Underlay (see item options) opacity                | 0-1                           |
-| underlay_style      | Underlay (see item options) opacity                |                               |
-| underlay_align      | Underlay alignment                                 | "left" or "center"            |
-| underlay_bg         | Fallback background color for missing states       | color/gradient/pattern        |
-| overlay_alpha       | Overlay (see item options) opacity                 | 0-1                           |
-| overlay_style       | Overlay (see item options) opacity                 |                               |
-| overlay_align       | Overlay alignment                                  | "left" or "center"            |
-| overlay_bg          | Fallback background color for missing states       | color/gradient/pattern        |
 | filter_prefix       | Text to be shown at begenning of the filter string | string                        |
 | max_items           | Maximum number of items before showing scrollbar   | number                        |
 | enable_keyboard     | Enable or disable keyboard navigation / hooks      | boolean                       |
@@ -226,7 +211,6 @@ Multiple items can have multiple sets of options.
 | selected       | Select this item                             | boolean            |
 | checkable      | Is the item dual state (a checkbox)          | boolean            |
 | checked        | Is the item checked or not                   | boolean            |
-| underlay       | Text to render at the far-right of the item  | [array of] string  |
 | prefix_widget  | Widget to append at the begenning of the item| widget             |
 | suffix_widget  | Widget to append at the end of the item      | widget             |
 | style          | Custom item_style for this item              | item_style         |
@@ -239,12 +223,7 @@ Multiple items can have multiple sets of options.
 | button5        | Scroll down action                           | function           |
 | overlay        | See menu.overlay                             | function           |
 | margins        | Read/Write table (left,right,top and bottom) | dynamic table      |
-| underlay_alpha | Underlay (see item options) opacity          | 0-1                |
-| underlay_style | Underlay (see item options) opacity          |                    |
-| underlay_align | Underlay alignment                           | "left" or "center" |
-| overlay_alpha  | Overlay (see item options) opacity           | 0-1                |
-| overlay_style  | Overlay (see item options) opacity           |                    |
-| overlay_align  | Overlay alignment                            | "left" or "center" |
+| infoshapes     | See the infoshapes widget documentation      | array of infoshapes|
 | overlay_draw   | Draw a custom painter on top of the item     | draw function      |
 
 ###Colors options
@@ -371,7 +350,6 @@ Radical also use the some of the same theme options as awful.menu, plus some:
 | menu_opacity                 | Use your favorite compositor           | Number (0=0%, 1=100%)     |
 | menu_draw_underlay           | Function returning the underlay pixmap | function(array,width)     |
 | menu_icon_transformation     | The function used to draw the icon     | function(image,data,item) |
-| underlay_alpha               | Alpha for underlays                    | Number (0 to 1)           |
 | menu_corner_radius           | Arrow based menu corner radius         | Number (default = 10)     |
 | dock_corner_radius           | The dock menu type corner radius       | Number (default 10)       |
 | menu_outline_color           | Arrow menu outer border color          | String/Gradient/Pattern   |
@@ -383,11 +361,9 @@ allow masks such as desaturation, tinting, invert or some matrix to be applied
 on the pixmap before it is being drawn. This function take the path/surface as
 only parameter and return the transformed surface.
 
-Other elements can be added to items such as prefix, underlay and siffixes.
+Other elements can be added to items such as prefix and siffixes.
 Those elements sometime need extra color groups. The `add_color_group` method
-allow to register such new category. For a common example, the underlay, it
-will be possible to pass `underlay_bg_focus` or `underlay_fg_disabled` colors
-or any other registered states.
+allow to register such new category.
 
 Some generic menu can also register beautiful namespaces using the 
 `add_colors_namespace` method. For example, the tasklist namespace can be used
