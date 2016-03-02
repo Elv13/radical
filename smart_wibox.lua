@@ -165,7 +165,7 @@ end
 -- @param use_mouse Use the mouse position instead of the widget center as
 -- reference point.
 function wb_func:move_by_parent(geo, use_mouse)
-    local dps = placement.get_relative_points(d, rgeo, mode)
+    local dps = placement.get_relative_points(geo, mode)
 
     rawset(self, "possible_positions", dps)
 

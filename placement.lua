@@ -132,7 +132,7 @@ function module.get_relative_points(geo, mode)
             left   = {x = dgeo.x              , y = center_point.y       },
             right  = {x = dgeo.x + dgeo.width , y = center_point.y       },
             top    = {x = center_point.x      , y = dgeo.y               },
-            bottom = {x = center_point.y      , y = dgeo.y + dgeo.height },
+            bottom = {x = center_point.x      , y = dgeo.y + dgeo.height },
         }
 
         local s = geo.drawable.screen or screen.getbycoord(
@@ -188,7 +188,7 @@ function module.move_relative(d, points, preferred_positions)
         end
 
         -- No need to continue
-        if preferred_positions[k] == 1 then break end
+        if fit and preferred_positions[k] == 1 then break end
     end
 
     local pos_name = pref_name or next(does_fit)
