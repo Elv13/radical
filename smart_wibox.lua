@@ -165,6 +165,8 @@ end
 -- @param use_mouse Use the mouse position instead of the widget center as
 -- reference point.
 function wb_func:move_by_parent(geo, use_mouse)
+    if rawget(self, "is_relative") == false then return end
+
     local dps = placement.get_relative_points(geo, mode)
 
     rawset(self, "possible_positions", dps)
@@ -182,6 +184,12 @@ end
 
 function wb_func:set_hoffset(offset)
     
+end
+
+--- Set if the wibox take into account the other wiboxes.
+-- @tparam boolean val Take the other wiboxes position into account
+function wb_func:set_relative(val)
+    rawset(self, "is_relative", val)
 end
 
 --- A brilliant idea to totally turn the whole hierarchy on its head
@@ -223,6 +231,10 @@ local function create_auto_resize_widget(self, wdg, args)
 
     if args.shape then
         w:set_shape(args.shape, unpack(args.shape_args or {}))
+    end
+
+    if args.relative ~= nil then
+        w:set_relative(args.relative)
     end
 
     for k,v in ipairs{"shape_border_color", "shape_border_width"} do
