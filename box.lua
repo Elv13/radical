@@ -10,10 +10,16 @@ local function new(args)
   args.arrow_type = base.arrow_type.NONE
 
   local ret = context(args)
---   placement.centered (ret.wibox)
---   ret.wibox:set_valign("center")
---   ret.wibox:set_halign("center")
-  ret.wibox:set_shape (shape.rounded_rect, 10)
+
+  local w = ret.wibox
+
+  w:set_shape (shape.rounded_rect, 10)
+
+  local function f() placement.centered(w) end
+
+  w:connect_signal("property::width" ,f)
+  w:connect_signal("property::height",f)
+  f()
 
   return ret
 end
