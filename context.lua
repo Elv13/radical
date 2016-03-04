@@ -1,5 +1,3 @@
-local unpack       = unpack or table.unpack
-local rawset       = rawset
 local setmetatable = setmetatable
 local base         = require( "radical.base"        )
 local wibox        = require( "wibox"               )
