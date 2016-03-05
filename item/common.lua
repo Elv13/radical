@@ -1,4 +1,4 @@
-local wibox        = require( "wibox"                      )
+local wibox = require( "wibox" )
 
 local module = {}
 

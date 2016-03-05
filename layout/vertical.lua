@@ -1,22 +1,15 @@
 local setmetatable = setmetatable
-local print,ipairs  = print,ipairs
-local scroll    = require( "radical.widgets.scroll"   )
-local filter    = require( "radical.widgets.filter"   )
-local wibox     = require( "wibox"                    )
-local cairo     = require( "lgi"                      ).cairo
-local common    = require( "radical.common"           )
-local horizontal_item_layout= require( "radical.item.layout.horizontal" )
+local scroll = require( "radical.widgets.scroll" )
+local filter = require( "radical.widgets.filter" )
+local wibox  = require( "wibox"                  )
+local common = require( "radical.common"         )
 
 local module = {}
 
 --Get preferred item geometry
 local function item_fit(data,item,self,context, width,height)
-    local w, h = 0,0--item._internal.cache_w or 1,item._internal.cache_h or 1
-    if data.visible then
-        w, h = item._private_data._fit(self,context,width,height)
-    end
-
-    return w, item.height or h
+    local w, h = item._private_data._fit(self,context,width,height)
+    return w, item.height or h --TODO use a constraint widget
 end
 
 function module:setup_item(data,item,args)
@@ -27,9 +20,9 @@ function module:setup_item(data,item,args)
     item._internal.margin_w.fit = function(...) return item_fit(data,item,...) end
 
     -- Compute the minimum width
-    if data.auto_resize then
-        local fit_w = wibox.layout.margin.fit(item._internal.margin_w,{dpi=96},9999,9999)
-        local is_largest = item == data._internal.largest_item_w
+    if data.auto_resize then --FIXME this wont work if thext change
+        local fit_w = item._internal.margin_w:get_preferred_size()
+
         if fit_w < 1000 and (not data._internal.largest_item_w_v or data._internal.largest_item_w_v < fit_w) then
             data._internal.largest_item_w = item
             data._internal.largest_item_w_v = fit_w
