@@ -6,30 +6,36 @@ local checkbox     = require( "radical.widgets.checkbox"       )
 local horizontal   = require( "radical.item.layout.horizontal" )
 local util         = require( "awful.util"                     )
 local margins2     = require( "radical.margins"                )
+local common       = require( "radical.item.common"            )
 
 local module = {}
 
-local function icon_fit(data,...)
-  local w,h = wibox.widget.imagebox.fit(...)
-  --Try to retermine the limiting factor
-  if data._internal.layout.dir == "y" then
-    return data.icon_size or w,data.icon_size or h
-  else
-    return w,data.icon_size or h
-  end
+local function after_draw_children(self, context, cr, width, height)
+    --TODO get rid of this, use the stack container
+    if self._item.overlay_draw then
+        self._item.overlay_draw(context,self._item,cr,width,height)
+    end
+end
 
+local function icon_fit(data,...)
+    local w,h = wibox.widget.imagebox.fit(...)
+    --Try to retermine the limiting factor
+    if data._internal.layout.dir == "y" then
+        return data.icon_size or w,data.icon_size or h
+    else
+        return w,data.icon_size or h
+    end
 end
 
 local function icon_draw(self, context, cr, width, height)
-  local w,h = wibox.widget.imagebox.fit(self,context,width,height)
-  cr:save()
-  cr:translate((width-w)/2,0)
-  wibox.widget.imagebox.draw(self, context, cr, width, height)
-  cr:restore()
+    local w,h = wibox.widget.imagebox.fit(self,context,width,height)
+    cr:save()
+    cr:translate((width-w)/2,0)
+    wibox.widget.imagebox.draw(self, context, cr, width, height)
+    cr:restore()
 end
 
 local function create_item(item,data,args)
-
     if data.fkeys_prefix == true then
         local pref = wibox.widget.textbox()
 
@@ -40,7 +46,7 @@ local function create_item(item,data,args)
         end
     end
 
-    local icon = horizontal.setup_icon(horizontal,item,data)
+    local icon = common.setup_icon(item,data)
     icon.fit   = function(...) return icon_fit(data,...) end
     icon.draw  = icon_draw
 
@@ -128,7 +134,7 @@ local function create_item(item,data,args)
     item._internal.margin_w = item.widget:get_children_by_id("main_margin")[1]
     item._internal.text_w   = item.widget:get_children_by_id("main_text")[1]
     item._private_data._fit = wibox.widget.background.fit
-    w.after_draw_children   = horizontal.after_draw_children
+    w.after_draw_children   = after_draw_children
     w.fit                   = bg_fit
 
     -- Setup margins
@@ -142,7 +148,7 @@ local function create_item(item,data,args)
     end
 
     -- Setup events
-    horizontal.setup_event(data,item,w)
+    common.setup_event(data,item,w)
 
     return w
 end

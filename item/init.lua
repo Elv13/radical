@@ -135,9 +135,7 @@ local function new_item(data,args)
   item._private_data = private_data
   item._internal     = args._internal or {}
   theme.setup_item_colors(data,item,args)
---   item.get_y = function()
---     return (args.y and args.y >= 0) and args.y or data.height - (data.margins.top or data.border_width) - data.item_height --Hack around missing :fit call for last item
---   end
+
   item.get_height = function()
     return args.height or data.item_height or beautiful.menu_height or 30
   end
@@ -186,6 +184,12 @@ local function new_item(data,args)
     end
     item.state[module.item_flags.SELECTED] = true
     data._current_item = item
+  end
+
+  function item:set_hover(value)
+    local item_style = item.item_style or data.item_style
+    item.state[module.item_flags.HOVERED] = value and true or nil
+    item_style(item)
   end
 
   -- Overlay and underlay

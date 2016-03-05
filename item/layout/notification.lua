@@ -1,7 +1,8 @@
 local setmetatable = setmetatable
-local wibox     = require( "wibox"        )
+local wibox     = require( "wibox"                         )
 local horizontal= require( "radical.item.layout.horizontal")
 local margins2  = require( "radical.margins"               )
+local common    = require( "radical.item.common"           )
 
 local module = {}
 
@@ -31,7 +32,7 @@ local function create_item(item,data,args)
   local right = wibox.layout.fixed.horizontal()
 
   -- Icon
-  local icon = horizontal.setup_icon(horizontal,item,data)
+  local icon = common.setup_icon(item,data)
   icon.fit = function(...)
     local w,h = wibox.widget.imagebox.fit(...)
     return w+3,h
@@ -48,9 +49,6 @@ local function create_item(item,data,args)
   if ck then
     right:add(ck)
   end
-
-  -- Hover
-  horizontal:setup_hover(item,data)
 
   -- Sub_arrow
   local ar = horizontal:setup_sub_menu_arrow(item,data)
@@ -122,7 +120,7 @@ local function create_item(item,data,args)
   item.widget:set_fg(item._private_data.fg)
 
   -- Setup events
-  horizontal.setup_event(data,item)
+  common.setup_event(data,item)
 
   return bg
 end
