@@ -50,8 +50,6 @@ local function new(data)
             w,h = data.rowcount*(data.item_width or data.default_width),data.item_height
         end
 
-        data:emit_signal("layout_size",w,h)
-
         return w,h
     end
 

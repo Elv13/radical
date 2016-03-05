@@ -44,9 +44,6 @@ end
 local function adapt_size(data,w,h,screen)
     local max = get_max_size(data,screen)
 
-    -- Get the current size, then compare and ajust
-    local fit_w,fit_h = data._internal.layout:get_preferred_size({dpi=96,force_values=true},beautiful.default_height)
-
     -- Get the number of items minus the number of widgets
     -- This can be used to approximate the number of pixel to remove
     local visible_item = data.visible_row_count - #data._internal.widgets + 1
@@ -56,35 +53,23 @@ local function adapt_size(data,w,h,screen)
     if orientation == "vertical" and h > max then
         local wdg_height = data.widget_fit_height_sum
         --TODO this assume the widget size wont change
-    --     data.item_height = math.ceil((data.item_height*max)/h) --OLD
-        data.item_height = math.ceil((max-wdg_height)/visible_item)
-        w = data.item_height
-        h = max
-        data.item_width  = w
-        data.menu_width  = w
-        w = w + data.margins.left+data.margins.right
-        data.default_width = w
-        data._internal.private_data.width = w
+
+        data.item_height   = math.ceil((max-wdg_height)/visible_item)
+        data.item_width    = data.item_height
+        data.default_width = data.item_width
+
     elseif orientation == "horizontal" and w > max then
         --TODO merge this with above
-        local wdg_width = data.widget_fit_width_sum
         data.item_width = math.ceil((data.item_height*max)/w)
-        data._internal.private_data = data.item_width
-        w = max
         h = data.item_width
         data.item_height  = h
-        data.menu_height  = h
-        h = h + data.margins.bottom+data.margins.top
-    --     data.default_width = h
     end
     if data.icon_size and data.icon_size > w then
         data.icon_size = w
     end
 
-    data._internal.margin:emit_signal("widget::layout_changed")
-    data._internal.margin:emit_signal("widget::redraw_needed")
-
-    return w == 0 and 1 or w, h == 0 and 1 or h
+    data._internal.layout:emit_signal("widget::layout_changed")
+    data._internal.layout:emit_signal("widget::redraw_needed" )
 end
 
 -- Create the main wibox (lazy-loading)
@@ -127,7 +112,7 @@ local function setup_drawable(data)
 
     function data:set_visible(value)
         if internal.w then
-        internal.w.visible = value or false
+            internal.w.visible = value or false
         end
     end
 

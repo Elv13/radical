@@ -1,7 +1,6 @@
 local setmetatable = setmetatable
 local wibox      = require( "wibox"                          )
 local util       = require( "awful.util"                     )
-local horizontal = require( "radical.item.layout.horizontal" )
 local margins2   = require( "radical.margins"                )
 local common     = require( "radical.item.common"            )
 
