@@ -53,10 +53,7 @@ end
 local function new(data)
 
     local function real_fit(self,context,o_w,o_h,force_values)
-        if not data.visible then return 1,1 end
-        local w,h = compute_geo(data,o_w,o_h,force_values)
-        data:emit_signal("layout_size",w,h)
-        return w,h
+        return compute_geo(data,o_w,o_h,force_values)
     end
 
     -- Create the scroll widgets
