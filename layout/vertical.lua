@@ -13,7 +13,7 @@ local module = {}
 local function item_fit(data,item,self,context, width,height)
     local w, h = 0,0--item._internal.cache_w or 1,item._internal.cache_h or 1
     if data.visible then
-        w, h = item._private_data._fit({},self,context,width,height)
+        w, h = item._private_data._fit(self,context,width,height)
     end
 
     return w, item.height or h
@@ -21,17 +21,13 @@ end
 
 function module:setup_item(data,item,args)
     item._private_data._fit = wibox.widget.background.fit
-    if item._internal.margin_w then
-        item._internal.margin_w.fit = function(...)
-            if (item.visible == false or item._filter_out == true or item.widget.visible == false) then
-                return 0,0
-            end
-            return item_fit(data,item,...)
-        end
-    end
+
+    if not item._internal.margin_w then return end
+
+    item._internal.margin_w.fit = function(...) return item_fit(data,item,...) end
 
     -- Compute the minimum width
-    if data.auto_resize and item._internal.margin_w then
+    if data.auto_resize then
         local fit_w = wibox.layout.margin.fit(item._internal.margin_w,{dpi=96},9999,9999)
         local is_largest = item == data._internal.largest_item_w
         if fit_w < 1000 and (not data._internal.largest_item_w_v or data._internal.largest_item_w_v < fit_w) then

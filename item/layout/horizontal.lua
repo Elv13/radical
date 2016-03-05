@@ -1,64 +1,16 @@
 local setmetatable = setmetatable
 local beautiful    = require( "beautiful"                  )
-local color        = require( "gears.color"                )
-local cairo        = require( "lgi"                        ).cairo
 local wibox        = require( "wibox"                      )
 local checkbox     = require( "radical.widgets.checkbox"   )
 local fkey         = require( "radical.widgets.fkey"       )
 local infoshapes   = require( "radical.widgets.infoshapes" )
-local theme        = require( "radical.theme"              )
 local util         = require( "awful.util"                 )
 local margins2     = require( "radical.margins"            )
 local shape        = require( "gears.shape"                )
 local surface      = require( "gears.surface"              )
+local common       = require( "radical.item.common"        )
 
 local module = {}
-
--- Add [F1], [F2] ... to items
-function module:setup_fkey(item,data)
-  item.set_f_key = function(_,value)
-    item._internal.has_changed = true
-    item._internal.f_key = value
-    data:remove_key_hook("F"..value)
-    data:add_key_hook({}, "F"..value      , "press", function()
-      item.button1(data,menu)
-      data.visible = false
-    end)
-  end
-  item.get_f_key = function() return item._internal.f_key end
-end
-
-function module.after_draw_children(self, context, cr, width, height)
-    --TODO get rid of this, use the stack container
-    if self._item.overlay_draw then
-        self._item.overlay_draw(context,self._item,cr,width,height)
-    end
-end
-
--- Apply icon transformation
-function module.set_icon(self,image)
-  if self._data.icon_transformation then
-    self._item._original_icon = image
-    image = self._data.icon_transformation(image,self._data,self._item)
-  end
-  wibox.widget.imagebox.set_image(self,image)
-end
-
--- Setup the item icon
-function module:setup_icon(item,data)
-  local icon = wibox.widget.imagebox()
-  icon._data = data
-  icon._item = item
-  icon.set_image = module.set_icon
-  if item.icon then
-    icon:set_image(item.icon)
-  end
-
-  item.set_icon = function (_,value)
-    icon:set_image(value)
-  end
-  return icon
-end
 
 -- Show the checkbox
 function module:setup_checked(item,data)
@@ -78,15 +30,6 @@ function module:setup_checked(item,data)
       item._internal.has_changed = true
     end
     return ck
-  end
-end
-
--- Setup hover
-function module:setup_hover(item,data)
-  item.set_hover = function(_,value)
-    local item_style = item.item_style or data.item_style
-    item.state[-1] = value and true or nil
-    item_style(item,{})
   end
 end
 
@@ -112,97 +55,30 @@ function module:setup_sub_menu_arrow(item,data)
   end
 end
 
--- Proxy all events to the parent
-function module.setup_event(data,item,widget)
-  local widget = widget or item.widget
-
-  -- Setup data signals
-  widget:connect_signal("button::press",function(_,__,___,id,mod,geo)
-    local mods_invert = {}
-    for k,v in ipairs(mod) do
-      mods_invert[v] = i
+local function set_text(self, value)
+    if data.disable_markup then
+        self:set_text(value)
+    else
+        self:set_markup(value)
     end
-
-    item.state[4] =  true
-    data:emit_signal("button::press",item,id,mods_invert,geo)
-    item:emit_signal("button::press",data,id,mods_invert,geo)
-  end)
-  widget:connect_signal("button::release",function(wdg,__,___,id,mod,geo)
-    local mods_invert = {}
-    for k,v in ipairs(mod) do
-      mods_invert[v] = i
-    end
-    item.state[4] =  nil
-    data:emit_signal("button::release",item,id,mods_invert,geo)
-    item:emit_signal("button::release",data,id,mods_invert,geo)
-  end)
-  widget:connect_signal("mouse::enter",function(b,mod,geo)
-    data:emit_signal("mouse::enter",item,mod,geo)
-    item:emit_signal("mouse::enter",data,mod,geo)
-  end)
-  widget:connect_signal("mouse::leave",function(b,mod,geo)
-    data:emit_signal("mouse::leave",item,mod,geo)
-    item:emit_signal("mouse::leave",data,mod,geo)
-  end)
-
-  -- Always tracking mouse::move is expensive, only do it when necessary
---   local function conn(b,t)
---     item:emit_signal("mouse::move",item)
---   end
---   item:connect_signal("connection",function(_,name,count)
---     if name == "mouse::move" then
---       widget:connect_signal("mouse::move",conn)
---     end
---   end)
---   item:connect_signal("disconnection",function(_,name,count)
---     if count == 0 then
---       widget:connect_signal("mouse::move",conn)
---     end
---   end)
+    self._private_data.text = value
 end
 
 -- Create the actual widget
 local function create_item(item,data,args)
+    -- F keys
+    common.setup_fkey(item,data)
 
-  -- F keys
-  module:setup_fkey(item,data)
+    -- Icon
+    local icon = common.setup_icon(item,data)
 
-  -- Icon
-  local icon = module:setup_icon(item,data)
-  icon.fit = function(...)
-    local w,h = wibox.widget.imagebox.fit(...)
-    return w+3,h
-  end
-
-  if data.icon_per_state == true then
-    item:connect_signal("state::changed",function(i,d,st)
-      if item._original_icon and data.icon_transformation then
-        wibox.widget.imagebox.set_image(icon,data.icon_transformation(item._original_icon,data,item))
-      end
-    end)
-  end
-
-  -- Text
-  local tb = wibox.widget.textbox()
-
-  tb:set_text(item.text)
-  item.set_text = function (_,value)
-    if data.disable_markup then
-      tb:set_text(value)
-    else
-      tb:set_markup(value)
+    if data.icon_per_state == true then --TODO create an icon widget, see item/common.lua
+        item:connect_signal("state::changed",function(i,d,st)
+            if item._original_icon and data.icon_transformation then
+                wibox.widget.imagebox.set_image(icon,data.icon_transformation(item._original_icon,data,item))
+            end
+        end)
     end
-    item._private_data.text = value
-  end
-
-  -- Hover
-  module:setup_hover(item,data)
-
-  -- Overlay
-  item.set_overlay = function(_,value)
-    item._private_data.overlay = value
-    item.widget:emit_signal("widget::updated")
-  end
 
     -- Define the item layout
     item.widget = wibox.widget.base.make_widget_declarative {
@@ -219,7 +95,11 @@ local function create_item(item,data,args)
 
                     -- Widget
                     data.fkeys_prefix and fkey(data,item) or nil,
-                    icon                                        ,
+                    {
+                        icon                                    ,
+                        right  = 3                              ,
+                        widget = wibox.layout.margin            ,
+                    },
                     args.prefix_widget                          ,
 
                     -- Attributes
@@ -227,7 +107,13 @@ local function create_item(item,data,args)
                 },
                 {
                     -- Underlay and overlay
-                    tb,
+                    {
+                        -- The main textbox
+                        id            = "main_text"         ,
+                        _private_data = item._private_data  ,
+                        text          = item.text           ,
+                        widget        = wibox.widget.textbox,
+                    },
 
                     -- Attributes
                     widget     = infoshapes,
@@ -270,10 +156,11 @@ local function create_item(item,data,args)
     -- Make some widgets easier to access
     item._internal.margin_w = item.widget:get_children_by_id("main_margin")[1]
     item._internal.align    = item.widget:get_children_by_id("main_align" )[1]
+    item._internal.text_w   = item.widget:get_children_by_id("main_text"  )[1]
+    item._internal.icon_w   = icon
 
     -- Override some methods
-    item._internal.text_w            = tb
-    item._internal.icon_w            = icon
+    item._internal.text_w.set_text = set_text
 
     -- Export the margin
     local mrgns = margins2(
@@ -292,7 +179,7 @@ local function create_item(item,data,args)
     item_style(item,{})
 
     -- Setup events
-    module.setup_event(data,item)
+    common.setup_event(data,item)
 
     return item.widget
 end

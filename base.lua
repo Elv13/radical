@@ -68,17 +68,6 @@ theme.register_color(module.item_flags.USED      , "used"      , "used"      , t
 theme.register_color(module.item_flags.CHECKED   , "checked"   , "checked"   , true )
 theme.register_color(module.item_flags.ALTERNATE , "alternate" , "alternate" , true )
 theme.register_color(module.item_flags.HIGHLIGHT , "highlight" , "highlight" , true )
---     register_color(item_flags.HEADER    , ""
---     register_color(item_flags.USR1      , ""
---     register_color(item_flags.USR2      , ""
---     register_color(item_flags.USR3      , ""
---     register_color(item_flags.USR4      , ""
---     register_color(item_flags.USR5      , ""
---     register_color(item_flags.USR6      , ""
---     register_color(item_flags.USR7      , ""
---     register_color(item_flags.USR8      , ""
---     register_color(item_flags.USR9      , ""
---     register_color(item_flags.USR10     , ""
 
 
 local function filter(data)

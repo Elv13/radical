@@ -3,6 +3,7 @@ local wibox      = require( "wibox"                          )
 local util       = require( "awful.util"                     )
 local horizontal = require( "radical.item.layout.horizontal" )
 local margins2   = require( "radical.margins"                )
+local common     = require( "radical.item.common"            )
 
 local function create_item(item,data,args)
 
@@ -39,7 +40,7 @@ local function create_item(item,data,args)
     end
 
     -- Setup events
-    horizontal.setup_event(data, item, w)
+    common.setup_event(data, item, w)
 
     return w
 end
