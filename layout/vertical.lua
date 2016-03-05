@@ -99,7 +99,8 @@ local function new(data)
             data._internal.scroll_w and data._internal.scroll_w["down"] or nil,
             data.show_filter and {
                 id     = "filter_widget",
-                widget = filter(data) --FIXME for some reason it doesn't show up
+                data   = data,
+                widget = filter
             } or nil,
 
             -- Attributes
@@ -120,7 +121,6 @@ local function new(data)
     data._internal.content_layout = real_l:get_children_by_id( "content_layout" )[1]
     data._internal.suf_l          = real_l:get_children_by_id( "suffix_layout"  )[1]
     data._internal.pref_l         = real_l:get_children_by_id( "prefix_layout"  )[1]
-    data._internal.filter_tb      = real_l:get_children_by_id( "filter_widget"  )[1]
 
     -- Set the overloaded methods
     real_l.fit = real_fit
