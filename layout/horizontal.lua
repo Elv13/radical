@@ -1,45 +1,27 @@
 local setmetatable = setmetatable
-local print,pairs = print,pairs
-local unpack=unpack
-local util      = require( "awful.util"       )
-local button    = require( "awful.button"     )
-local checkbox  = require( "radical.widgets.checkbox" )
-local wibox     = require( "wibox" )
-local common    = require( "radical.common"           )
-local item_layout = require("radical.item.layout.icon")
+local wibox        = require( "wibox"          )
+local common       = require( "radical.common" )
 
 local module = {}
 
 function module:setup_item(data,item,args)
-  local text_w = item._internal.text_w
+    -- Compute the minimum width
+    if data.auto_resize then --FIXME this wont work if thext change
+        local _, fit_h = item._internal.margin_w:get_preferred_size()
 
-  -- Setup text
-  item.set_text = function (_,value)
-    if data.disable_markup then
-      text_w:set_text(value)
-    else
-      text_w:set_markup(value)
+        if not data._internal.largest_item_h_v or data._internal.largest_item_h_v < fit_h then
+            data._internal.largest_item_h   = item
+            data._internal.largest_item_h_v = fit_h
+        end
     end
-    if data.auto_resize then
-      local fit_w,fit_h = text_w:get_preferred_size()
-      local is_largest = item == data._internal.largest_item_h
-      --TODO find new largest is item is smaller
-      if not data._internal.largest_item_h_v or data._internal.largest_item_h_v < fit_h then
-        data._internal.largest_item_h =item
-        data._internal.largest_item_h_v = fit_h
-      end
-    end
-  end
-
-  item:set_text(item._private_data.text)
-
+    item:set_text(item._private_data.text)
 end
 
 --Get preferred item geometry
-local function item_fit(data,item,self, content, width, height)
-  if not data.visible then return 1,1 end
-  local w, h = item._private_data._fit(self,content,width,height) --TODO port to new context API
-  return data.item_width or 70, item._private_data.height or h --TODO broken
+local function item_fit(data,item,self, context, width, height)
+    local w, h = item._private_data._fit(self,context,width,height) --TODO port to new context API
+
+    return data.item_width or w, h --TODO broken
 end
 
 local function new(data)

@@ -55,15 +55,6 @@ function module:setup_sub_menu_arrow(item,data)
   end
 end
 
-local function set_text(self, value)
-    if data.disable_markup then
-        self:set_text(value)
-    else
-        self:set_markup(value)
-    end
-    self._private_data.text = value
-end
-
 -- Create the actual widget
 local function create_item(item,data,args)
     -- F keys
@@ -110,6 +101,7 @@ local function create_item(item,data,args)
                     {
                         -- The main textbox
                         id            = "main_text"         ,
+                        _data         = data                ,
                         _private_data = item._private_data  ,
                         text          = item.text           ,
                         widget        = wibox.widget.textbox,
@@ -158,9 +150,6 @@ local function create_item(item,data,args)
     item._internal.align    = item.widget:get_children_by_id("main_align" )[1]
     item._internal.text_w   = item.widget:get_children_by_id("main_text"  )[1]
     item._internal.icon_w   = icon
-
-    -- Override some methods
-    item._internal.text_w.set_text = set_text
 
     -- Export the margin
     local mrgns = margins2(

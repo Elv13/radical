@@ -192,6 +192,30 @@ local function new_item(data,args)
     item_style(item)
   end
 
+  function item:set_text(text)
+    local text_w = item._internal.text_w
+    if not text_w then return end
+
+    if data.disable_markup then
+      text_w:set_text(text)
+    else
+      text_w:set_markup(text)
+    end
+
+    if data.auto_resize then
+      local fit_w,fit_h = text_w:get_preferred_size()
+      local is_largest = item == data._internal.largest_item_h
+
+      --TODO find new largest is item is smaller
+--       if not data._internal.largest_item_h_v or data._internal.largest_item_h_v < fit_h then
+--         data._internal.largest_item_h =item
+--         data._internal.largest_item_h_v = fit_h
+--       end
+    end
+
+    item._private_data.text = text
+  end
+
   -- Overlay and underlay
   item.set_infoshapes = set_infoshapes
 
