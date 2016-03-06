@@ -56,8 +56,8 @@ local function get_group_extents(self, group, height)
 end
 
 -- Add the shape to the context
-local function draw_shape2(self, cr, width, height, ...)
-    local shape = self.shape or default_shape
+local function draw_shape2(self, infoshape, cr, width, height, ...)
+    local shape = infoshape.shape or self._default_shape or default_shape
 
     if shape then
         shape(cr, width, height, ...)
@@ -73,15 +73,15 @@ local function draw_shape(self, cr, width, height, infoshape)
     local w,h = extents.width + 2*height, height - 2*padding
 
     -- Draw the shape
-    draw_shape2(infoshape, cr, w, h) --TODO support padding, shape args
+    draw_shape2(self, infoshape, cr, w, h) --TODO support padding, shape args
 
     -- The border
     local border_width = infoshape.border_width or self._shape_border_width or beautiful.infoshape_shape_border_width
     local border_color = infoshape.border_color or self._shape_border_color or beautiful.infoshape_shape_border_color
-    if self._shape_border and border_color then
-        cr:set_source(color())
+    if border_width and border_color then
+        cr:set_source(color(border_color))
         cr:set_line_width(border_width)
-        cr:srtoke_preserve()
+        cr:stroke_preserve()
     end
 
     -- The background
@@ -262,9 +262,19 @@ function infoshape:set_infoshapes(args)
     self:emit_signal("widget::redraw_needed")
 end
 
---TODO use beautiful
-function infoshape:set_default_shape(shape)
-    default_shape = shape
+--TODO fallback beautiful
+function infoshape:set_shape(shape)
+    self._default_shape = shape
+end
+
+--TODO fallback beautiful
+function infoshape:set_shape_border_color(col)
+    self._shape_border_color = col
+end
+
+--TODO fallback beautiful
+function infoshape:set_shape_border_width(col)
+    self._shape_border_width = col
 end
 
 function infoshape:set_default_font_description(desc)
