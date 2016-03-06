@@ -138,7 +138,7 @@ local function new(args)
     args.internal.layout_func = orientation == "vertical" and vertical or horizontal
     args.layout               = args.layout or args.internal.layout_func
     args.item_style           = args.item_style or item.style
-      args.item_layout          = args.item_layout or item_layout
+    args.item_layout          = args.item_layout or item_layout
     args[length_inv]          = args[length_inv] or 40
 
     -- Create the dock

@@ -16,7 +16,7 @@ local capi = { mouse = mouse, screen = screen , keygrabber = keygrabber, root=ro
 
 local module = {
   arrow_type = {
-    NONE     = 0,
+    NONE     = 0, --TODO move to theme.state or something
     PRETTY   = 1,
     CENTERED = 2,
   },
@@ -58,6 +58,7 @@ local module = {
   colors_by_id = theme.colors_by_id
 }
 
+--TODO move to theme/init.lua
 theme.register_color(module.item_flags.DISABLED  , "disabled"  , "disabled"  , true )
 theme.register_color(module.item_flags.URGENT    , "urgent"    , "urgent"    , true )
 theme.register_color(module.item_flags.SELECTED  , "focus"     , "focus"     , true )
@@ -354,6 +355,8 @@ local function new(args)
       disable_markup  = args.disable_markup or false,
       x               = args.x or 0,
       y               = args.y or 0,
+      shape           = args.shape or nil,
+      item_shape      = args.item_shape,
       sub_menu_on     = args.sub_menu_on or module.event.SELECTED,
       select_on       = args.select_on or module.event.HOVER,
       opacity         = args.opacity or beautiful.menu_opacity or 1,
