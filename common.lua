@@ -51,13 +51,13 @@ function module.get_margins(data)
 
     if not internal._margins then
         local ret = {
-            left   = data.border_width+(data.default_margins.left
+            left   = ((data.default_margins.left or data.default_margins.LEFT)
                         or (data.style and data.style.margins.LEFT   ) or 0),
-            right  = data.border_width+(data.default_margins.right
+            right  = ((data.default_margins.right or data.default_margins.RIGHT)
                         or (data.style and data.style.margins.RIGHT  ) or 0),
-            top    = data.border_width+(data.default_margins.top
+            top    = ((data.default_margins.top or data.default_margins.TOP)
                         or (data.style and data.style.margins.TOP    ) or 0),
-            bottom = data.border_width+(data.default_margins.bottom
+            bottom = ((data.default_margins.bottom or data.default_margins.BOTTOM)
                         or (data.style and data.style.margins.BOTTOM ) or 0),
         }
 

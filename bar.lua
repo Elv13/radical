@@ -1,28 +1,44 @@
-local setmetatable,unpack,table = setmetatable,unpack,table
+local setmetatable = setmetatable
 local base       = require( "radical.base"                    )
-local color      = require( "gears.color"                     )
 local wibox      = require( "wibox"                           )
-local beautiful  = require( "beautiful"                       )
 local item_style = require( "radical.item.style.arrow_single" )
 local item_layout= require( "radical.item.layout.horizontal"  )
 local common     = require( "radical.common"                  )
+local shape      = require( "gears.shape"                     )
 
 local module = {}
 
 local function setup_drawable(data)
     local internal = data._internal
 
-    internal.layout       = internal.layout_func or wibox.layout.fixed.horizontal()
-    internal.margin       = wibox.layout.margin(internal.layout)
-    internal.layout._data = data
-
-    if internal.layout.set_spacing and data.spacing then
-        internal.layout:set_spacing(data.spacing)
-    end
+    -- Use a background to make the border work
+    internal.widget = wibox.widget.base.make_widget_declarative {
+        {
+            {
+                id      = "main_layout"      ,
+                spacing = data.spacing or nil,
+                _data   = data               ,
+                layout  = internal.layout_func or wibox.layout.fixed.horizontal
+            },
+            id     = "main_margin"      ,
+            layout = wibox.layout.margin,
+        },
+        shape              = data.shape or shape.rectangle or nil,
+        shape_border_width = data.border_width                   ,
+        shape_border_color = data.border_color                   ,
+        widget             = wibox.widget.background             ,
+    }
+    internal.layout       = internal.widget:get_children_by_id("main_layout")[1]
+    internal.margin       = internal.widget:get_children_by_id("main_margin")[1]
 
     --Getters
     data.get_visible = function() return true end
     data.get_margins = common.get_margins
+    function data:get_widget()
+        return internal.widget
+    end
+
+    data:get_margins()
 
     if data.style then
         data.style(data)
@@ -33,6 +49,7 @@ end
 
 local function new(args)
     local args                   = args                         or {}
+    args.border_width            = args.border_width            or 0
     args.internal                = args.internal                or {}
     args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
     args.internal.setup_item     = args.internal.setup_item     or common.setup_item
@@ -42,7 +59,7 @@ local function new(args)
 
     local ret = base(args)
 
-    return ret,ret._internal.margin
+    return ret,ret._internal.widget
 end
 
 function module.flex(args)

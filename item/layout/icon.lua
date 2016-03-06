@@ -11,6 +11,7 @@ local common       = require( "radical.item.common"            )
 local module = {}
 
 local function after_draw_children(self, context, cr, width, height)
+    wibox.widget.background.after_draw_children(self, context, cr, width, height)
     --TODO get rid of this, use the stack container
     if self._item.overlay_draw then
         self._item.overlay_draw(context,self._item,cr,width,height)

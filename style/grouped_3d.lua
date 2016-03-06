@@ -1,6 +1,7 @@
 local setmetatable = setmetatable
-local base = require( "radical.base" )
-local color     = require( "gears.color"      )
+local base   = require( "radical.base" )
+local color  = require( "gears.color"  )
+local shape  = require( "gears.shape"  )
 
 local module = {
   margins = {
@@ -11,7 +12,7 @@ local module = {
   }
 }
 
-local function rounded_rect(cr,x,y,w,h,radius)
+local function rounded_rect(cr,x,y,w,h,radius) --TODO port to shape API
   cr:save()
   cr:translate(x,y)
   cr:move_to(0,radius)
