@@ -95,7 +95,14 @@ local function get_wibox(data, screen)
         adapt_size(data, w.width, w.height, 1)
     end)
 
-    placement.pin(w, placement.corner, "left", screen or 1)
+    local f = nil
+    if beautiful.dock_always_show then
+        f = placement.attach_struts
+    else
+        f = placement.attach
+    end
+
+    f(w, placement.align, "left", screen or 1)
 
     return w
 end

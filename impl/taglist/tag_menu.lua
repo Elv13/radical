@@ -120,7 +120,7 @@ local function new(t)
   local mainMenu2 = menu{layout=radical.layout.grid,column=6,}
 
   -- TODO port to async
-  local f = io.popen('find '..config.iconPath .. "tags/ -maxdepth 1 -iname \"*.png\" -type f","r")
+  local f = io.popen('find '..config.iconPath .. "tags_invert/ -maxdepth 1 -iname \"*.png\" -type f","r")
   local counter = 0
   while true do
     local file = f:read("*line")

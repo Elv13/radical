@@ -19,7 +19,7 @@ local function generic(_, args)
     }
 
     local function draw(item)
-        item.widget:set_shape(args.shape, unpack(args.shape_args or {}))
+        item.widget:set_shape(args.shape or item.shape, unpack(args.shape_args or {}))
         item.widget:set_shape_border_width(item.border_width)
         theme.update_colors(item)
     end

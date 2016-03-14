@@ -14,6 +14,7 @@ local wibox     = require( "wibox"                    )
 local tag       = require( "awful.tag"                )
 local color     = require( "gears.color"              )
 local cairo     = require( "lgi"                      ).cairo
+local shape     = require( "gears.shape"              )
 
 local default = {width=90,height=30,radius=40,base_radius=60}
 
@@ -114,14 +115,28 @@ function module.radial_client_select(args)
         data.indicator.cr:set_operator(cairo.Operator.SOURCE)
       end
       data.indicator.cr:set_source_rgb(1,0,0)
-      data.indicator.cr:arc             ( data.width/2 + (default.base_radius-20)*math.cos(angle),data.width/2 + (default.base_radius-20)*math.sin(angle),5,0,2*math.pi  )
-      data.indicator.cr:close_path()
+
+      -- The Inner dot around the dotted circle
+      local littledot_rad = 5
+      local dot = shape.transform(shape.circle) : translate(
+        data.width/2 + (default.base_radius-20)*math.cos(angle) -littledot_rad,
+        data.width/2 + (default.base_radius-20)*math.sin(angle) -littledot_rad
+      )
+
+      dot(data.indicator.cr, 2*littledot_rad, 2*littledot_rad)
       data.indicator.cr:fill()
+
+      -- The little arc on top of the border
       data.indicator.cr:set_line_width(4)
       data.indicator.cr:arc( data.width/2,data.height/2,default.radius + default.base_radius ,angle-0.15,angle+0.15  )
       data.indicator.cr:stroke()
-      data.indicator.cr:arc             ( data.width/2+170,data.height/2,10,0,2*math.pi  )
-      data.indicator.cr:close_path()
+
+      -- The Big red dot TODO make it move
+      dot = shape.transform(shape.circle) : translate(
+        data.width/2+170 -2*littledot_rad,
+        data.height/2    -2*littledot_rad
+      )
+      dot(data.indicator.cr, 4*littledot_rad, 4*littledot_rad)
       data.indicator.cr:fill()
       data.angle_cache = data.angle
     end

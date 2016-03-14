@@ -8,21 +8,6 @@ local tag_list = nil
 
 local module = {}
 
-local fallback_layouts = {
-  suits.floating,
-  suits.tile,
-  suits.tile.left,
-  suits.tile.bottom,
-  suits.tile.top,
-  suits.fair,
-  suits.fair.horizontal,
-  suits.spiral,
-  suits.spiral.dwindle,
-  suits.max,
-  suits.max.fullscreen,
-  suits.magnifier
-}
-
 local function createTagList(aScreen,args)
   if not tag_list then
     tag_list = require("radical.impl.taglist")
@@ -62,7 +47,8 @@ end
 function module.layouts(menu,layouts)
   local cur = awful.layout.get(awful.tag.getscreen(awful.tag.selected(capi.client.focus and capi.client.focus.screen)))
   local screenSelect = menu or radical.context {}
-  local layouts = layouts or awful.layout.layouts or fallback_layouts
+
+  local layouts = layouts or awful.layout.layouts
   for i, layout_real in ipairs(layouts) do
     local layout2 = awful.layout.getname(layout_real)
     local is_current = cur and ((layout_real == cur) or (layout_real.name == cur.name))
@@ -107,13 +93,15 @@ function module.layout_item(menu,args)
 
   local function update()
     local layout = awful.layout.getname(awful.layout.get(screen))
-    local ic = beautiful["layout_small_" ..layout] or beautiful["layout_" ..layout]
+    local ic = beautiful["layout_" ..layout]
     item.icon = ic
   end
   update()
 
   awful.tag.attached_connect_signal(screen, "property::selected", update)
   awful.tag.attached_connect_signal(screen, "property::layout"  , update)
+
+  return item
 end
 
 return setmetatable(module, { __call = function(_, ...) return module.listTags(...) end })

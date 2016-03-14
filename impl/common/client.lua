@@ -62,7 +62,7 @@ end
 function module.screenshot(clients,geo)
   if not clients then return end
 
-  local prev_menu= radical.context({layout=radical.layout.horizontal,item_width=140,item_height=140,icon_size=100,
+  local prev_menu= radical.context({layout=radical.layout.horizontal,item_layout=radical.item.layout.centerred,item_width=140,item_height=140,icon_size=100,
       arrow_type=radical.base.arrow_type.CENTERED,enable_keyboard=false,item_style=radical.item.style.rounded})
   local t = type(clients)
   if t == "client" then
