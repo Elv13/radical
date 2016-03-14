@@ -26,7 +26,7 @@ theme.register_color(MINIMIZED , "minimized" , "tasklist_minimized" , true )
 
 -- Default button implementation
 module.buttons = {
-  [1] = function (c)
+  [1] = function(c,menu,item,button_id,mod, geo)
     if c == capi.client.focus then
       c.minimized = true
     else
@@ -42,16 +42,18 @@ module.buttons = {
       c:raise()
     end
   end,
-  [3] = function(c)
+  [3] = function(c,menu,item,button_id,mod, geo)
     client_menu.client = c
     local menu = client_menu()
+    menu.parent_geometry = geo
     menu.visible = not menu.visible
+    menu._internal.w:move_by_parent(geo, "cursor")
   end,
-  [4] = function ()
+  [4] = function(c,menu,item,button_id,mod, geo)
     client.focus.byidx(1)
     if capi.client.focus then capi.client.focus:raise() end
   end,
-  [5] = function ()
+  [5] = function(c,menu,item,button_id,mod, geo)
     client.focus.byidx(-1)
     if capi.client.focus then capi.client.focus:raise() end
   end
@@ -203,14 +205,14 @@ local function create_client_item(c,screen)
     item.state[MINIMIZED] = true
   end
 
-  item:connect_signal("mouse::enter", function()
-    item.infoshapes = {
-        {text = "1:23:45", bg = beautiful.tasklist_bg_overlay, align = "center"},
-        {text = c.pid    , bg = beautiful.tasklist_bg_overlay, align = "center"}
-    }
-  end)
+--   item:connect_signal("mouse::enter", function()
+--     item.infoshapes = {
+--         {text = "1:23:45", bg = beautiful.tasklist_bg_overlay, align = "center"},
+--         {text = c.pid    , bg = beautiful.tasklist_bg_overlay, align = "center"}
+--     }
+--   end)
   item:connect_signal("mouse::leave", function()
-    item.infoshapes = {}
+--     item.infoshapes = {}
   end)
 
   item.add_suffix = function(w,w2)
@@ -334,9 +336,9 @@ local function new(screen)
 
   load_clients(tag.selected(screen))
 
-  menu:connect_signal("button::press",function(menu,item,button_id,mod)
+  menu:connect_signal("button::press",function(menu,item,button_id,mod,geo)
     if module.buttons and module.buttons[button_id] then
-      module.buttons[button_id](item.client,menu,item,button_id,mod)
+      module.buttons[button_id](item.client,menu,item,button_id,mod,geo)
     end
   end)
 
@@ -344,7 +346,7 @@ local function new(screen)
     display_screenshot(i.client,geo,true)
   end)
 
-  return menu,menu._internal.layout
+  return menu,menu._internal.widget
 end
 
 function module.item(client)

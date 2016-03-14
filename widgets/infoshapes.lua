@@ -41,7 +41,7 @@ end
 
 local function get_extents(text, height)
     local l = init_pango(height)
-    l.text = text
+    l.text = text or ""
     return l:get_pixel_extents()
 end
 

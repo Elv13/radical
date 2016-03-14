@@ -38,9 +38,11 @@ local cache = setmetatable({}, { __mode = 'k' })
 
 module.buttons = { [1] = awful.tag.viewonly,
                       [2] = awful.tag.viewtoggle,
-                      [3] = function(q,w,e,r)
-                              local menu = tag_menu(q)
+                      [3] = function(t,menu,item,button_id,mod,geo)
+                              local menu = tag_menu(t)
+                              menu.parent_geometry = geo
                               menu.visible = true
+                              menu._internal.w:move_by_parent(geo, "cursor")
                             end,
                       [4] = function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end,
                       [5] = function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end,
@@ -117,10 +119,10 @@ local function create_item(t,s)
   end
 --   menu:move(item,index)
 
-  menu:connect_signal("button::press",function(menu,item,button_id,mod)
+  menu:connect_signal("button::press",function(menu,item,button_id,mod,geo)
     if module.buttons and module.buttons[button_id] then
       if item.tag[1] then
-        module.buttons[button_id](item.tag[1],menu,item,button_id,mod)
+        module.buttons[button_id](item.tag[1],menu,item,button_id,mod,geo)
       else
         print("Invalid tag")
       end

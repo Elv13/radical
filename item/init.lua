@@ -120,6 +120,7 @@ local function new_item(data,args)
       style       = args.style       or data.item_style                                                     ,
       layout      = args.layout      or args.item_layout or nil                                             ,
       infoshapes  = args.infoshapes  or nil                                                                 ,
+      shape       = args.shape       or data.item_shape                                                     ,
       overlay_draw= args.overlay_draw or data.overlay_draw                                                  ,
       item_border_color = args.item_border_color or data.item_border_color or nil                           ,
     },

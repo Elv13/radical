@@ -6,6 +6,8 @@ local placement = require( "radical.placement" )
 
 local module = {}
 
+--TODO add "wrap cursor mode"
+
 local wibox_to_req = {}
 
 local corners_geo = {
@@ -43,7 +45,7 @@ local function create_hot_corner(corner, s)
     local size  = corners_geo[corner](s_geo, w_geo)
     local w = wibox(util.table.crush(size, {ontop=true, opacity = 0, visible=true}))
 
-    placement.corner(w, corner, s, false, false)
+    placement.align(w, corner, s, false, false)
 
     local req = {wibox = w, screen = s, corner = corner}
 

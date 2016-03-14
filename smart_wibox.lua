@@ -162,9 +162,9 @@ end
 -- direction to avoid going off-screen.
 -- @param[opt=mouse.coords()] geo A geometry table. It is given as parameter
 --  from buttons callbacks and signals such as `mouse::enter`.
--- @param use_mouse Use the mouse position instead of the widget center as
+-- @param mode Use the mouse position instead of the widget center as
 -- reference point.
-function wb_func:move_by_parent(geo, use_mouse)
+function wb_func:move_by_parent(geo, mode)
     if rawget(self, "is_relative") == false then return end
 
     local dps = placement.get_relative_points(geo, mode)

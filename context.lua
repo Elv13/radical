@@ -13,7 +13,7 @@ local function set_visible(i, value)
     local w, pg = i.w, i.private_data.parent_geometry
 
     if value then
-        w:move_by_parent(pg, true)
+        w:move_by_parent(pg, "widget")
     end
 
     w.visible = value
@@ -66,7 +66,7 @@ local function new(args)
     local ret = base(args)
 
     ret:connect_signal("parent_geometry::changed", function()
-        args.internal.w:move_by_parent(ret.parent_geometry, true)
+        args.internal.w:move_by_parent(ret.parent_geometry, "widget")
     end)
 
     -- Init the style

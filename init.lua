@@ -22,10 +22,12 @@ end
 -- @tparam[opt="button1::pressed"] string event The event trigger for showing
 --  the menu.
 -- @tparam[opt=1] button_id The mouse button 1 (1= left, 3=right)
-local function set_menu(self,menu, event, button_id)
+-- @tparam[opt=widget] The position mode (see `radical.placement`)
+local function set_menu(self,menu, event, button_id, mode)
   if not menu then return end
   local event = event or "button::pressed"
   local button_id = button_id or 1
+  mode = mode or "widget"
 
 
   local function trigger(_, geo)
@@ -47,7 +49,7 @@ local function set_menu(self,menu, event, button_id)
     if not m then return end
 
     m.parent_geometry = geo
-    m._internal.w:move_by_parent(geo)
+    m._internal.w:move_by_parent(geo, mode)
 
     m.visible = not m.visible
   end
