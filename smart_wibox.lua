@@ -25,6 +25,9 @@ local module = {}
 
 local main_widget = {}
 
+--TODO position = relative to parent
+--TODO direction = up or down (the alternate stuff)
+
 -- Get the optimal direction for the wibox
 -- This (try to) avoid going offscreen
 local function set_position(self)
@@ -34,7 +37,7 @@ local function set_position(self)
     local pos_name = placement.move_relative(self, points, preferred_positions)
 
     if pos_name ~= rawget(self, "position") then
-        self:emit_signal("property::position", pos_name)
+        self:emit_signal("property::direction", pos_name)
         rawset(self, "position", pos_name)
     end
 end
@@ -167,7 +170,11 @@ end
 function wb_func:move_by_parent(geo, mode)
     if rawget(self, "is_relative") == false then return end
 
-    local dps = placement.get_relative_points(geo, mode)
+    --TODO add border_width?
+    local dps = placement.get_relative_points(geo, mode, {
+        xoffset = rawget(self, "xoffset") or 0,
+        yoffset = rawget(self, "yoffset") or 0,
+    })
 
     rawset(self, "possible_positions", dps)
 
@@ -178,12 +185,41 @@ function wb_func:move_by_mouse()
     --TODO
 end
 
-function wb_func:set_voffset(offset)
-    
+function wb_func:set_xoffset(offset)
+    local old =  rawget(self, "xoffset") or 0
+    if old == offset then return end
+
+    rawset(self, "xoffset", offset)
+
+    -- Update the points
+    for k,v in pairs(rawget(self, "possible_positions") or {}) do
+        v.x = v.x - old + offset
+    end
+
+    -- Update the position
+    set_position(self)
 end
 
-function wb_func:set_hoffset(offset)
-    
+function wb_func:set_yoffset(offset)
+    local old =  rawget(self, "yoffset") or 0
+    if old == offset then return end
+
+    rawset(self, "yoffset", offset)
+
+    -- Update the points
+    for k,v in pairs(rawget(self, "possible_positions") or {}) do
+        v.y = v.y - old + offset
+    end
+
+    -- Update the position
+    set_position(self)
+end
+
+function wb_func:set_margin(margin)
+    rawset(self, "left_margin"  , margin)
+    rawset(self, "right_margin" , margin)
+    rawset(self, "top_margin"   , margin)
+    rawset(self, "bottom_margin", margin)
 end
 
 --- Set if the wibox take into account the other wiboxes.
@@ -219,7 +255,7 @@ local function create_auto_resize_widget(self, wdg, args)
 
     w:set_shape_border_color()
 
-    w:add_signal("property::position")
+    w:add_signal("property::direction")
 
     if args and args.preferred_positions then
         if type(args.preferred_positions) == "table" then

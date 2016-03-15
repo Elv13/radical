@@ -43,28 +43,26 @@ local radius       = 10
 local arrow_height = 13
 
 -- Generate the arrow position
-local function gen_arrow_x(data,direction, width, height)
+local function gen_arrow_x(data, direction, width, height)
     local at = data.arrow_type
-    local par_center_x = data.wibox.width/2
 
     if at == base.arrow_type.PRETTY or not at then
         if direction == "left" then
-            data._arrow_x = data._internal.w.height -20 - (data.arrow_x_orig or 20)
+            --TODO
         elseif direction == "right" then
-            --TODO
+            data._internal.w:set_yoffset(-(20) - arrow_height)
         elseif direction == "bottom" then
-            data._arrow_x = width -20 - (data.arrow_x_orig or 20)
-            if par_center_x >= 0 then
-                data._arrow_x = width - (par_center_x - 0) - arrow_height
-            end
+--             data._internal.w:set_xoffset(-(20) - arrow_height) --TODO negative are broken
         elseif direction == "top" then
-            --TODO
+            data._internal.w:set_xoffset(-data._internal.w.width + (20) + arrow_height)
         end
     elseif at == base.arrow_type.CENTERED then
         if direction == "left" or direction == "right" then
             data._arrow_x = height/2 - arrow_height
+            data._internal.w:set_yoffset(data._internal.w.height/2 - arrow_height)
         else
             data._arrow_x = width/2 - arrow_height
+            data._internal.w:set_xoffset(data._internal.w.width/2 - arrow_height)
         end
     end
 end
@@ -85,12 +83,19 @@ local function update_margins(data, pos)
 end
 
 -- Generate a rounded cairo path with the arrow
-local function draw_roundedrect_path(cr, width, height, radius, data, position)
+local function draw_roundedrect_path(cr, width, height, radius, data, direction)
+    direction = direction or "right"
+
     if data.arrow_type == base.arrow_type.NONE then
+        if direction == "left" then
+            data._internal.w:set_yoffset(-radius)
+        elseif direction == "right" then
+            data._internal.w:set_yoffset(radius)
+        end
         return shape.rounded_rect(cr, width, height, radius)
     end
 
-    local angle, swap = angles[position], swaps[position]
+    local angle, swap = angles[direction], swaps[direction]
 
     -- Invert width and height to avoid distortion
     if swap then
@@ -107,7 +112,7 @@ local function draw_roundedrect_path(cr, width, height, radius, data, position)
     gen_arrow_x(data, data.direction, width, height)
 
     -- Forward to the real shape
-    local ax = swap and width - (data._arrow_x or 20) or (data._arrow_x or 20)
+    local ax = swap and width - (data._arrow_x or 20)-arrow_height - radius or (data._arrow_x or 20)
     s(cr, width, height, radius, arrow_height, ax)
 end
 
@@ -119,16 +124,17 @@ local function draw(data,args)
         data._internal.w:set_shape_border_color(color(beautiful.menu_outline_color or beautiful.menu_border_color or beautiful.fg_normal))
         data._internal.w:set_shape(data.shape or shape.infobubble, unpack(data.shape_args or {}))
 
-        data._internal.w:connect_signal("property::position", function(_, pos)
-            data._internal.w:set_shape(function(cr, w, h) draw_roundedrect_path(cr, w, h, radius, data, pos) end)
-            update_margins(data, pos)
+        data._internal.w:connect_signal("property::direction", function(_, dir)
+            data.direction = dir
+            data._internal.w:set_shape(function(cr, w, h) draw_roundedrect_path(cr, w, h, radius, data, dir) end)
+            update_margins(data, dir)
         end)
 
-        local pos = data._internal.w.position
-        if pos then
-            data._internal.w:set_shape(function(cr, w, h) draw_roundedrect_path(cr, w, h, radius, data, data._internal.w.position) end)
-        end
-        update_margins(data, pos)
+--         local dir = data._internal.w.position
+--         if dir then
+--             data._internal.w:set_shape(function(cr, w, h) draw_roundedrect_path(cr, w, h, radius, data, data._internal.w.position) end)
+--         end
+        update_margins(data, dir)
 
         data._internal.arrow_setup = true
     end

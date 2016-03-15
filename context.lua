@@ -39,7 +39,7 @@ local function setup_drawable(data)
         opacity             = data.opacity       ,
         bg                  = data.bg            ,
         fg                  = data.fg            ,
-        preferred_positions = {"right", "bottom"},
+        preferred_positions = {"right", "left"  },
         border_color        = data.border_color
                                or beautiful.menu_outline_color
                                or beautiful.menu_border_color

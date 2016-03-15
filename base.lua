@@ -417,7 +417,7 @@ local function new(args)
       data.item_style(data._current_item,{})
     end
     if internal.has_changed and data.style then
-      data.style(data,{arrow_x=20,margin=internal.margin})
+      data.style(data)
     end
     if internal.set_position then
       internal.set_position(data)
@@ -484,7 +484,7 @@ local function new(args)
   for k,v in ipairs({"bg","fg","border_color","border_width","item_height","width","arrow_type"}) do
     data:connect_signal(v.."::changed",function()
       if data.visible and data.style then
---         data.style(data,{arrow_x=20,margin=internal.margin})
+--         data.style(data)
       else
         data.has_changed = true
       end

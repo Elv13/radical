@@ -27,14 +27,14 @@ local reverse_map = {}
 
 -- Create the geometry rectangle 1=best case, 2=fallback
 local positions = {
-    left1   = function(x, y, w, h) return {x = x - w, y = y     , width = w, height = h} end,
-    left2   = function(x, y, w, h) return {x = x - w, y = y - h , width = w, height = h} end,
-    right1  = function(x, y, w, h) return {x = x    , y = y     , width = w, height = h} end,
-    right2  = function(x, y, w, h) return {x = x    , y = y - h , width = w, height = h} end,
-    top1    = function(x, y, w, h) return {x = x    , y = y - h , width = w, height = h} end,
-    top2    = function(x, y, w, h) return {x = x - w, y = y - h , width = w, height = h} end,
-    bottom1 = function(x, y, w, h) return {x = x    , y = y     , width = w, height = h} end,
-    bottom2 = function(x, y, w, h) return {x = x - w, y = y     , width = w, height = h} end,
+    left1   = function(r, w, h) return {x=r.x-w        , y=r.y            } end,
+    left2   = function(r, w, h) return {x=r.x-w        , y=r.y-h+r.height } end,
+    right1  = function(r, w, h) return {x=r.x          , y=r.y            } end,
+    right2  = function(r, w, h) return {x=r.x          , y=r.y-h+r.height } end,
+    top1    = function(r, w, h) return {x=r.x          , y=r.y-h          } end,
+    top2    = function(r, w, h) return {x=r.x-w+r.width, y=r.y-h          } end,
+    bottom1 = function(r, w, h) return {x=r.x          , y=r.y            } end,
+    bottom2 = function(r, w, h) return {x=r.x-w+r.width, y=r.y            } end,
 }
 
 -- Check if the proposed geometry fit in the screen
@@ -81,16 +81,13 @@ function module.align(drawable, position, parent, args)
     args = args or {}
     parent = parent or drawable.screen or capi.mouse.screen
 
-    local sgeo = nil
 
     -- Get the parent geometry
     local parent_type = type(parent)
 
-    if parent_type == "screen" or parent_type == "number" then
-        sgeo = capi.screen[parent][args.honor_workarea and "workarea" or "geometry"]
-    else
-        sgeo = parent:geometry()
-    end
+    local sgeo = (parent_type == "screen" or parent_type == "number") and
+        capi.screen[parent][args.honor_workarea and "workarea" or "geometry"] or
+        parent:geometry()
 
     local dgeo = drawable:geometry()
 
@@ -246,8 +243,19 @@ end
 --- Get the possible 2D anchor points around a widget geometry.
 -- This take into account the widget drawable (wibox) and try to avoid
 -- overlapping.
-function module.get_relative_points(geo, mode) --TODO rename regions
+--
+-- Valid arguments are:
+--
+-- * xoffset
+-- * yoffset
+-- * margins: A table with "left", "right", "top" and "bottom" as key or a number
+--
+-- @tparam table geo A geometry table with optional "drawable" member
+-- @tparam[opt="widget"] string mode TODO document
+-- @tparam[opt={}] table args
+function module.get_relative_points(geo, mode, args) --TODO rename regions
     mode = mode or "widget"
+    args = args or {}
 
     -- Use the mouse position and the wibox/client under it
     if not geo then
@@ -286,13 +294,15 @@ function module.get_relative_points(geo, mode) --TODO rename regions
     -- Get widget regions for both axis
     local cs = get_cross_sections(abs_widget_geo, mode)
 
+    -- Set the offset
+    local xoff, yoff = args.xoffset or 0, args.yoffset or 0 --TODO add margins
 
     -- Get the 4 closest points from `center_point` around the wibox
     local regions = {
-        left   = {x = cs.h.x           , y = cs.h.y            },
-        right  = {x = cs.h.x+cs.h.width, y = cs.h.y            },
-        top    = {x = cs.v.x           , y = cs.v.y            },
-        bottom = {x = cs.v.x           , y = cs.v.y+cs.v.height},
+        left   = {x = xoff+cs.h.x           , y = yoff+cs.h.y            },
+        right  = {x = xoff+cs.h.x+cs.h.width, y = yoff+cs.h.y            },
+        top    = {x = xoff+cs.v.x           , y = yoff+cs.v.y            },
+        bottom = {x = xoff+cs.v.x           , y = yoff+cs.v.y+cs.v.height},
     }
 
     -- Assume the section is part of a single screen until someone complain.
@@ -318,23 +328,25 @@ function module.get_relative_points(geo, mode) --TODO rename regions
 end
 
 -- @tparam drawable d A wibox or client
--- @tparam table points A table with position as key and points (x,y) as value
+-- @tparam table regions A table with position as key and regions (x,y,w,h) as value
 -- @tparam[opt={}] table preferred_positions The preferred positions (position as key,
 --  and index as value)
 -- @treturn string The choosen position
-function module.move_relative(d, points, preferred_positions) --TODO inside/outside
+function module.move_relative(d, regions, preferred_positions) --TODO inside/outside
     local w,h = d.width, d.height
 
     local pref_idx, pref_name = 99, nil
 
     local does_fit = {}
-    for k,v in pairs(points) do
-        local geo = positions[k..1](v.x, v.y, w, h)
+    for k,v in pairs(regions) do
+        local geo = positions[k..1](v, w, h)
+        geo.width, geo.height = w, h
         local fit = fit_in_screen(v.screen, geo)
 
         -- Try the other compatible geometry
         if not fit then
-            geo = positions[k..2](v.x, v.y, w, h)
+            geo = positions[k..2](v, w, h)
+            geo.width, geo.height = w, h
             fit = fit_in_screen(v.screen, geo)
         end
 
