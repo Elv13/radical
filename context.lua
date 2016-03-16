@@ -12,7 +12,7 @@ local capi, module = { keygrabber = keygrabber },{}
 local function set_visible(i, value)
     local w, pg = i.w, i.private_data.parent_geometry
 
-    if value then
+    if value and pg then
         w:move_by_parent(pg, "widget")
     end
 
