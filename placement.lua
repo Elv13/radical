@@ -2,6 +2,7 @@ local capi   = {screen=screen, mouse = mouse}
 local unpack = unpack or table.unpack
 local mouse  = require( "awful.mouse"  )
 local screen = require( "awful.screen" )
+local tag    = require( "awful.tag"    ) --TODO do the opposite, include placement in awful.tag
 local cairo  = require( "lgi"          ).cairo
 
 local module = {}
@@ -27,19 +28,19 @@ local reverse_map = {}
 
 -- Create the geometry rectangle 1=best case, 2=fallback
 local positions = {
-    left1   = function(r, w, h) return {x=r.x-w        , y=r.y            } end,
-    left2   = function(r, w, h) return {x=r.x-w        , y=r.y-h+r.height } end,
-    right1  = function(r, w, h) return {x=r.x          , y=r.y            } end,
-    right2  = function(r, w, h) return {x=r.x          , y=r.y-h+r.height } end,
-    top1    = function(r, w, h) return {x=r.x          , y=r.y-h          } end,
-    top2    = function(r, w, h) return {x=r.x-w+r.width, y=r.y-h          } end,
-    bottom1 = function(r, w, h) return {x=r.x          , y=r.y            } end,
-    bottom2 = function(r, w, h) return {x=r.x-w+r.width, y=r.y            } end,
+    left1   = function(r, w, h) return {x=r.x-w        , y=r.y            }, "down"  end,
+    left2   = function(r, w, h) return {x=r.x-w        , y=r.y-h+r.height }, "up"    end,
+    right1  = function(r, w, h) return {x=r.x          , y=r.y            }, "down"  end,
+    right2  = function(r, w, h) return {x=r.x          , y=r.y-h+r.height }, "up"    end,
+    top1    = function(r, w, h) return {x=r.x          , y=r.y-h          }, "right" end,
+    top2    = function(r, w, h) return {x=r.x-w+r.width, y=r.y-h          }, "left"  end,
+    bottom1 = function(r, w, h) return {x=r.x          , y=r.y            }, "right" end,
+    bottom2 = function(r, w, h) return {x=r.x-w+r.width, y=r.y            }, "left"  end,
 }
 
 -- Check if the proposed geometry fit in the screen
-local function fit_in_screen(s, geo)
-    local sgeo = capi.screen[s].geometry
+local function fit_in_screen(s, geo) --TODO replace by fit_in_bounding
+    local sgeo   = capi.screen[s].geometry
     local region = cairo.Region.create_rectangle(cairo.RectangleInt(sgeo))
 
     region:intersect(cairo.Region.create_rectangle(
@@ -51,6 +52,63 @@ local function fit_in_screen(s, geo)
     -- If the geometry is the same, then it fit, else, it will be cropped
     --TODO in case all directions are cropped, keep the least cropped one
     return geo2.width == geo.width and geo2.height == geo.height
+end
+
+local function apply_geometry_ajustments(geo, delta)
+    return {
+        x      = geo.x + (delta.left or 0),
+        y      = geo.y + (delta.top  or 0),
+        width  = geo.width  - (delta.left or 0) - (delta.right  or 0),
+        height = geo.height - (delta.top  or 0) - (delta.bottom or 0),
+    }
+end
+
+--- Get a placement bounding geometry.
+-- This method offer a flexible way to build a customized outer geometry used
+-- by the various functions of this module.
+--
+-- Valid arguments are:
+--
+-- * honor_padding
+-- * honor_workarea
+-- * margins
+-- * tag
+-- * parent: A parent drawable to use a base geometry
+-- * bounding_rect: A bounding rectangle
+--
+-- @tparam[opt=mouse.screen] screen s A screen
+-- @tparam[opt={}] table args The arguments
+function module.get_bounding_geometry(s, args)
+    args = args or {}
+
+    -- If the tag has a geometry, assume it is right
+    if args.tag then
+        local geo = tag.getproperty(args.tag, "geometry")
+        if geo then
+            return geo
+        end
+    end
+
+    s = s or capi.mouse.screen
+
+    local geo = args.bounding_rect or (args.parent and parent:geometry()) or
+        capi.screen[s][args.honor_workarea and "workarea" or "geometry"]
+
+    if (not args.parent) and (not args.bounding_rect) and args.honor_padding then
+        local padding = screen.padding(s) or {}
+        geo = apply_geometry_ajustments(geo, padding)
+    end
+
+    if args.margins then
+        geo = apply_geometry_ajustments(geo,
+            type(args.margins) == "table" and args.margins or {
+                left = args.margins, right  = args.margins,
+                top  = args.margins, bottom = args.margins,
+            }
+        )
+    end
+
+    return geo
 end
 
 --- Move the drawable (client or wibox) `d` to a screen position or side.
@@ -72,28 +130,35 @@ end
 -- The valid other arguments are:
 --
 -- * *honor_workarea*: Take workarea into account when placing the drawable (default: false)
+-- * *honor_padding*: Take the screen padding into account (see `awful.screen.padding`)
+-- * *tag*: Use a tag geometry
+-- * *margins*: A table with left, right, top, bottom keys or a number
+-- * *parent*: A parent drawable to use a base geometry
+-- * *bounding_rect*: A bounding rectangle
 --
--- @param drawable A drawable (like `client` or `wibox`)
+-- @tparam drawable d A drawable (like `client` or `wibox`)
 -- @tparam string position One of the position mentionned above
 -- @param[opt=d.screen or capi.mouse.screen] parent The parent geometry
 -- @tparam[opt={}] table args Other arguments
-function module.align(drawable, position, parent, args)
-    args = args or {}
-    parent = parent or drawable.screen or capi.mouse.screen
+function module.align(d, position, parent, args)
+    d = d or capi.client.focus
+    if not d then return end
+
+    args   = args or {}
+    parent = parent or d.screen or capi.mouse.screen
 
 
     -- Get the parent geometry
     local parent_type = type(parent)
 
     local sgeo = (parent_type == "screen" or parent_type == "number") and
-        capi.screen[parent][args.honor_workarea and "workarea" or "geometry"] or
-        parent:geometry()
+        module.get_bounding_geometry(parent, args) or parent:geometry()
 
-    local dgeo = drawable:geometry()
+    local dgeo = d:geometry()
 
     local pos = map[position](sgeo.width, sgeo.height, dgeo.width, dgeo.height)
 
-    drawable : geometry {
+    d : geometry {
         x      = pos.x and math.ceil(sgeo.x + pos.x) or dgeo.x,
         y      = pos.y and math.ceil(sgeo.y + pos.y) or dgeo.y,
         width  =           math.ceil(dgeo.width    )          ,
@@ -101,7 +166,7 @@ function module.align(drawable, position, parent, args)
     }
 end
 
--- Create many placement functions
+-- Add the alias functions
 for k,v in pairs(map) do
     module[k] = function(d, p, args)
         module.align(d, k, p, args)
@@ -110,12 +175,102 @@ for k,v in pairs(map) do
     reverse_map[module[k]] = k
 end
 
+--- Stretch a drawable in a specific direction.
+-- Valid args:
+--
+-- * *preserve_ratio*: 
+-- * *margins*: A margin value or table
+-- * *honor_workarea*:
+-- * *honor_padding*:
+-- * *tag*: Use a tag geometry, this honor the workarea, padding and gaps
+-- * *parent*: A parent drawable to use a base geometry
+-- * *bounding_rect*: A bounding rectangle
+-- * minimim_height:
+-- * minimim_width:
+--
+-- @tparam[opt=client.focus] drawable d A drawable (like `client` or `wibox`)
+-- @tparam string direction The stretch direction (left, right, up, down)
+-- @tparam[opt={}] table args The arguments
+function module.stretch(d, direction, args)
+    d = d or capi.client.focus
+    if not d then return end
+
+    --TODO maybe this could be integrated with the resize matrix?
+    local sgeo = module.get_bounding_geometry(d.screen, args)
+    local dgeo = d:geometry()
+    local ngeo = dgeo
+
+    if direction == "left" then
+        ngeo.x      = sgeo.x
+        ngeo.width  = (sgeo.width - sgeo.x) - (ngeo.x + ngeo.width)
+    elseif direction == "right" then
+        ngeo.width  = sgeo.width - ngeo.x
+    elseif direction == "up" then
+        ngeo.y      = sgeo.y
+        ngeo.height = (sgeo.height - sgeo.y) - (ngeo.y + ngeo.height)
+    elseif direction == "down" then
+        ngeo.height = sgeo.height - dgeo.y
+    end
+
+    -- Avoid negative sizes
+    ngeo.width  = math.max(args.minimim_width  or 1, ngeo.width )
+    ngeo.height = math.max(args.minimim_height or 1, ngeo.height)
+end
+
+-- Add the alias functions
+for k,v in ipairs {"left", "right", "up", "down"} do
+    module["stretch_"..v] =  function(d, args) module.stretch(d, v, args) end
+end
+
+--- Maximize a drawable horizontally, vertically or both.
+-- Valid args:
+--
+-- * *preserve_ratio*: 
+-- * *margins*: A margin value or table
+-- * *honor_workarea*:
+-- * *honor_padding*:
+-- * *tag*: Use a tag geometry, this honor the workarea, padding and gaps
+-- * *parent*: A parent drawable to use a base geometry
+-- * *bounding_rect*: A bounding rectangle
+--
+-- @tparam[opt=client.focus] drawable d A drawable (like `client` or `wibox`)
+-- @tparam string axis The  axis (vertically or horizontally)
+-- @tparam[opt={}] table args The arguments
+function module.maximize(d, axis, args)
+    d = d or capi.client.focus
+    if not d then return end
+
+    local sgeo = module.get_bounding_geometry(d.screen, args)
+    local dgeo = d:geometry()
+    local ngeo = dgeo
+
+    if (not axis) or axis:match("vertical") then
+        ngeo.y      = sgeo.y
+        ngeo.height = sgeo.height
+    end
+
+    if (not axis) or axis:match("horizontal") then
+        ngeo.x      = sgeo.x
+        ngeo.width  = sgeo.width
+    end
+
+    d:geometry(ngeo)
+end
+
+-- Add the alias functions
+for k, v in ipairs {"vertically", "horizontally"} do
+    module["maximize_"..v] = function(d, args) module.maximize(d, v, args) end
+end
+
 --- Pin a drawable to a placement function.
 -- Automatically update the position when the size change.
 -- All other arguments will be passed to the `position` function (if any)
--- @param drawable A drawable (like `client` or `wibox`)
+-- @tparam[opt=client.focus] drawable d A drawable (like `client` or `wibox`)
 -- @param position A position name (see `align`) or a position function
-function module.attach(drawable, position, ...)
+function module.attach(d, position, ...)
+    d = d or capi.client.focus
+    if not d then return end
+
     if type(position) == "string" then
         position = module[position]
     end
@@ -125,11 +280,11 @@ function module.attach(drawable, position, ...)
     local args = {...}
 
     local function tracker()
-        position(drawable, unpack(args))
+        position(d, unpack(args))
     end
 
-    drawable:connect_signal("property::width" , tracker)
-    drawable:connect_signal("property::height", tracker)
+    d:connect_signal("property::width" , tracker)
+    d:connect_signal("property::height", tracker)
 
     tracker()
 end
@@ -327,30 +482,33 @@ function module.get_relative_points(geo, mode, args) --TODO rename regions
     return regions
 end
 
+--- Move a drawable to a relative position next to another one.
 -- @tparam drawable d A wibox or client
 -- @tparam table regions A table with position as key and regions (x,y,w,h) as value
 -- @tparam[opt={}] table preferred_positions The preferred positions (position as key,
 --  and index as value)
 -- @treturn string The choosen position
-function module.move_relative(d, regions, preferred_positions) --TODO inside/outside
+-- @treturn string The choosen direction
+function module.move_relative(d, regions, preferred_positions) --TODO inside/outside, replace by args, allow modes
+    --args.geo, args.mode, args.drawable, args.regions, args.preferred_positions
     local w,h = d.width, d.height
 
     local pref_idx, pref_name = 99, nil
 
     local does_fit = {}
     for k,v in pairs(regions) do
-        local geo = positions[k..1](v, w, h)
+        local geo, dir = positions[k..1](v, w, h)
         geo.width, geo.height = w, h
         local fit = fit_in_screen(v.screen, geo)
 
         -- Try the other compatible geometry
         if not fit then
-            geo = positions[k..2](v, w, h)
+            geo, dir = positions[k..2](v, w, h)
             geo.width, geo.height = w, h
             fit = fit_in_screen(v.screen, geo)
         end
 
-        does_fit[k] = fit and geo or nil
+        does_fit[k] = fit and {geo, dir} or nil
 
         if fit and preferred_positions[k] and preferred_positions[k] < pref_idx then
             pref_idx  = preferred_positions[k]
@@ -362,14 +520,14 @@ function module.move_relative(d, regions, preferred_positions) --TODO inside/out
     end
 
     local pos_name = pref_name or next(does_fit)
-    local pos      = does_fit[pos_name]
+    local pos, dir = unpack(does_fit[pos_name])
 
     if pos then
         d.x = math.ceil(pos.x)
         d.y = math.ceil(pos.y)
     end
 
-    return pos_name
+    return pos_name, dir
 end
 
 return module
