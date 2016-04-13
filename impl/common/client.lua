@@ -10,8 +10,8 @@ local module = {}
 
 local function createTagList(aScreen)
   local tagList = radical.context {}
-  for _, v in ipairs(awful.tag.gettags(aScreen)) do
-    tagList:add_item({text = v.name,icon=awful.tag.geticon(v)})
+  for _, v in ipairs(capi.screen[aScreen].tags) do
+    tagList:add_item({text = v.name,icon=v.icon})
   end
   return tagList
 end

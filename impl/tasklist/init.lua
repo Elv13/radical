@@ -6,7 +6,7 @@
 -- @license GPLv2+ because of copy paste from the old tasklist.lua
 ---------------------------------------------------------------------------
 
-local capi = {client = client,tag=tag}
+local capi = {client = client,tag=tag,screen=screen}
 local rawset = rawset
 local radical     = require( "radical"      )
 local tag         = require( "awful.tag"    )
@@ -83,7 +83,7 @@ end
 local function sticky_callback(c)
   local val = c.sticky
   sticky[c] = val and true or nil
-  local menu = instances[c.screen].menu
+  local menu = instances[capi.screen[c.screen]].menu
   local is_in_tag = false
   for _,t in ipairs(tag.selectedlist(k)) do
     for k2,v2 in ipairs(c:tags()) do
@@ -157,7 +157,7 @@ local function reload_infoshapes(c)
         if c.ontop then
             infoshapes[#infoshapes+1] = infoshape_template.ontop
         end
-        if client.floating.get(c) then
+        if c.floating then
             infoshapes[#infoshapes+1] = infoshape_template.float
         end
         if c.sticky then
@@ -184,7 +184,7 @@ end
 
 local function create_client_item(c,screen)
   local item = _cache[c]
-  local menu = instances[screen].menu
+  local menu = instances[capi.screen[screen]].menu
   -- If it already exist, don't waste time creating a copy
   if item then
     menu:append(item)
@@ -236,11 +236,11 @@ end
 
 -- Clear the menu and repopulate it
 local function load_clients(t)
-  local screen = tag.getscreen(t)
-  if not t or not screen or not instances[screen] then return end
-  local menu = instances[screen].menu
+  local screen = t.screen
+  if not t or not screen or not instances[capi.screen[screen]] then return end
+  local menu = instances[capi.screen[screen]].menu
   local clients = {}
-  local selected = tag.selectedlist(screen)
+  local selected = screen.selected_tags
   -- The "#selected > 0" is for reseting when multiple tags are selected
   if t.selected or #selected > 0 then
     menu:clear()
@@ -261,7 +261,7 @@ end
 -- Reload the tag
 local function tag_screen_changed(t)
   if not t.selected then return end
-  local screen = tag.getscreen(t)
+  local screen = t.screen
   load_clients(t)
 end
 
@@ -284,9 +284,11 @@ end
 -- Remove the client from the tag
 local function untagged(c,t)
   local item = _cache[c]
-  local screen = tag.getscreen(t)
-  if not item or not instances[screen] then return end
-  local menu = instances[screen].menu
+
+  -- t.screen can be nil if the tag was deleted
+  local screen = t.screen or c.screen or capi.mouse.screen
+  if not item or not instances[capi.screen[screen]] then return end
+  local menu = instances[capi.screen[screen]].menu
   if t.selected then
     menu:remove(item)
   end
@@ -295,7 +297,7 @@ end
 -- Add and remove clients from the tasklist
 local function tagged(c,t)
   if t.selected and not c.sticky then
-    add_client(c,tag.getscreen(t))
+    add_client(c,t.screen)
   end
 end
 
@@ -332,9 +334,9 @@ local function new(screen)
 
 
   -- Connect to a bunch of signals
-  instances[screen] = {menu = menu}
+  instances[capi.screen[screen]] = {menu = menu}
 
-  load_clients(tag.selected(screen))
+  load_clients(screen.selected_tag)
 
   menu:connect_signal("button::press",function(menu,item,button_id,mod,geo)
     if module.buttons and module.buttons[button_id] then

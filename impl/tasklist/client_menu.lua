@@ -82,8 +82,8 @@ local function new(screen, args)
     text    = "Floating",
     checked = true ,
     button1 = function()
-      awful.client.floating.set(module.client,not awful.client.floating.get(module.client))
-      itemVFloating.checked = awful.client.floating.get(module.client)
+      module.client.floating = not module.client.floating
+      itemVFloating.checked = module.client.floating
     end
   }
   itemMaximized  = mainMenu:add_item{

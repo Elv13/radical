@@ -14,8 +14,8 @@ local function createTagList(aScreen,args)
   end
   local tagList = args.menu or radical.context {}
   local ret = {}
-  for _, v in ipairs(awful.tag.gettags(aScreen)) do
-    args.text,args.icon = v.name,awful.tag.geticon(v)
+  for _, v in ipairs(capi.screen[aScreen].tags) do
+    args.text,args.icon = v.name,v.icon
     local i = tagList:add_item(args)
     i._tag = v
     ret[v] = i
@@ -45,7 +45,7 @@ function module.listTags(args, menu)
 end
 
 function module.layouts(menu,layouts)
-  local cur = awful.layout.get(awful.tag.getscreen(awful.tag.selected(capi.client.focus and capi.client.focus.screen)))
+  local cur = awful.layout.get(capi.client.focus and capi.client.focus.screen)
   local screenSelect = menu or radical.context {}
 
   local layouts = layouts or awful.layout.layouts
@@ -57,7 +57,7 @@ function module.layouts(menu,layouts)
         if mod then
           screenSelect[mod[1] == "Shift" and "previous_item" or "next_item"].selected = true
         end
-        awful.layout.set(layouts[screenSelect.current_index] or layouts[1],awful.tag.selected(capi.client.focus and capi.client.focus.screen))
+        awful.layout.set(layouts[screenSelect.current_index] or layouts[1],(capi.client.focus and capi.client.focus.screen).selected_tag)
       end, selected = is_current, item_layout = radical.item.layout.icon})
     end
   end
