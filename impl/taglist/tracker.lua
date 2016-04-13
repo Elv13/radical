@@ -1,6 +1,6 @@
 -- This module try to track tags relative index
 -- It will emit signals the widget can rely on 
-local capi = {tag=tag}
+local capi = {tag=tag,screen=screen}
 local tag    = require( "awful.tag"      )
 local object = require( "radical.object" )
 local awful = require("awful")
@@ -10,14 +10,15 @@ local init = false
 local screen_cache = setmetatable({}, { __mode = 'k' })--TODO this suck
 
 local function reload(t,s)
-  local s        = s or tag.getscreen(t) or screen_cache[t]
+  local s        = s or t.screen or screen_cache[t]
   local tracker  = cache[s]
 
   if not tracker then return end
 
   local old_tags = tracker._internal.old_tags or {}
 
-  local new_tags = tag.gettags(s)
+  local new_tags = capi.screen[s].tags
+
   for k,v in ipairs(new_tags) do
     if v ~= old_tags[k] then
 --       print(v.name,k,s,tag.getscreen(v),tag.getidx(v))
@@ -37,7 +38,7 @@ end
   local old_screen = awful.tag.getproperty(t,"screen")
 
   -- Change the screen
-  awful.tag.setproperty(t, "screen", s)
+--   awful.tag.setproperty(t, "screen", s)
 
   --Prevent some very strange side effects, does create some issue with multitag clients
   for k,c in ipairs(t:clients()) do

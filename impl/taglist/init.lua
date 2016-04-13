@@ -44,8 +44,8 @@ module.buttons = { [1] = awful.tag.viewonly,
                               menu.visible = true
                               menu._internal.w:move_by_parent(geo, "cursor")
                             end,
-                      [4] = function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end,
-                      [5] = function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end,
+                      [4] = function(t) awful.tag.viewnext(t.screen) end,
+                      [5] = function(t) awful.tag.viewprev(t.screen) end,
                     }
 --                     awful.button({ modkey }, 1, awful.client.movetotag),
 --                     awful.button({ modkey }, 3, awful.client.toggletag),
@@ -63,7 +63,7 @@ local function index_draw(self, context, cr, width, height)
 end
 
 local function create_item(t,s)
-  local menu,ib,original = instances[s],nil,tag.geticon(t) or beautiful.taglist_default_icon
+  local menu,ib,original = instances[capi.screen[s]],nil,t.icon or beautiful.taglist_default_icon
   if not menu or not t then return end
   local w = wibox.layout.fixed.horizontal()
   if beautiful.taglist_disable_icon ~= true then
@@ -122,6 +122,7 @@ local function create_item(t,s)
   menu:connect_signal("button::press",function(menu,item,button_id,mod,geo)
     if module.buttons and module.buttons[button_id] then
       if item.tag[1] then
+        assert(type(item.tag[1]) == "tag")
         module.buttons[button_id](item.tag[1],menu,item,button_id,mod,geo)
       else
         print("Invalid tag")
@@ -138,8 +139,8 @@ local function create_item(t,s)
 end
 
 local function track_used(c,t)
-  if t then
-    local item = cache[t] or create_item(t,tag.getscreen(t))
+  if t and t.activated then
+    local item = cache[t] or create_item(t,t.screen or c.screen or capi.mouse.screen)
     if not item then return end -- Yes, it happen if the screen is still nil
     item.state[radical.base.item_flags.USED] = #t:clients() > 0 and true or nil
     item.state[radical.base.item_flags.CHANGED] = ((not t.selected) and #t:clients() > 0) and true or nil
@@ -156,7 +157,7 @@ end
 
 local function tag_activated(t)
   if not t.activated and cache[t] then
-    instances[cache[t]._internal.screen]:remove(cache[t])
+    instances[capi.screen[cache[t]._internal.screen]]:remove(cache[t])
     cache[t] = nil
   end
 end
@@ -164,18 +165,18 @@ end
 local function tag_added(t,b)
   if not t then return end
 
-  local s = tag.getscreen(t)
+  local s = t.screen
   local item = cache[t]
 
   -- Creating items when there is no screen cause random behaviors
   if not item and s then
-    create_item(t,s)
+    create_item(t,s or capi.mouse.screen)
   elseif item._internal.screen ~= s then
     if item._internal.screen then
-      instances[item._internal.screen]:remove(item)
+      instances[capi.screen[item._internal.screen]]:remove(item)
     end
     if s then
-      instances[s]:append(item)
+      instances[capi.screen[s]]:append(item)
     end
 
     --Allow nil
@@ -185,7 +186,7 @@ end
 
 local function select(t)
   local s = t.selected
-  local item = cache[t] or create_item(t,tag.getscreen(t))
+  local item = cache[t] or create_item(t,t.screen or capi.mouse.screen)
   if item then
     item.state[radical.base.item_flags.SELECTED] = s or nil
 --     if s then --We also want to unset those when we quit the tag
@@ -197,7 +198,7 @@ end
 
 local function urgent_callback(t)
   local modif = tag.getproperty(t,"urgent")
-  local item = cache[t] or create_item(t,tag.getscreen(t))
+  local item = cache[t] or create_item(t,t.screen or capi.mouse.screen)
   if item then
     item.state[radical.base.item_flags.URGENT] = modif and true or nil
   end
@@ -228,7 +229,7 @@ local function init()
   capi.tag.connect_signal("property::icon", function(t)
     local item = cache[t]
     if item and item._internal.icon_w then
-      item._internal.icon_w:set_image(tag.geticon(t) or beautiful.taglist_default_icon)
+      item._internal.icon_w:set_image(t.icon or beautiful.taglist_default_icon)
     end
   end)
   is_init = true
@@ -282,22 +283,22 @@ local function new(s)
     args["fg_"..v] = beautiful["taglist_fg_"..v]
   end
 
-  instances[s] = radical.bar(args)
+  instances[capi.screen[s]] = radical.bar(args)
 
   --Add some settings
-  rawset(instances[s],"index_prefix",beautiful.taglist_index_prefix)
-  rawset(instances[s],"index_suffix",beautiful.taglist_index_suffix)
+  rawset(instances[capi.screen[s]],"index_prefix",beautiful.taglist_index_prefix)
+  rawset(instances[capi.screen[s]],"index_suffix",beautiful.taglist_index_suffix)
 
 
   -- Load the innitial set of tags
-  for k,t in ipairs(tag.gettags(s)) do
-    create_item(t,s)
+  for k,t in ipairs(capi.screen[s].tags) do
+    create_item(t,capi.screen[s])
   end
 
   -- Per screen signals
 --   tag.attached_connect_signal(screen, "property::hide", ut)!
 
-  instances[s]:connect_signal("button::press",function(m,item,button_id,mod)
+  instances[capi.screen[s]]:connect_signal("button::press",function(m,item,button_id,mod)
     if module.buttons and module.buttons[button_id] then
       module.buttons[button_id](item.tag[1],m,item,button_id,mod)
     end
@@ -305,16 +306,16 @@ local function new(s)
 
   init()
   track:reload()
-  return instances[s]
+  return instances[capi.screen[s]]
 end
 
 capi.tag.connect_signal("property::selected" , select)
 capi.tag.connect_signal("property::index2",function(t,i)
   if t and not beautiful.taglist_disable_index then
-    local s = tag.getscreen(t)
+    local s = t.screen
     local item = cache[t]
     if item then
-      local menu = instances[s]
+      local menu = instances[capi.screen[s]]
       menu:move(item,i)
       if item.tw then
         item.tw:set_markup((menu.index_prefix or " <b>#")..(i)..(menu.index_suffix or "</b>: "))

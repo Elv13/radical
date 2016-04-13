@@ -30,7 +30,7 @@ local function push_focus(c)
   if c and not pause_monitoring then
     focusTable[c] = focusIdx
     focusIdx = focusIdx + 1
-    focusTag[c] = tag.selected(c.screen)
+    focusTag[c] = c.screen.selected_tag
   end
 end
 capi.client.connect_signal("focus", push_focus)
@@ -114,7 +114,7 @@ local function new(args)
   end
 
   local scr = capi.client.focus and capi.client.focus.screen or capi.mouse.screen
-  local t,auto_release = tag.selected(scr),args.auto_release
+  local t,auto_release = scr.selected_tag,args.auto_release
   local currentMenu = radical.box({filter = true, show_filter=not auto_release, autodiscard = true,
     disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[scr]).geometry.width)/2),
     icon_transformation = beautiful.alttab_icon_transformation,filter_underlay="Use [Shift] and [Control] to toggle clients",filter_underlay_color=beautiful.menu_bg_normal,
@@ -201,7 +201,7 @@ local function new(args)
       checked       = v.screen == scr and (not auto_release and is_in_tag(t,v)) or nil,
       button1       = function(a,b,c,d,no_hide)
         local t = focusTag[v] or v:tags()[1]
-        if t and t.selected == false and not util.table.hasitem(v:tags(),tag.selected(v.screen)) then
+        if t and t.selected == false and not util.table.hasitem(v:tags(),capi.screen[v.screen].selected_tag) then
           lock_history = true
           tag.viewonly(t)
           lock_history = false

@@ -97,7 +97,7 @@ local function new(t)
     aTagMenu:add_item({text = "Screen",sub_menu = screenMenu})
 
     for i=1,capi.screen.count() do
-      screenMenu:add_item({text = "Screen "..i, checked = tag.getscreen(aTag) == i,button1 = function() tag_to_screen(aTag,i) end})
+      screenMenu:add_item({text = "Screen "..i, checked = aTag.screen == i,button1 = function() tag_to_screen(aTag,i) end})
     end
   end
 
@@ -108,7 +108,7 @@ local function new(t)
   function createTagList(aScreen)
     local tagList = menu()
     local count = 0
-    for _, v in ipairs(awful.tag.gettags(aScreen)) do
+    for _, v in ipairs(capi.screen[aScreen].tags) do
        tagList:add_item({text = v.name})
        count = count + 1
     end
@@ -127,7 +127,7 @@ local function new(t)
     if (file == "END" or nil) or (counter > 30) then
       break
     end
-    mainMenu2:add_item({ button1 = function() tag.seticon(file,aTag) end, icon = file, item_layout = radical.item.layout.icon})
+    mainMenu2:add_item({ button1 = function() aTag.icon = file end, icon = file, item_layout = radical.item.layout.icon})
     counter = counter +1
   end
   f:close()
