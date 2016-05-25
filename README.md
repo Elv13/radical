@@ -1,7 +1,7 @@
 # Radical menu system for AwesomeWM
 =======================================
 
-**Warning** The upstream Awesome internal widget API changed during summer 2015. Radical master branch is designed to be compatible with version 3.5 of Awesome or git-master older than July. I am currently unavailable to do the (non trivial) work required to port to the new API (and make good use of its improvments). Theirfor, please be patient and stay with a supported version for a few more months if you wish to use Radical.
+**Warning** If you use Awesome git master, please use the awesome3.6 branch
 
 This is Radical, one of the largest Awesome extension module. It provide un
 unified interface to generate multiple types of menus.
