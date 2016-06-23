@@ -107,6 +107,28 @@ local function reload_highlight(i)
   end
 end
 
+--TODO save the settings somewhere
+local conf = {
+  tags      = true,
+  screens   = true,
+  minimized = true,
+}
+
+local function toggle_all_tags(item)
+  conf.tags = not conf.tags
+  item.checked = conf.tags
+end
+
+local function toggle_all_screens(item)
+  conf.screens = not conf.screens
+  item.checked = conf.screens
+end
+
+local function toggle_maximized(item)
+  conf.minimized = not conf.minimized
+  item.checked = conf.minimized
+end
+
 local function new(args)
   local histo = get_history(--[[screen]])
   if #histo == 0 then
@@ -124,24 +146,25 @@ local function new(args)
   currentMenu.margins.bottom = currentMenu.border_width
 
   if not auto_release then
-    local pref_bg = wibox.widget.background()
+    local pref_bg = wibox.container.background()
     local pref_l = wibox.layout.align.horizontal()
     pref_bg.fit = function(s,c,w,h)
-      local w2,h2 = wibox.widget.background.fit(s,c,w,h)
+      local w2,h2 = wibox.container.background.fit(s,c,w,h)
       return w2,currentMenu.item_height
     end
     pref_bg:set_bg(currentMenu.bg_alternate)
     local tb2= wibox.widget.textbox()
-    tb2:set_text("foo!!!!")
+    tb2:set_markup("  <b>"..#histo.."</b> clients")
     pref_l:set_first(tb2)
     pref_bg:set_widget(pref_l)
     local pref_menu,pref_menu_l = radical.bar{item_style=radical.item.style.basic}
---     pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
-    pref_menu:add_item{text="Exclusive"}
---     pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
-    pref_menu:add_item{text="12 clients"}
---     pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
-    pref_menu:add_item{text="All Screens"}
+    pref_menu:add_widget(wibox.widget.textbox "<b>Display: </b>")
+    pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+    pref_menu:add_item{text="All tags  ", checkable = true, checked = true, button1 = toggle_all_tags}
+    pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+    pref_menu:add_item{text="Minimized  ", checkable = true, checked = true, button1 = toggle_all_screens}
+    pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
+    pref_menu:add_item{text="All Screens  ", checkable = true, checked = true, button1 = toggle_maximized}
 --     pref_menu:add_widget(radical.widgets.separator(pref_menu,radical.widgets.separator.VERTICAL))
     pref_l:set_third(pref_menu_l)
 
