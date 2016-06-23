@@ -79,7 +79,7 @@ local function filter(data)
       local tmp = v._filter_out
       v._filter_out = (v.text:lower():find(fs) == nil)-- or (fs ~= "")
       if tmp ~= v._filter_out then
-        v.widget:emit_signal("widget::updated")
+        v.widget.visible = not v._filter_out
       end
       if (not v._filter_out) and (not v.widget.visible == false) then
         visible_counter = visible_counter + v.height
