@@ -27,7 +27,7 @@ local function new(data,item)
   pref.draw = function(self, context, cr, width, height)
     local padding = height/4
     local key = item._internal.f_key
-    if not keys[height]  then
+    if not keys[height] then
       pref:emit_signal("widget::updated")
       create_pango(height)
       keys[height] = {}
@@ -56,6 +56,12 @@ local function new(data,item)
     cr:paint()
   end
   pref.fit = function(self,context,width,height)
+    if not keys[height] then
+      pref:emit_signal("widget::updated")
+      create_pango(height)
+      keys[height] = {}
+    end
+
     return max_width,data.item_height
   end
   pref:set_markup("<span fgcolor='".. beautiful.bg_normal .."'><tt><b>F11</b></tt></span>")
