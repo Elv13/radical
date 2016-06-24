@@ -45,7 +45,7 @@ local function init(data,widget,args)
 
     -- Setup the wibox
     local vertical = (args.direction == "left") or (args.direction == "right")
-    local w,extents = data.wibox or wibox{},widget._layout:get_pixel_extents()
+    local w,extents = data.wibox or wibox{},widget._private.layout:get_pixel_extents()
     extents.width = extents.width + 60
     w.visible = false
     w.width   = extents.width
@@ -131,7 +131,7 @@ local function new(widget,text, args)
 
     if data.wibox then
 
-      local l,m = wibox.layout.fixed.horizontal(),wibox.layout.margin(textw)
+      local l,m = wibox.layout.fixed.horizontal(),wibox.container.margin(textw)
       m:set_left    ( 30 )
       m:set_right   ( 10 )
       m:set_bottom  ( not vertical and ((args.direction == "top") and 4 or -4) or 0 )

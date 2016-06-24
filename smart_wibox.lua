@@ -18,7 +18,7 @@ local beautiful = require( "beautiful"        )
 local color     = require( "gears.color"      )
 local screen    = require( "awful.screen"     )
 local mouse     = require( "awful.mouse"      )
-local placement = require( "radical.placement")
+local placement = require( "awful.placement"  )
 local unpack    = unpack or table.unpack
 
 local module = {}
@@ -31,10 +31,29 @@ local main_widget = {}
 -- Get the optimal direction for the wibox
 -- This (try to) avoid going offscreen
 local function set_position(self)
-    local points = rawget(self, "possible_positions") or {}
-    local preferred_positions = rawget(self, "_preferred_directions") or {}
+    local pf = rawget(self, "_placement")
 
-    local pos_name = placement.move_relative(self, points, preferred_positions)
+    if pf == false then return end
+
+    if pf then
+        pf(self, {bounding_rect = self.screen.geometry})
+        return
+    end
+
+    local geo = rawget(self, "widget_geo")
+
+    local preferred_positions = rawget(self, "_preferred_directions") or {
+        "right", "left", "top", "bottom"
+    }
+
+    local _, pos_name = placement.next_to(self, {
+        preferred_positions = preferred_positions,
+        geometry            = geo,
+        offset              = {
+            x = (rawget(self, "xoffset") or 0),
+            y = (rawget(self, "yoffset") or 0),
+        },
+    })
 
     if pos_name ~= rawget(self, "position") then
         self:emit_signal("property::direction", pos_name)
@@ -152,12 +171,8 @@ end
 -- * top
 -- * bottom
 -- @tparam string ... One of more directions (in the preferred order)
-function wb_func:set_preferred_positions(...)
-    local dirs = {}
-    for k, v in ipairs{...} do
-        dirs[v] = k
-    end
-    rawset(self, "_preferred_directions", dirs)
+function wb_func:set_preferred_positions(pref_pos)
+    rawset(self, "_preferred_directions", pref_pos)
 end
 
 --- Move the wibox to a position relative to `geo`.
@@ -170,13 +185,7 @@ end
 function wb_func:move_by_parent(geo, mode)
     if rawget(self, "is_relative") == false then return end
 
-    --TODO add border_width?
-    local dps = placement.get_relative_points(geo, mode, {
-        xoffset = rawget(self, "xoffset") or 0,
-        yoffset = rawget(self, "yoffset") or 0,
-    })
-
-    rawset(self, "possible_positions", dps)
+    rawset(self, "widget_geo", geo)
 
     set_position(self)
 end
@@ -191,11 +200,6 @@ function wb_func:set_xoffset(offset)
 
     rawset(self, "xoffset", offset)
 
-    -- Update the points
-    for k,v in pairs(rawget(self, "possible_positions") or {}) do
-        v.x = v.x - old + offset
-    end
-
     -- Update the position
     set_position(self)
 end
@@ -205,11 +209,6 @@ function wb_func:set_yoffset(offset)
     if old == offset then return end
 
     rawset(self, "yoffset", offset)
-
-    -- Update the points
-    for k,v in pairs(rawget(self, "possible_positions") or {}) do
-        v.y = v.y - old + offset
-    end
 
     -- Update the position
     set_position(self)
@@ -226,6 +225,18 @@ end
 -- @tparam boolean val Take the other wiboxes position into account
 function wb_func:set_relative(val)
     rawset(self, "is_relative", val)
+end
+
+--- Set the placement function.
+-- @tparam[opt=next_to] function|string|boolean The placement function or name
+-- (or false to disable placement)
+function wb_func:set_placement(f)
+
+    if type(f) == "string" then
+        f = placement[f]
+    end
+
+    rawset(self, "_placement", f)
 end
 
 --- A brilliant idea to totally turn the whole hierarchy on its head
@@ -255,13 +266,11 @@ local function create_auto_resize_widget(self, wdg, args)
 
     w:set_shape_border_color()
 
-    w:add_signal("property::direction")
-
     if args and args.preferred_positions then
         if type(args.preferred_positions) == "table" then
-            w:set_preferred_positions(unpack(args.preferred_positions))
-        else
             w:set_preferred_positions(args.preferred_positions)
+        else
+            w:set_preferred_positions({args.preferred_positions})
         end
     end
 
@@ -273,7 +282,7 @@ local function create_auto_resize_widget(self, wdg, args)
         w:set_relative(args.relative)
     end
 
-    for k,v in ipairs{"shape_border_color", "shape_border_width"} do
+    for k,v in ipairs{"shape_border_color", "shape_border_width", "placement"} do
         if args[v] then
             w["set_"..v](w, args[v])
         end

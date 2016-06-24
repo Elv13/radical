@@ -7,7 +7,7 @@ local beautiful = require( "beautiful"         )
 -- Define some wibox.widget extensions
 local function set_tooltip(self, text, args)
   if not text then return end
-  self._tooltip = tooltip(self,text, args)
+  rawset(self, "_tooltip", tooltip(self,text, args))
 end
 
 --- Set a menu for widget "self".
@@ -82,12 +82,12 @@ end
 base._make_widget =base.make_widget
 base.make_widget = function(...)
   local ret = base._make_widget(...)
-  ret.set_tooltip        = set_tooltip
-  ret.set_menu           = set_menu
+  rawset(ret, "set_tooltip" , set_tooltip)
+  rawset(ret, "set_menu"    , set_menu)
 
   -- Textboxes already have it
-  if not ret.get_preferred_size then
-    ret.get_preferred_size = get_preferred_size
+  if not rawget(ret, "get_preferred_size") then
+    rawset(ret, "get_preferred_size", get_preferred_size)
   end
 
   return ret

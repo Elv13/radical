@@ -46,13 +46,15 @@ local arrow_height = 13
 local function gen_arrow_x(data, direction, width, height)
     local at = data.arrow_type
 
+    local pg = data.parent_geometry
+
     if at == base.arrow_type.PRETTY or not at then
         if direction == "left" then
             --TODO
         elseif direction == "right" then
-            data._internal.w:set_yoffset(-(20) - arrow_height)
+            data._internal.w:set_yoffset(-(20) + arrow_height)
         elseif direction == "bottom" then
---             data._internal.w:set_xoffset(-(20) - arrow_height) --TODO negative are broken
+            data._internal.w:set_xoffset(-(20) - arrow_height)
         elseif direction == "top" then
             data._internal.w:set_xoffset(-data._internal.w.width + (20) + arrow_height)
         end
@@ -62,7 +64,11 @@ local function gen_arrow_x(data, direction, width, height)
             data._internal.w:set_yoffset(data._internal.w.height/2 - arrow_height)
         else
             data._arrow_x = width/2 - arrow_height
-            data._internal.w:set_xoffset(data._internal.w.width/2 - arrow_height)
+            if pg then
+                data._internal.w:set_xoffset(-data._internal.w.width/2 + arrow_height + pg.width/2)
+            else
+                data._internal.w:set_xoffset(data._internal.w.width/2 - arrow_height)
+            end
         end
     end
 end

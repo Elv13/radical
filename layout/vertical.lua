@@ -13,14 +13,14 @@ local function item_fit(data,item,self,context, width,height)
 end
 
 function module:setup_item(data,item,args)
-    item._private_data._fit = wibox.widget.background.fit
+    item._private_data._fit = wibox.container.background.fit
 
     if not item._internal.margin_w then return end
 
     item._internal.margin_w.fit = function(...) return item_fit(data,item,...) end
 
     -- Compute the minimum width
-    if data.auto_resize then --FIXME this wont work if thext change
+    if data.auto_resize then --FIXME this wont work if the text change
         local fit_w = item._internal.margin_w:get_preferred_size()
 
         if fit_w < 1000 and (not data._internal.largest_item_w_v or data._internal.largest_item_w_v < fit_w) then
@@ -42,7 +42,7 @@ local function compute_geo(data,width,height,force_values)
     local sw,sh = data._internal.suf_l:get_preferred_size()
     local pw,ph = data._internal.pref_l:get_preferred_size()
     if not data._internal.has_widget then
-        return w,(total and total > 0 and total or visblerow*data.item_height) + ph + sh
+        return w, visblerow*data.item_height + ph + sh
     else
         local sumh = data.widget_fit_height_sum
         local h = (visblerow-#data._internal.widgets)*data.item_height + sumh

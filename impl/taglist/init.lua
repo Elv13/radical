@@ -5,7 +5,7 @@
 -- @license BSD
 ---------------------------------------------------------------------------
 
-local capi = {tag=tag,client=client,screen=screen}
+local capi = {tag=tag,client=client,screen=screen,mouse=mouse}
 
 local radical   = require( "radical"      )
 local tag       = require( "awful.tag"    )
@@ -36,7 +36,7 @@ local module,instances = {},{}
 local cache = setmetatable({}, { __mode = 'k' })
 
 
-module.buttons = { [1] = awful.tag.viewonly,
+module.buttons = { [1] = function(t) t:view_only() end,
                       [2] = awful.tag.viewtoggle,
                       [3] = function(t,menu,item,button_id,mod,geo)
                               local menu = tag_menu(t)
@@ -130,7 +130,7 @@ local function create_item(t,s)
     end
   end)
 
-  item._internal.screen = s
+  item._internal.screen = capi.screen[s]
   item.state[radical.base.item_flags.SELECTED] = t.selected or nil
   cache[t] = item
   item.tag = setmetatable({}, { __mode = 'v' })
@@ -156,7 +156,7 @@ local function track_title(c)
 end
 
 local function tag_activated(t)
-  if not t.activated and cache[t] then
+  if (not t.activated or not t.screen) and cache[t] then
     instances[capi.screen[cache[t]._internal.screen]]:remove(cache[t])
     cache[t] = nil
   end
@@ -171,7 +171,7 @@ local function tag_added(t,b)
   -- Creating items when there is no screen cause random behaviors
   if not item and s then
     create_item(t,s or capi.mouse.screen)
-  elseif item._internal.screen ~= s then
+  elseif item._internal.screen ~= capi.screen[s] then
     if item._internal.screen then
       instances[capi.screen[item._internal.screen]]:remove(item)
     end
@@ -180,11 +180,13 @@ local function tag_added(t,b)
     end
 
     --Allow nil
-    item._internal.screen = s
+    item._internal.screen = capi.screen[s]
   end
 end
 
 local function select(t)
+  if not t.activated then return end
+
   local s = t.selected
   local item = cache[t] or create_item(t,t.screen or capi.mouse.screen)
   if item then

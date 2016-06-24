@@ -12,7 +12,7 @@ local hot_corner  = require( "radical.hot_corner"         )
 local shape       = require( "gears.shape"                )
 local common      = require( "radical.common"             )
 local smart_wibox = require( "radical.smart_wibox"        )
-local placement   = require( "radical.placement"          )
+local aplace      = require( "awful.placement"            )
 
 local default_radius = 10
 local rad = beautiful.dock_corner_radius or default_radius
@@ -76,7 +76,7 @@ end
 local function get_wibox(data, screen)
     if data._internal.w then return data._internal.w end
 
-    data._internal.margin = wibox.layout.margin(data._internal.layout)
+    data._internal.margin = wibox.container.margin(data._internal.layout)
 
     local w = smart_wibox(data._internal.margin, {
         screen             = screen                                         ,
@@ -85,7 +85,9 @@ local function get_wibox(data, screen)
         shape_border_width = 1                                              ,
         shape_border_color = color(data.border_color or data.fg            ),
         bg                 = color(beautiful.bg_dock or beautiful.bg_normal),
+        placement          = false                                          ,
     })
+
 
     data._internal.w = w
 
@@ -95,14 +97,10 @@ local function get_wibox(data, screen)
         adapt_size(data, w.width, w.height, 1)
     end)
 
-    local f = nil
-    if beautiful.dock_always_show then
-        f = placement.attach_struts
-    else
-        f = placement.attach
-    end
-
-    f(w, placement.align, "left", screen or 1)
+    aplace.left(w, {
+        attach          = true,
+        update_workarea = beautiful.dock_always_show
+    })
 
     return w
 end

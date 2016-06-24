@@ -2,7 +2,7 @@ local capi      = {screen = screen}
 local wibox     = require( "wibox"             )
 local util      = require( "awful.util"        )
 local timer     = require( "gears.timer"       )
-local placement = require( "radical.placement" )
+local placement = require( "awful.placement"   )
 
 local module = {}
 
@@ -40,12 +40,18 @@ end
 
 local function create_hot_corner(corner, s)
     local s = s or 1
-    local s_geo = capi.screen[s].geometry
-    local w_geo = capi.screen[s].workarea
-    local size  = corners_geo[corner](s_geo, w_geo)
+
+    local size  = corners_geo[corner] (
+        capi.screen[s].geometry,
+        capi.screen[s].workarea
+    )
+
     local w = wibox(util.table.crush(size, {ontop=true, opacity = 0, visible=true}))
 
-    placement.align(w, corner, s, false, false)
+    placement[corner](w, {
+        parent = capi.screen[s],
+        attach = true,
+    })
 
     local req = {wibox = w, screen = s, corner = corner}
 
@@ -122,7 +128,5 @@ function module.register_wibox(corner, w, s, timeout)
 
     return req
 end
-
---TODO watch for workarea changes
 
 return module

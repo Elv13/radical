@@ -79,7 +79,7 @@ module.get_beg_arrow = function(args)
 end
 
 local function draw_real(self, context, cr, width, height)
---   wibox.widget.background.draw(self, context, cr, width, height)
+--   wibox.container.background.draw(self, context, cr, width, height)
   cr:save()
 
   -- This item style require negative padding, this is a little dangerous to

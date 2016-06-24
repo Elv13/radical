@@ -42,7 +42,7 @@ local function new(data)
             widget = infoshapes  ,
         },
         set_data = set_data,
-        widget   = wibox.widget.background
+        widget   = wibox.container.background
     }
 end
 
