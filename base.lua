@@ -72,49 +72,50 @@ theme.register_color(module.item_flags.HIGHLIGHT , "highlight" , "highlight" , t
 
 
 local function filter(data)
-  if not data.filter == false then
-    local fs,visible_counter = data.filter_string:lower(),0
-    data._internal.visible_item_count = 0
-    for k,v in pairs(data.items) do
-      local tmp = v._filter_out
-      v._filter_out = (v.text:lower():find(fs) == nil)-- or (fs ~= "")
-      if tmp ~= v._filter_out then
-        v.widget.visible = not v._filter_out
+    local max_items = data.max_items or 9999999
+
+    local fs = data.filter_string ~= "" and data.filter_string:lower() or nil
+
+    local start_at, visible_counter = data._start_at or -1, 0
+
+    -- There is 2 factors to consider to display the item:
+    --
+    -- * Is the item within range
+    -- * Is the item matching the filter
+    --
+    for k,v in ipairs(data.items) do
+
+      v.widget.visible =  (not fs or v.text and v.text:lower():find(fs) ~= nil)
+        and k >= start_at and visible_counter < max_items
+
+      if v.widget.visible then
+        visible_counter = visible_counter + 1
+        v.f_key         = visible_counter
       end
-      if (not v._filter_out) and (not v.widget.visible == false) then
-        visible_counter = visible_counter + v.height
-        data._internal.visible_item_count = data._internal.visible_item_count +1
-        v.f_key = data._internal.visible_item_count
-      end
+
+      -- Don't waste CPU
+      if visible_counter >= max_items then break end
+
     end
-    data._total_item_height = visible_counter
+
+    data._internal.visible_item_count = visible_counter
 
     -- Make sure to select an item
-    if data._current_item and data._current_item._filter_out then
+    if data._current_item and not data._current_item.widget.visible then
       local n = data.next_item
       if n then
         n.selected = true
       end
     end
-
-  end
 end
 
 -- Get the number of visible rows
 local function get_visible_row_count(data)
-  local visblerow = data.filter_string == "" and data.rowcount or data._internal.visible_item_count
-  if data.max_items and data.max_items < data.rowcount then
-    visblerow = data.max_items
-    if data.filter_string ~= "" then
-      local cur,vis = (data._start_at or 1),0
-      while (data._internal.items[cur] and data._internal.items[cur]) and cur < data.max_items + (data._start_at or 1) do
-        vis = vis + (data._internal.items[cur]._filter_out and 0 or 1)
-        cur = cur +1
-      end
-      visblerow = vis
-    end
+  if not data._internal.visible_item_count then
+    filter(data)
   end
-  return visblerow
+
+  return data._internal.visible_item_count
 end
 
 ------------------------------------KEYBOARD HANDLING-----------------------------------
@@ -163,10 +164,8 @@ local function activateKeyboard(data)
         capi.keygrabber.stop()
       elseif (key == 'BackSpace') and data.filter_string ~= "" and data.filter == true then
         data.filter_string = data.filter_string:sub(1,-2)
-        filter(data)
       elseif data.filter == true and key:len() == 1 then
         data.filter_string = data.filter_string .. key:lower()
-        filter(data)
       else
         data.visible = false
         capi.keygrabber.stop()
@@ -211,6 +210,13 @@ local function add_item(data,args)
 
   item.index = data.rowcount
   data:emit_signal("item::added",item)
+
+  -- Keep the filter up-to-date
+  if data.max_items and data.rowcount - (data._start_at or 0) > data.max_items then
+--FIXME    and data._internal.visible_item_count < data.max_items then
+    filter(data)
+  end
+
   return item
 end
 
@@ -276,11 +282,6 @@ local function get_widget_fit_sum(data)
     w,h = w + fw,h + fh
   end
   return w,h
-end
-
-local function get_widget_fit_width_sum(data)
-  -- TODO query this from the layout itself
-  return get_widget_fit_sum(data)
 end
 
 local function get_widget_fit_height_sum(data)
@@ -386,12 +387,12 @@ local function new(args)
     autogen_signals = true,
   })
   internal.private_data = private_data
-  
+
   -- Methods
   data.add_item,data.add_widget,data.add_embeded_menu,data._internal,data.add_key_binding = add_item,add_widget,add_embeded_menu,internal,add_key_binding
   data.add_prefix_widget,data.add_suffix_widget,data.add_items,data.add_widgets=add_prefix_widget,add_suffix_widget,add_items,add_widgets
   data.add_colors_namespace = add_colors_namespace
-  
+
   -- Load colors
   theme.setup_colors(data,args)
 
@@ -401,8 +402,7 @@ local function new(args)
   data.get_items                 = function(_) return internal.items end
   data.get_rowcount              = function(_) return #internal.items end
   data.get_visible_row_count     = get_visible_row_count
-  data.get_widget_fit_height_sum = get_widget_fit_height_sum
-  data.get_widget_fit_width_sum  = get_widget_fit_width_sum
+  data.get_widget_fit_height_sum = get_widget_fit_height_sum --TODO remove
 
   -- Setters
   data.set_auto_resize  = function(_,val) private_data[""] = val end
@@ -467,14 +467,14 @@ local function new(args)
 
   data.get_previous_item = function(_)
     local candidate,idx = internal.items[(data.current_index or 0)-1],(data.current_index or 0)-1
-    while candidate and (candidate.widget.visible == false or candidate._filter_out) and idx > 0 do
+    while candidate and (candidate.widget.visible == false) and idx > 0 do
       candidate,idx = internal.items[idx - 1],idx-1
     end
     return (candidate or internal.items[data.rowcount])
   end
   data.get_next_item     = function(_)
     local candidate,idx = internal.items[(data.current_index or 0)+1],(data.current_index or 0)+1
-    while candidate and (candidate.widget.visible == false or candidate._filter_out) and idx <= data.rowcount do
+    while candidate and (candidate.widget.visible == false) and idx <= data.rowcount do
       candidate,idx = internal.items[idx + 1],idx+1
     end
     return (candidate or internal.items[1])
@@ -490,6 +490,10 @@ local function new(args)
       end
     end)
   end
+
+  -- Make sure the filter doesn't get outdated
+  data:connect_signal("max_items::changed"    , filter)
+  data:connect_signal("filter_string::changed", filter)
 
   function data:add_key_hook(mod, key, event, func)
     if key and event and func then
@@ -512,19 +516,19 @@ local function new(args)
     data:emit_signal("clear::menu")
   end
 
-  function data:swap(item1,item2)
+  function data:swap(item1,item2) --TODO can item.index be used?
     if not item1 or not item2 then return end
     if not item1 or not item2 and item1 ~= item2 then return end
     local idx1,idx2
     for k,v in ipairs(internal.items) do --rows
-      for k2,v2 in ipairs(v) do --columns
-        if item2 == v2 then
-          idx2 = k
-        end
-        if item1 == v2 then
-          idx1 = k
-        end
+      if item2 == v then
+        idx2 = k
       end
+
+      if item1 == v then
+        idx1 = k
+      end
+
       if idx1 and idx2 then
         break
       end
@@ -594,17 +598,9 @@ local function new(args)
         current_item:set_selected(false,true)
       end
       data._start_at  = (data._start_at or 1) - 1
-      internal.items[data._start_at].widget:set_visible(false)
-      data:emit_signal("_hidden::changed",internal.items[data._start_at])
-      internal.items[data._start_at+data.max_items].widget:set_visible(true)
-      data:emit_signal("_hidden::changed",internal.items[data._start_at+data.max_items])
+
       filter(data)
 
-      --HACK upstream bug
-      internal.items[data._start_at].widget:emit_signal("widget::layout_changed")
-      internal.items[data._start_at+data.max_items].widget:emit_signal("widget::layout_changed")
-      data._internal.layout:emit_signal("widget::redraw_needed")
-      data._internal.layout:emit_signal("widget::layout_changed")
     end
   end
 
@@ -615,17 +611,9 @@ local function new(args)
         current_item:set_selected(false,true)
       end
       data._start_at  = (data._start_at or 1) + 1
-      internal.items[data._start_at-1].widget:set_visible(true)
-      data:emit_signal("_hidden::changed",internal.items[data._start_at-1])
-      internal.items[data._start_at-1+data.max_items].widget:set_visible(false)
-      data:emit_signal("_hidden::changed",internal.items[data._start_at-1+data.max_items])
+
       filter(data)
 
-      --HACK upstream bug
-      internal.items[data._start_at-1].widget:emit_signal("widget::layout_changed")
-      internal.items[data._start_at-1+data.max_items].widget:emit_signal("widget::layout_changed")
-      data._internal.layout:emit_signal("widget::redraw_needed")
-      data._internal.layout:emit_signal("widget::layout_changed")
     end
   end
 
