@@ -39,7 +39,7 @@ local function mouse_leave(w)
 end
 
 local function create_hot_corner(corner, s)
-    local s = s or 1
+    s = s or 1
 
     local size  = corners_geo[corner] (
         capi.screen[s].geometry,

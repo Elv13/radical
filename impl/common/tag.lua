@@ -2,8 +2,6 @@ local radical = require("radical")
 local capi = { screen = screen, client=client}
 local awful     = require( "awful"      )
 local beautiful =  require("beautiful")
-local suits = require("awful.layout.suit")
-local wibox = require("wibox")
 local tag_list = nil
 
 local module = {}
@@ -32,7 +30,7 @@ local function createTagList(aScreen,args)
 end
 
 function module.listTags(args, menu)
-  local args = args or {}
+  args = args or {}
   if capi.screen.count() == 1 or args.screen then
     return createTagList(args.screen or 1,args or {})
   else
@@ -48,7 +46,8 @@ function module.layouts(menu,layouts)
   local cur = awful.layout.get(capi.client.focus and capi.client.focus.screen)
   local screenSelect = menu or radical.context {}
 
-  local layouts = layouts or awful.layout.layouts
+  layouts = layouts or awful.layout.layouts
+
   for i, layout_real in ipairs(layouts) do
     local layout2 = awful.layout.getname(layout_real)
     local is_current = cur and ((layout_real == cur) or (layout_real.name == cur.name))
@@ -68,8 +67,7 @@ end
 
 -- Widget to replace the default awesome layoutbox
 function module.layout_item(menu,args)
-  local args = args or {}
-  local ib = wibox.widget.imagebox()
+  args = args or {}
   local screen = args.screen or 1
   local sub_menu = nil
 

@@ -7,7 +7,6 @@ local capi = { client = client, mouse = mouse, screen = screen}
 local module = {}
 
 local function is_checked(m,i)
-  local t = i._tag
   return true
 end
 
@@ -23,9 +22,9 @@ local function toggle_tag(i,m)
 end
 
 local function new(args)
-  local args = args or {}
+  args = args or {}
 
-  local t,auto_release = tag.selected(capi.client.focus and capi.client.focus.screen or capi.mouse.screen),args.auto_release
+  local auto_release = args.auto_release
   local currentMenu = radical.box({filter = true, show_filter=not auto_release, autodiscard = true,
     disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[capi.client.focus and capi.client.focus.screen or capi.mouse.screen]).geometry.width)/2),
     icon_transformation = beautiful.alttab_icon_transformation,filter_underlay="Use [Shift] and [Control] to toggle clients",filter_underlay_color=beautiful.menu_bg_normal,

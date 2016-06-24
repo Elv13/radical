@@ -7,7 +7,6 @@
 ---------------------------------------------------------------------------
 
 local capi = {client = client,tag=tag,screen=screen}
-local rawset = rawset
 local radical     = require( "radical"      )
 local tag         = require( "awful.tag"    )
 local beautiful   = require( "beautiful"    )
@@ -44,10 +43,10 @@ module.buttons = {
   end,
   [3] = function(c,menu,item,button_id,mod, geo)
     client_menu.client = c
-    local menu = client_menu()
+    local m = client_menu()
 --     menu.parent_geometry = geo
-    menu.visible = not menu.visible
-    menu._internal.w:move_by_parent(nil, "cursor")
+    m.visible = not m.visible
+    m._internal.w:move_by_parent(nil, "cursor")
   end,
   [4] = function(c,menu,item,button_id,mod, geo)
     client.focus.byidx(1)
@@ -60,10 +59,6 @@ module.buttons = {
 }
 
 local function display_screenshot(c,geo,visible)
-    if not visible and prev_menu then
-        prev_menu.visible = false
-        return
-    end
     if not c then return end
 
     local dgeo = geo.drawable.drawable:geometry()
@@ -85,7 +80,7 @@ local function sticky_callback(c)
   sticky[c] = val and true or nil
   local menu = instances[capi.screen[c.screen]].menu
   local is_in_tag = false
-  for _,t in ipairs(tag.selectedlist(k)) do
+  for _,t in ipairs(tag.selectedlist(c.screen)) do
     for k2,v2 in ipairs(c:tags()) do
       if v2 == t then
         is_in_tag = true
@@ -263,7 +258,6 @@ end
 -- Reload the tag
 local function tag_screen_changed(t)
   if not t.selected then return end
-  local screen = t.screen
   load_clients(t)
 end
 
@@ -340,7 +334,7 @@ local function new(screen)
 
   load_clients(screen.selected_tag)
 
-  menu:connect_signal("button::press",function(menu,item,button_id,mod,geo)
+  menu:connect_signal("button::press",function(_,item,button_id,mod,geo)
     if module.buttons and module.buttons[button_id] then
       module.buttons[button_id](item.client,menu,item,button_id,mod,geo)
     end
@@ -353,8 +347,8 @@ local function new(screen)
   return menu,menu._internal.widget
 end
 
-function module.item(client)
-  return _cache[client]
+function module.item(c)
+  return _cache[c]
 end
 
 -- Global callbacks

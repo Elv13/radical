@@ -58,7 +58,7 @@ local function setup_drawable(data)
 end
 
 local function new(args)
-    local args                   = args or {}
+    args                         = args or {}
     args.internal                = args.internal or {}
     args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
     args.internal.setup_item     = args.internal.setup_item or common.setup_item

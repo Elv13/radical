@@ -11,7 +11,6 @@ local radical   = require( "radical"      )
 local tag       = require( "awful.tag"    )
 local beautiful = require( "beautiful"    )
 local color     = require( "gears.color"  )
-local client    = require( "awful.client" )
 local wibox     = require( "wibox"        )
 local awful     = require( "awful"        )
 local theme     = require( "radical.theme")
@@ -39,10 +38,10 @@ local cache = setmetatable({}, { __mode = 'k' })
 module.buttons = { [1] = function(t) t:view_only() end,
                       [2] = awful.tag.viewtoggle,
                       [3] = function(t,menu,item,button_id,mod,geo)
-                              local menu = tag_menu(t)
-                              menu.parent_geometry = geo
-                              menu.visible = true
-                              menu._internal.w:move_by_parent(geo, "cursor")
+                              local m = tag_menu(t)
+                              m.parent_geometry = geo
+                              m.visible = true
+                              m._internal.w:move_by_parent(geo, "cursor")
                             end,
                       [4] = function(t) awful.tag.viewnext(t.screen) end,
                       [5] = function(t) awful.tag.viewprev(t.screen) end,
@@ -111,7 +110,6 @@ local function create_item(t,s)
     end)
   end
 
-
   item.tw = tw
 
   if tag.getproperty(t,"clone_of") then
@@ -119,7 +117,7 @@ local function create_item(t,s)
   end
 --   menu:move(item,index)
 
-  menu:connect_signal("button::press",function(menu,item,button_id,mod,geo)
+  menu:connect_signal("button::press",function(_,_,button_id,mod,geo)
     if module.buttons and module.buttons[button_id] then
       if item.tag[1] then
         assert(type(item.tag[1]) == "tag")

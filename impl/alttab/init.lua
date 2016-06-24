@@ -1,4 +1,4 @@
-local setmetatable,type = setmetatable, type
+local setmetatable = setmetatable
 local ipairs, pairs     = ipairs, pairs
 local button    = require( "awful.button"         )
 local beautiful = require( "beautiful"            )
@@ -149,7 +149,7 @@ local function new(args)
     local pref_bg = wibox.container.background()
     local pref_l = wibox.layout.align.horizontal()
     pref_bg.fit = function(s,c,w,h)
-      local w2,h2 = wibox.container.background.fit(s,c,w,h)
+      local w2 = wibox.container.background.fit(s,c,w,h)
       return w2,currentMenu.item_height
     end
     pref_bg:set_bg(currentMenu.bg_alternate)
@@ -223,7 +223,6 @@ local function new(args)
       checkable     = (not auto_release) and v.screen == scr,
       checked       = v.screen == scr and (not auto_release and is_in_tag(t,v)) or nil,
       button1       = function(a,b,c,d,no_hide)
-        local t = focusTag[v] or v:tags()[1]
         if t and t.selected == false and not util.table.hasitem(v:tags(),capi.screen[v.screen].selected_tag) then
           lock_history = true
           tag.viewonly(t)

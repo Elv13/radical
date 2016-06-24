@@ -1,11 +1,7 @@
-local capi = { screen = screen, }
 local setmetatable = setmetatable
-local ipairs,pairs = ipairs,pairs
-local type         = type
 local radical   = require( "radical"    )
 local beautiful = require( "beautiful"  )
 local awful     = require( "awful"      )
-local util      = require( "awful.util" )
 local wibox     = require( "wibox"      )
 local listTags  = require( "radical.impl.common.tag" ).listTags
 local singalMenu = require( "radical.impl.common.client" ).signals
@@ -60,7 +56,7 @@ local function new(screen, args)
     return mainMenu
   end
   mainMenu = radical.context()
-  local itemVisible,itemVSticky,itemVFloating,itemMaximized,itemMoveToTag,itemSendSignal,itemRenice,itemNewTag,itemLayer,itemClose
+  local itemVisible,itemVSticky,itemVFloating,itemMaximized
 
   itemVisible    = mainMenu:add_item{
     text    = "Visible",
@@ -94,23 +90,23 @@ local function new(screen, args)
       itemMaximized.checked    = module.client.fullscreen 
     end
   }
-  itemMoveToTag  = mainMenu:add_item{text="Move to tag"       , sub_menu = function() return listTags() end,}
-  itemSendSignal = mainMenu:add_item{text="Send Signal"       , sub_menu = singalMenu()                    ,}
-  itemRenice     = mainMenu:add_item{text="Renice"            , checked  = true , button1 = function()  end,}
-  itemNewTag     = mainMenu:add_item{text="Move to a new Tag" , button1  = function()
+  mainMenu:add_item{text="Move to tag"       , sub_menu = function() return listTags() end,}
+  mainMenu:add_item{text="Send Signal"       , sub_menu = singalMenu()                    ,}
+  mainMenu:add_item{text="Renice"            , checked  = true , button1 = function()  end,}
+  mainMenu:add_item{text="Move to a new Tag" , button1  = function()
     local t = createNewTag()
     module.client:tags({t})
     awful.tag.viewonly(t)
     mainMenu.visible = false
   end}
 
-  itemLayer     = mainMenu:add_item({text="Layer"       , sub_menu=layerMenu(), button1 = function()  end})
+  mainMenu:add_item({text="Layer"       , sub_menu=layerMenu(), button1 = function()  end})
   mainMenu:add_item{text="Add widgets",sub_menu=function() return extensions.extensions_menu(module.client) end}
   mainMenu:add_widget(radical.widgets.separator())
 
   local ib = wibox.widget.imagebox()
   ib:set_image(beautiful.titlebar_close_button_normal)
-  itemClose      = mainMenu:add_item({text="Close",suffix_widget = ib, button1 = function() if module.client ~= nil then  module.client:kill();mainMenu.visible=false end end})
+  mainMenu:add_item({text="Close",suffix_widget = ib, button1 = function() if module.client ~= nil then  module.client:kill();mainMenu.visible=false end end})
 
   return mainMenu
 end

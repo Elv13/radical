@@ -1,16 +1,14 @@
 -- This module try to track tags relative index
 -- It will emit signals the widget can rely on 
 local capi = {tag=tag,screen=screen}
-local tag    = require( "awful.tag"      )
 local object = require( "radical.object" )
-local awful = require("awful")
 
 local cache = {}
 local init = false
 local screen_cache = setmetatable({}, { __mode = 'k' })--TODO this suck
 
 local function reload(t,s)
-  local s        = s or t.screen or screen_cache[t]
+  s              = s or t.screen or screen_cache[t]
   local tracker  = cache[s]
 
   if not tracker then return end
@@ -51,9 +49,8 @@ end]]--
 local function new(s)
   if cache[s] then return cache[s] end
 
-  local tracker,private_data = object({
+  local tracker = object({
     private_data = {
-      widget = widget,
       selected = false,
     },
     autogen_getmap  = true,

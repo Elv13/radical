@@ -1,13 +1,10 @@
 local setmetatable = setmetatable
 local pairs,ipairs = pairs, ipairs
-local type,string  = type,string
-local print,unpack = print, unpack
 local table        = table
 local beautiful    = require( "beautiful"               )
 local util         = require( "awful.util"              )
 local aw_key       = require( "awful.key"               )
 local object       = require( "radical.object"          )
-local vertical     = require( "radical.layout.vertical" )
 local theme        = require( "radical.theme"           )
 local item_mod     = require( "radical.item"            )
 local common       = require( "radical.common"          )
@@ -121,16 +118,15 @@ end
 ------------------------------------KEYBOARD HANDLING-----------------------------------
 local function activateKeyboard(data)
   if not data then return end
-  if not data or grabKeyboard == true then return end
+
   if (not (data._internal.private_data.enable_keyboard == false)) and data.visible == true then
     capi.keygrabber.run(function(mod, key, event)
       for k,v in pairs(data._internal.filter_hooks or {}) do --TODO modkeys
         if (k.key == "Mod4" or k.key == "Mod1") and (key == "End" or key == "Super_L" or key == "Alt_L") then
-          local found = false
-          for k3,v3 in ipairs(mod) do
-            for k4,v4 in ipairs({"Mod4","Mod1"})do
+          for _,v3 in ipairs(mod) do
+            for _,v4 in ipairs({"Mod4","Mod1"})do
               if v3 == v4 and event == k.event then
-                local retval,self = v(data,mod)
+                local _,self = v(data,mod)
                 if self and type(self) == "table" then
                   data = self
                 end
@@ -260,7 +256,7 @@ local function add_widget(data,widget,args)
 end
 
 local function add_widgets(data,widgets)
-  for k,item in ipairs(widgets) do
+  for _,item in ipairs(widgets) do
     data:add_widget(item)
   end
 end
@@ -277,7 +273,7 @@ end
 local function get_widget_fit_sum(data)
   local h,w = 0,0
   -- TODO query this from the layout itself
-  for k,v in ipairs(data._internal.widgets) do
+  for _,v in ipairs(data._internal.widgets) do
     local fw,fh = v.widget:get_preferred_size()
     w,h = w + fw,h + fh
   end
@@ -286,7 +282,7 @@ end
 
 local function get_widget_fit_height_sum(data)
   -- TODO query this from the layout itself
-  local w,h = get_widget_fit_sum(data)
+  local _,h = get_widget_fit_sum(data)
   return h
 end
 
@@ -308,7 +304,7 @@ end
 
 ---------------------------------MENU HANDLING----------------------------------
 local function new(args)
-  local args = args or {}
+  args = args or {}
   local internal = args.internal or {}
   if not internal.items then internal.items = {} end
   if not internal.widgets then internal.widgets = {} end
@@ -398,7 +394,7 @@ local function new(args)
 
   -- Getters
   data.get_is_menu               = function(_) return true end
-  data.get_margin                = function(_) return {left=0,bottom=0,right=0,left=0} end
+  data.get_margin                = function(_) return {top=0,bottom=0,right=0,left=0} end
   data.get_items                 = function(_) return internal.items end
   data.get_rowcount              = function(_) return #internal.items end
   data.get_visible_row_count     = get_visible_row_count
@@ -437,7 +433,7 @@ local function new(args)
     end
   end
 
-  data.add_colors_group = function(data,section)
+  data.add_colors_group = function(_,section)
     theme.add_section(data,section,args)
   end
 
@@ -481,11 +477,9 @@ local function new(args)
   end
 
   --Repaint when appearance properties change
-  for k,v in ipairs({"bg","fg","border_color","border_width","item_height","width","arrow_type"}) do
+  for _,v in ipairs({"bg","fg","border_color","border_width","item_height","width","arrow_type"}) do
     data:connect_signal(v.."::changed",function()
-      if data.visible and data.style then
---         data.style(data)
-      else
+      if not (data.visible and data.style) then
         data.has_changed = true
       end
     end)
@@ -627,11 +621,6 @@ local function new(args)
         parent = parent.parent_geometry and parent.parent_geometry.is_menu and parent.parent_geometry
       end
     end
-  end
-
-  if private_data.layout then
-    local f = private_data.layout.setup_key_hooks or common.setup_key_hooks
-    f(value, data)
   end
 
   data._internal.setup_drawable(data)
