@@ -30,7 +30,7 @@ local function setup_drawable(data)
     data.layout = data.layout or layout.vertical
 
     internal.layout = data.layout(data)
-    internal.margin = wibox.layout.margin(internal.layout)
+    internal.margin = wibox.container.margin(internal.layout)
 
     -- Init
     internal.w = smart_wibox(internal.margin, {

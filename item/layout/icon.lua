@@ -11,7 +11,7 @@ local common       = require( "radical.item.common"            )
 local module = {}
 
 local function after_draw_children(self, context, cr, width, height)
-    wibox.widget.background.after_draw_children(self, context, cr, width, height)
+    wibox.container.background.after_draw_children(self, context, cr, width, height)
     --TODO get rid of this, use the stack container
     if self._item.overlay_draw then
         self._item.overlay_draw(context,self._item,cr,width,height)
@@ -67,7 +67,7 @@ local function create_item(item,data,args)
         if data._internal.layout.item_fit then
             return data._internal.layout.item_fit(data,item,box,context, w, h)
         else
-            return wibox.widget.background.fit(box,context, w,h)
+            return wibox.container.background.fit(box,context, w,h)
         end
 
         return 0,0
@@ -121,20 +121,20 @@ local function create_item(item,data,args)
             },
             left   = data.fkeys_prefix and 0 or nil,
             id     = "main_margin",
-            layout = wibox.layout.margin,
+            layout = wibox.container.margin,
         },
 
         -- Attributes
         fg     = item._private_data.fg,
         _item  = item,
-        widget = wibox.widget.background
+        widget = wibox.container.background
     }
 
     item.widget             = w
     item._internal.icon_w   = icon
     item._internal.margin_w = item.widget:get_children_by_id("main_margin")[1]
     item._internal.text_w   = item.widget:get_children_by_id("main_text")[1]
-    item._private_data._fit = wibox.widget.background.fit
+    item._private_data._fit = wibox.container.background.fit
     w.after_draw_children   = after_draw_children
     w.fit                   = bg_fit
 

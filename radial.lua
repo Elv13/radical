@@ -387,7 +387,7 @@ local function setup_drawable(data)
 
   --Init
 --   internal.w = wibox({})
-  internal.margin = wibox.layout.margin()
+  internal.margin = wibox.container.margin()
   if not data.layout then
     data.layout = layout.vertical
   end

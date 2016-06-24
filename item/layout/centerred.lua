@@ -1,8 +1,8 @@
 local setmetatable = setmetatable
-local wibox      = require( "wibox"                          )
-local util       = require( "awful.util"                     )
-local margins2   = require( "radical.margins"                )
-local common     = require( "radical.item.common"            )
+local wibox      = require( "wibox"               )
+local util       = require( "awful.util"          )
+local margins2   = require( "radical.margins"     )
+local common     = require( "radical.item.common" )
 
 local function create_item(item,data,args)
 
@@ -20,9 +20,9 @@ local function create_item(item,data,args)
                 layout = wibox.layout.align.horizontal,
             },
             id     = "main_margin",
-            layout = wibox.layout.margin
+            layout = wibox.container.margin
         },
-        widget = wibox.widget.background,
+        widget = wibox.container.background,
     }
     item.widget             = w
     item._internal.margin_w = item.widget:get_children_by_id("main_margin")[1]

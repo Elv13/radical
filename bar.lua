@@ -21,12 +21,12 @@ local function setup_drawable(data)
                 layout  = internal.layout_func or wibox.layout.fixed.horizontal
             },
             id     = "main_margin"      ,
-            layout = wibox.layout.margin,
+            layout = wibox.container.margin,
         },
         shape              = data.shape or shape.rectangle or nil,
         shape_border_width = data.border_width                   ,
         shape_border_color = data.border_color                   ,
-        widget             = wibox.widget.background             ,
+        widget             = wibox.container.background             ,
     }
     internal.layout       = internal.widget:get_children_by_id("main_layout")[1]
     internal.margin       = internal.widget:get_children_by_id("main_margin")[1]

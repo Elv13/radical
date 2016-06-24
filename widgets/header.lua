@@ -10,11 +10,12 @@ local module = {}
 
 local function new(data,text,args)
   local args = args or {}
-  local bg = wibox.widget.background()
+  local bg = wibox.container.background()
   local infoHeader     = wibox.widget.textbox()
   infoHeader:set_font("")
   infoHeader:set_markup( " <span color='".. beautiful.bg_normal .."' font='DejaVu Sans Mono' size='small' font_weight='bold'>".. text .."</span> " )
   local l = wibox.layout.align.horizontal()
+  print("\n\n\nAAAAAAAAAA",l.set_first, l.set_left)
   l:set_left(infoHeader)
   bg:set_widget(l)
   bg:set_bg(data.bg_header)

@@ -15,10 +15,10 @@ end
 -- Create the actual widget
 local function create_item(item,data,args)
   -- Background
-  local bg = wibox.widget.background()
+  local bg = wibox.container.background()
 
   -- Margins
-  local m = wibox.layout.margin(la)
+  local m = wibox.container.margin(la)
   local mrgns = margins2(m,(item.item_style or data.item_style).margins)
   item.get_margins = function()
     return mrgns

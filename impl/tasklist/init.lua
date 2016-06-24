@@ -45,9 +45,9 @@ module.buttons = {
   [3] = function(c,menu,item,button_id,mod, geo)
     client_menu.client = c
     local menu = client_menu()
-    menu.parent_geometry = geo
+--     menu.parent_geometry = geo
     menu.visible = not menu.visible
-    menu._internal.w:move_by_parent(geo, "cursor")
+    menu._internal.w:move_by_parent(nil, "cursor")
   end,
   [4] = function(c,menu,item,button_id,mod, geo)
     client.focus.byidx(1)
@@ -236,6 +236,8 @@ end
 
 -- Clear the menu and repopulate it
 local function load_clients(t)
+  if not t then return end
+
   local screen = t.screen
   if not t or not screen or not instances[capi.screen[screen]] then return end
   local menu = instances[capi.screen[screen]].menu

@@ -59,11 +59,11 @@ local function new(data)
     end
     ib.draw = function(self, context, cr, width, height)
       if width > 0 and height > 0 then
-        cr:set_source_surface(self._image, width/2 - self._image:get_width()/2, 0)
+        cr:set_source_surface(self._private.image, width/2 - self._private.image:get_width()/2, 0)
       end
       cr:paint()
     end
-    scroll_w[v] = wibox.widget.background()
+    scroll_w[v] = wibox.container.background()
     scroll_w[v]:set_widget(ib)
     scroll_w[v].visible = true
     data.item_style({widget=scroll_w[v]},{color=data.bg_highlight})

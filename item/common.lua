@@ -14,9 +14,11 @@ end
 -- Setup the item icon
 function module.setup_icon(item,data) --TODO maybe create a proper widget
     local icon = wibox.widget.imagebox()
-    icon._data = data
-    icon._item = item
-    icon.set_image = set_icon
+
+    rawset(icon, "_data"    , data    )
+    rawset(icon, "_item"    , item    )
+    rawset(icon, "set_image", set_icon)
+
     if item.icon then
         icon:set_image(item.icon)
     end
@@ -38,6 +40,10 @@ function module.setup_fkey(item,data)
         end)
     end
     item.get_f_key = function() return item._internal.f_key end
+
+    if item._internal.f_key then
+        item:set_f_key(item._internal.f_key)
+    end
 end
 
 -- Proxy all events to the parent

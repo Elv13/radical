@@ -15,11 +15,7 @@ local function new(args)
 
   w:set_shape (shape.rounded_rect, 10)
 
-  local function f() placement.centered(w) end
-
-  w:connect_signal("property::width" ,f)
-  w:connect_signal("property::height",f)
-  f()
+  w.placement = placement.centered
 
   return ret
 end

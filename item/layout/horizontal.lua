@@ -89,7 +89,7 @@ local function create_item(item,data,args)
                     {
                         icon                                    ,
                         right  = 3                              ,
-                        widget = wibox.layout.margin            ,
+                        widget = wibox.container.margin         ,
                     },
                     args.prefix_widget                          ,
 
@@ -134,7 +134,7 @@ local function create_item(item,data,args)
 
             -- Attributes
             id     = "main_margin"      ,
-            layout = wibox.layout.margin,
+            layout = wibox.container.margin,
         },
 
         -- Attributes
@@ -142,7 +142,7 @@ local function create_item(item,data,args)
         tooltip = item.tooltip           ,
         _item   = item                   ,
         _data   = data                   ,
-        widget  = wibox.widget.background,
+        widget  = wibox.container.background,
     }
 
     -- Make some widgets easier to access

@@ -77,9 +77,5 @@ local function new(s)
   return tracker
 end
 
-
-capi.tag.add_signal("property::index2")
-
-
 return setmetatable({}, { __call = function(_, ...) return new(...) end })
 -- kate: space-indent on; indent-width 2; replace-tabs on;

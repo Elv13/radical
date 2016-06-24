@@ -19,7 +19,7 @@ end
 
 local function after_draw_children_top(self, context, cr, width, height)
   cr:save()
-  cr:set_source(color(self.background))
+  cr:set_source(color(self._private.background))
   cr:rectangle(0, 0, width, default_height)
   cr:fill()
   cr:restore()
@@ -27,7 +27,7 @@ end
 
 local function after_draw_children_bottom(self, context, cr, width, height)
   cr:save()
-  cr:set_source(color(self.background))
+  cr:set_source(color(self._private.background))
   cr:rectangle(0, height -default_height, width, default_height)
   cr:fill()
   cr:restore()

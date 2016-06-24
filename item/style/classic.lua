@@ -13,16 +13,16 @@ local module = {
 }
 
 local function horizontal(self, context, cr, width, height)
-  if self._item and self._shape_border_color then
-    cr:set_source(color(self._shape_border_color))
+  if self._item and self._item.item_border_color then
+    cr:set_source(color(self._item.item_border_color))
     cr:rectangle(0, height -1, width, 1)
     cr:fill()
   end
 end
 
 local function vertical(self, context, cr, width, height)
-  if self._item and self._shape_border_color then
-    cr:set_source(color(self._shape_border_color))
+  if self._item and self._item.item_border_color then
+    cr:set_source(color(self._item.item_border_color))
     cr:rectangle(width-1, 0, 1, height)
     cr:fill()
   end
