@@ -35,7 +35,7 @@ function module.setup_fkey(item,data)
         item._internal.f_key = value
         data:remove_key_hook("F"..value)
         data:add_key_hook({}, "F"..value      , "press", function()
-            item.button1(data,menu)
+            item.button1(data)
             data.visible = false
         end)
     end
@@ -48,13 +48,13 @@ end
 
 -- Proxy all events to the parent
 function module.setup_event(data,item,widget)
-    local widget = widget or item.widget
+    widget = widget or item.widget
 
     -- Setup data signals
     widget:connect_signal("button::press",function(_,__,___,id,mod,geo)
         local mods_invert = {}
         for k,v in ipairs(mod) do
-            mods_invert[v] = i
+            mods_invert[v] = k
         end
 
         item.state[4] = true
@@ -64,7 +64,7 @@ function module.setup_event(data,item,widget)
     widget:connect_signal("button::release",function(wdg,__,___,id,mod,geo)
         local mods_invert = {}
         for k,v in ipairs(mod) do
-            mods_invert[v] = i
+            mods_invert[v] = k
         end
         item.state[4] = nil
         data:emit_signal("button::release",item,id,mods_invert,geo)

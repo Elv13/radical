@@ -25,13 +25,14 @@ end
 -- @tparam[opt=widget] The position mode (see `radical.placement`)
 local function set_menu(self,menu, event, button_id, mode)
   if not menu then return end
-  local event = event or "button::pressed"
-  local button_id = button_id or 1
+
+  event = event or "button::pressed"
+  button_id = button_id or 1
   mode = mode or "widget"
 
 
   local function trigger(_, geo)
-    local geo = geo or _
+    geo = geo or _
     local m =  menu
 
     if self._data and self._data.is_menu then
@@ -55,7 +56,7 @@ local function set_menu(self,menu, event, button_id, mode)
   end
 
   if event == "button::pressed" then
-    local current,bt = self:buttons(),aw_button({},b,trigger)
+    local current,bt = self:buttons(),aw_button({},button_id,trigger)
     for k, v in pairs(bt) do
       current[type(k) == "number" and (#current+1) or k] = v
     end
@@ -63,11 +64,11 @@ local function set_menu(self,menu, event, button_id, mode)
     self:connect_signal(event, trigger)
   end
   self._menu = menu
-  return bt
+  return button_id
 end
 
 local function get_preferred_size(self, context, width, height)
-  local context = context or 1
+  context = context or 1
 
   if type(context) == "number" then
     context = {dpi=beautiful.xresources.get_dpi(context)}

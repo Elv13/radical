@@ -34,7 +34,8 @@ local function setup_drawable(data)
     --Getters
     data.get_visible = function() return true end
     data.get_margins = common.get_margins
-    function data:get_widget()
+
+    function data.get_widget()
         return internal.widget
     end
 
@@ -48,7 +49,7 @@ local function setup_drawable(data)
 end
 
 local function new(args)
-    local args                   = args                         or {}
+    args                         = args                         or {}
     args.border_width            = args.border_width            or 0
     args.internal                = args.internal                or {}
     args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
@@ -63,13 +64,11 @@ local function new(args)
 end
 
 function module.flex(args)
-    local args                = args          or {}
+    args                      = args          or {}
     args.internal             = args.internal or {}
     args.internal.layout_func = wibox.layout.flex.horizontal()
 
     local data = new(args)
-
-    function data._internal.text_fit(self,width,height) return width,height end
 
     return data,data._internal.margin
 end

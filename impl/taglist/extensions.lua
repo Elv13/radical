@@ -1,14 +1,8 @@
 -- This file provide extensions 
 
 local capi = { screen = screen, client=client}
-local setmetatable = setmetatable
 local ipairs,pairs = ipairs,pairs
-local type         = type
 local radical   = require( "radical"    )
-local beautiful = require( "beautiful"  )
-local awful     = require( "awful"      )
-local util      = require( "awful.util" )
-local wibox     = require( "wibox"      )
 local taglist = nil
 
 local module = {}
@@ -116,5 +110,5 @@ function module.add(name,f)
   end
 end
 
-return setmetatable(module, { __call = function(_, ...) return new(...) end })
+return module
 -- kate: space-indent on; indent-width 2; replace-tabs on;

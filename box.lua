@@ -5,7 +5,7 @@ local shape     = require( "gears.shape"     )
 local placement = require( "awful.placement" )
 
 local function new(args)
-  local args = args or {}
+  args = args or {}
   args.internal = args.internal or {}
   args.arrow_type = base.arrow_type.NONE
 

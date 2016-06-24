@@ -1,11 +1,8 @@
 local setmetatable = setmetatable
 local io           = io
-local ipairs       = ipairs
-local tag       = require( "awful.tag"     )
 local menu      = require( "radical.context"  )
 local beautiful = require( "beautiful" )
 local com_tag = require( "radical.impl.common.tag" )
-local awful = require("awful")
 local radical = require("radical")
 local extensions = require("radical.impl.taglist.extensions")
 local capi = { screen = screen }
@@ -38,24 +35,24 @@ local function gen_icon(col,height)
   return img
 end
 
-local function set_color(aTag,col)
+local function set_color(t,col)
   local pat = col
     if beautiful.taglist_custom_color then
       pat = beautiful.taglist_custom_color(pat)
     end
     local idx,name = tag_list.register_color(pat)
-    local item = tag_list.item(aTag)
+    local item = tag_list.item(t)
     item["bg_"..name] = pat
     item.state[idx] = true
 end
 
-local function color_menu(aTag)
+local function color_menu(t)
   if not tag_list then
     tag_list = require("radical.impl.taglist")
   end
   local m = radical.context {layout=radical.layout.grid,column=6}
-  m:add_item{icon=gen_icon("#ff0000",m.item_height-4), item_layout = radical.item.layout.icon, button1 = function() set_color(aTag,"#ff0000") end}
-  m:add_item{icon=gen_icon("#00ff00",m.item_height-4), item_layout = radical.item.layout.icon, button1 = function() set_color(aTag,"#00ff00") end}
+  m:add_item{icon=gen_icon("#ff0000",m.item_height-4), item_layout = radical.item.layout.icon, button1 = function() set_color(t,"#ff0000") end}
+  m:add_item{icon=gen_icon("#00ff00",m.item_height-4), item_layout = radical.item.layout.icon, button1 = function() set_color(t,"#00ff00") end}
   m:add_item{icon=gen_icon("#0000ff",m.item_height-4), item_layout = radical.item.layout.icon}
   m:add_item{icon=gen_icon("#ff00ff",m.item_height-4), item_layout = radical.item.layout.icon}
   m:add_item{icon=gen_icon("#ffff00",m.item_height-4), item_layout = radical.item.layout.icon}
@@ -86,35 +83,22 @@ local function new(t)
   aTagMenu:add_item({text = "Rename", button1 = function() --[[shifty.rename(aTag)]] end})
 
   aTagMenu:add_item({text = "Close applications and remove", button1 = function()
-        for i=1, #aTag:clients() do
-            aTag:clients()[i]:kill()
-        end
---         shifty.del(aTag)
-    end})
+    for i=1, #aTag:clients() do
+        aTag:clients()[i]:kill()
+    end
+  end})
 
   if capi.screen.count() > 1 then
     local screenMenu = menu()
     aTagMenu:add_item({text = "Screen",sub_menu = screenMenu})
 
     for i=1,capi.screen.count() do
-      screenMenu:add_item({text = "Screen "..i, checked = aTag.screen == i,button1 = function() tag_to_screen(aTag,i) end})
+      screenMenu:add_item({text = "Screen "..i, checked = aTag.screen == i,button1 = function() --[[tag_to_screen(aTag,i)]] end})
     end
   end
 
   aTagMenu:add_item({text = "Set color", sub_menu = function() return color_menu(aTag) end})
-
   aTagMenu:add_item({text = "Merge With", sub_menu = function() return com_tag.listTags() end})
-
-  function createTagList(aScreen)
-    local tagList = menu()
-    local count = 0
-    for _, v in ipairs(capi.screen[aScreen].tags) do
-       tagList:add_item({text = v.name})
-       count = count + 1
-    end
-    return tagList
-  end
-
   aTagMenu:add_item({text = "<b>Save settings</b>"})
 
   local mainMenu2 = menu{layout=radical.layout.grid,column=6,}

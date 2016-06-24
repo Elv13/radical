@@ -13,6 +13,7 @@ local shape       = require( "gears.shape"                )
 local common      = require( "radical.common"             )
 local smart_wibox = require( "radical.smart_wibox"        )
 local aplace      = require( "awful.placement"            )
+local timer       = require( "gears.timer"                )
 
 local default_radius = 10
 local rad = beautiful.dock_corner_radius or default_radius
@@ -25,17 +26,14 @@ local max_size = {height={},width={}}
 local function get_max_size(data,screen)
     local dir = "left"
     local w_or_h = ((dir == "left" or dir == "right") and "height" or "width")
-    local x_or_y = w_or_h == "height" and "y" or "x"
     local res = max_size[w_or_h][screen]
+
     if not res then
-        local full,wa = capi.screen[screen].geometry[w_or_h],capi.screen[screen].workarea
-        local top,bottom = wa[x_or_y],full-(wa.y+wa[w_or_h])
-        local biggest = top > bottom and top or bottom
-        --res = full - biggest*2 - 52 -- 26px margins
         local margin = beautiful.dock_margin or 52
-        res = wa[w_or_h] - margin
+        res = capi.screen[screen].workarea[w_or_h] - margin
         max_size[w_or_h][screen] = res
     end
+
     return res
 end
 
@@ -125,7 +123,7 @@ local function setup_drawable(data)
 end
 
 local function new(args)
-    local args = args or {}
+    args = args or {}
     local orientation = (not args.position or args.position == "left" or args.position == "right") and "vertical" or "horizontal"
     local length_inv  = orientation == "vertical" and "width" or "height"
 
@@ -142,7 +140,7 @@ local function new(args)
     args.internal             = args.internal or {}
     args.internal.layout_func = orientation == "vertical" and vertical or horizontal
     args.layout               = args.layout or args.internal.layout_func
-    args.item_style           = args.item_style or item.style
+    args.item_style           = args.item_style
     args.item_layout          = args.item_layout or item_layout
     args[length_inv]          = args[length_inv] or 40
 

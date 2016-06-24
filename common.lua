@@ -156,10 +156,6 @@ function module.setup_item_move_events(data)
         data._internal.suf_l:add(widget)
     end)
 
-    data._internal.text_fit = function(self, context, width, height)
-        return width,height
-    end
-
     data:connect_signal("clear::menu",function(_,vis)
         l:reset()
     end)
