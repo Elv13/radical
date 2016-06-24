@@ -1,5 +1,3 @@
-local setmetatable = setmetatable
-local print = print
 local color = require("gears.color")
 local cairo     = require( "lgi"              ).cairo
 
@@ -96,4 +94,4 @@ function module.unchecked()
     return notcheckedI
 end
 
-return setmetatable(module, { __call = function(_, ...) return new(...) end })
+return module

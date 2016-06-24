@@ -6,19 +6,13 @@ local common    = require( "radical.item.common"           )
 
 local module = {}
 
--- Force the width or compute the minimum space
-local function align_fit(box,context,w,h)
-  if box._item.width then return box._item.width - box._data.item_style.margins.LEFT - box._data.item_style.margins.RIGHT,h end
-  return box.first:fit(context,w,h)+wibox.widget.textbox.fit(box.second,context,w,h)+box.third:fit(context,w,h),h
-end
-
 -- Create the actual widget
 local function create_item(item,data,args)
   -- Background
   local bg = wibox.container.background()
 
   -- Margins
-  local m = wibox.container.margin(la)
+  local m = wibox.container.margin()
   local mrgns = margins2(m,(item.item_style or data.item_style).margins)
   item.get_margins = function()
     return mrgns

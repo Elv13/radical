@@ -2,7 +2,6 @@ local setmetatable,math = setmetatable,math
 local beautiful = require( "beautiful"      )
 local surface   = require( "gears.surface"  )
 local wibox     = require( "wibox"          )
-local cairo     = require( "lgi"            ).cairo
 local object    = require( "radical.object" )
 local shape     = require( "gears.shape"    )
 local capi = { screen = screen ,
@@ -91,7 +90,9 @@ end
 
 
 local function new(widget,text, args)
-  local args,data = args or  {},object({
+  args = args or {}
+
+  local data = object({
     private_data  = {
     },
     autogen_getmap  = true,
@@ -114,7 +115,7 @@ local function new(widget,text, args)
   function data:hide() hide_tooltip() end
 
   function data:showToolTip(show,args2)
-    local args2 = args2 or args or {}
+    args2 = args2 or args or {}
     args.direction = args.direction or get_direction(args2)
 
     local vertical,textw = (args.direction == "left") or (args.direction == "right"),wibox.widget.textbox()
@@ -151,10 +152,11 @@ local function new(widget,text, args)
       end
     end
   end
-  widget:connect_signal("mouse::enter"  , function(widget,geometry) data:showToolTip( true  , {parent=geometry}) end)
+  widget:connect_signal("mouse::enter"  , function(_,geometry) data:showToolTip( true  , {parent=geometry}) end)
   widget:connect_signal("mouse::leave"  , hide_tooltip)
   widget:connect_signal("button::press" , hide_tooltip)
-  data.set_text = set_text
+  data.set_text   = set_text
+  data.set_markup = set_markup
   data._args = args
   return data
 end

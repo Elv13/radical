@@ -36,13 +36,7 @@ local function new(data)
     }
 
     -- Hack fit
-    local new_fit
-    new_fit = function(self,context,w,h,force_values) --TODO use the context instead of extra argument
-        -- Get the original fit, the function need to be replaced to avoir a stack overflow
-        real_l.fit = real_l._fit
-        local result,r2 = self:get_preferred_size(context, force_values and w, force_values and h)
-        real_l.fit = new_fit
-
+    function real_l.fit(self,context)
         local w,h
         if data.auto_resize and data._internal.largest_item_h then
             w,h = data.rowcount*(data.item_width or data.default_width),data._internal.largest_item_h_v > data.item_height and data._internal.largest_item_h_v or data.item_height
@@ -52,9 +46,6 @@ local function new(data)
 
         return w,h
     end
-
-    real_l._fit = real_l.fit
-    real_l.fit  = new_fit
 
     return real_l
 end

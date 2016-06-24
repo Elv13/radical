@@ -9,15 +9,12 @@
 -- @release @AWESOME_VERSION@
 -- @module radical.smart_wibox
 ---------------------------------------------------------------------------
-local capi      = {mouse = mouse, screen = screen}
 local wibox     = require( "wibox"            )
 local util      = require( "awful.util"       )
 local surface   = require( "gears.surface"    )
 local glib      = require( "lgi"              ).GLib
 local beautiful = require( "beautiful"        )
 local color     = require( "gears.color"      )
-local screen    = require( "awful.screen"     )
-local mouse     = require( "awful.mouse"      )
 local placement = require( "awful.placement"  )
 local unpack    = unpack or table.unpack
 

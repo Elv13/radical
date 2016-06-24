@@ -22,9 +22,7 @@ local function after_draw_children(self, context, cr, width, height)
   cr:fill()
 end
 
-local function draw(item,args)
-  local args = args or {}
-
+local function draw(item)
   if not item.widget._overlay_init then
     item.widget.after_draw_children = after_draw_children
     item.widget._overlay_init = true
@@ -32,7 +30,7 @@ local function draw(item,args)
     -- Build the 2 item border colors, this item_style doesn't support gradient
     -- or patterns
     item.widget.col1 = color(item.item_border_color or item.border_color or beautiful.border_color)
-    local s,r,g,b,a = item.widget.col1:get_rgba()
+    local _,r,g,b,a = item.widget.col1:get_rgba()
     r,g,b = r-.2,g-.2,b-.2
     item.widget.col2 = cairo.Pattern.create_rgba(r,g,b,a)
   end

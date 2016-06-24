@@ -77,7 +77,7 @@ end
 local function new(data)
   if not colors then colors = {color(beautiful.fg_normal),color(beautiful.bg_alternate),color(beautiful.fg_focus),color(beautiful.bg_highlight)} end
   local im = wibox.widget.imagebox()
-  im._data,im.draw,im.set_data = dummy_dataset,draw,set_data
+  im.draw,im.set_data = draw,set_data
   im._cache = {}
   return im
 end

@@ -34,7 +34,7 @@ local function after_draw_children_bottom(self, context, cr, width, height)
 end
 
 local function draw(item,args)
-  local args = args or {}
+  args = args or {}
 
   item.widget.draw = widget_draw
   item.widget.before_draw_children = args.pos == "top"

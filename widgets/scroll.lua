@@ -5,7 +5,6 @@ local button     = require( "awful.button"  )
 local beautiful  = require( "beautiful"     )
 local shape      = require( "gears.shape"   )
 local surface    = require( "gears.surface" )
-local theme      = require( "radical.theme" )
 
 local module = {}
 

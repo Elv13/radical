@@ -8,7 +8,7 @@ local function set_data(self, data)
     local info = self:get_children_by_id("infoshapes" )[1]
     local tb   = self:get_children_by_id("filter_text")[1]
 
-    function self:fit(context,width,height)
+    function self.fit(_,context,width,height)
         return width,data.item_height
     end
 

@@ -3,7 +3,6 @@ local beautiful    = require( "beautiful"                      )
 local color        = require( "gears.color"                    )
 local wibox        = require( "wibox"                          )
 local checkbox     = require( "radical.widgets.checkbox"       )
-local horizontal   = require( "radical.item.layout.horizontal" )
 local util         = require( "awful.util"                     )
 local margins2     = require( "radical.margins"                )
 local common       = require( "radical.item.common"            )
@@ -29,7 +28,7 @@ local function icon_fit(data,...)
 end
 
 local function icon_draw(self, context, cr, width, height)
-    local w,h = wibox.widget.imagebox.fit(self,context,width,height)
+    local w = wibox.widget.imagebox.fit(self,context,width,height)
     cr:save()
     cr:translate((width-w)/2,0)
     wibox.widget.imagebox.draw(self, context, cr, width, height)
@@ -37,8 +36,10 @@ local function icon_draw(self, context, cr, width, height)
 end
 
 local function create_item(item,data,args)
+    local pref, subArrow, ck = nil, nil, nil
+
     if data.fkeys_prefix == true then
-        local pref = wibox.widget.textbox()
+        pref = wibox.widget.textbox()
 
         function pref:draw(context, cr, width, height)
             cr:set_source(color(beautiful.fg_normal))
@@ -54,7 +55,7 @@ local function create_item(item,data,args)
     local has_children = item._private_data.sub_menu_f or item._private_data.sub_menu_m
 
     if has_children then
-        local subArrow  = wibox.widget.imagebox() --TODO, make global
+        subArrow  = wibox.widget.imagebox() --TODO, make global
 
         function subArrow:fit(context, w, h)
             return subArrow._image:get_width(),item.height
@@ -69,20 +70,18 @@ local function create_item(item,data,args)
         else
             return wibox.container.background.fit(box,context, w,h)
         end
-
-        return 0,0
     end
 
     if item.checkable then
-        function item.get_checked(data,item)
-            if type(item._private_data.checked) == "function" then
-                return item._private_data.checked()
+        function item.get_checked(_, i)
+            if type(i._private_data.checked) == "function" then
+                return i._private_data.checked()
             else
-                return item._private_data.checked
+                return i._private_data.checked
             end
         end
 
-        local ck = wibox.widget.imagebox()
+        ck = wibox.widget.imagebox()
         ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
 
         function item:set_checked(value)
@@ -95,7 +94,7 @@ local function create_item(item,data,args)
         {
             {
                 {
-                    data.fkeys_prefix and pref or nil,
+                    pref or nil,
                     args.prefix_widget               ,
                     icon,
                     {
@@ -110,8 +109,8 @@ local function create_item(item,data,args)
                     -- Suffix
 
                     -- Widgets
-                    has_children   and subArrow or nil    ,
-                    item.checkable and ck       or nil    ,
+                    subArrow or nil    ,
+                    ck       or nil    ,
                     args.suffix_widget                    ,
 
                     -- Attributes

@@ -1,6 +1,5 @@
 local setmetatable = setmetatable
 local color = require( "gears.color"   )
-local wibox = require( "wibox"         )
 local theme = require( "radical.theme" )
 
 local module = {

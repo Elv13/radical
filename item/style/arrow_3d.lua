@@ -1,8 +1,5 @@
 local setmetatable = setmetatable
-local print  = print
-local pairs  = pairs
 local color  = require( "gears.color"  )
-local base   = require( "radical.base" )
 local theme     = require( "radical.theme" )
 
 local module = {
@@ -27,8 +24,6 @@ local c1 = color("#474e56dd")
 local c2 = color("#5b646cdd")
 local c3 = color("#212429dd")
 local c4 = color("#3b4249dd")
-local padding = 1
-local p2 = 2
 
 local function widget_draw23(self, context, cr, width, height)
   cr:save()
@@ -70,9 +65,7 @@ local function new_set_bg(self,bg)
   self.radical_bg = color(bg)
 end
 
-local function draw(item,args)
-  local args = args or {}
-
+local function draw(item)
   if not item.widget._overlay_init and not item.widget._draw then
     item.widget.__drawbasic = item.widget.draw
     item.widget.draw = widget_draw23

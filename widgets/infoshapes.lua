@@ -13,7 +13,7 @@ local infoshape = { mt = {} }
 
 local default_shape = shape.rounded_bar
 
-local default_font_description = nil
+-- local default_font_description = nil
 
 local pango_l = {}
 
@@ -56,11 +56,11 @@ local function get_group_extents(self, group, height)
 end
 
 -- Add the shape to the context
-local function draw_shape2(self, infoshape, cr, width, height, ...)
-    local shape = infoshape.shape or self._default_shape or default_shape
+local function draw_shape2(self, is, cr, width, height, ...)
+    local s = is.shape or self._default_shape or default_shape
 
-    if shape then
-        shape(cr, width, height, ...)
+    if s then
+        s(cr, width, height, ...)
     end
 end
 
@@ -121,7 +121,7 @@ end
 local function draw_section_common(self, context, cr, width, height, section)
     cr:translate(0, padding)
     for k, v in ipairs(section) do
-        local w, h = draw_shape(self, cr, width, height, v)
+        local w = draw_shape(self, cr, width, height, v)
         cr:translate(w + (self._padding or 2) + height, 0)
     end
 end
@@ -163,7 +163,7 @@ end
 -- Support multiple align modes
 function infoshape:layout(context, width, height)
     if self.widget then
-        local w, h = self.widget:fit(context, width, height)
+        local w = self.widget:fit(context, width, height)
         if not self._align or self._align == "left" then --TODO use base.fit_widget
             return { base.place_widget_at(self.widget, 0, 0, w, height) }
         else
@@ -230,7 +230,7 @@ end
 -- @treturn A unique identifier key
 --
 function infoshape:add_infoshape(args)
-    local args = args or {}
+    args = args or {}
     local align = args.align or "right"
     local layer = args.layer or "below"
     if not self["_"..layer] then
@@ -263,8 +263,8 @@ function infoshape:set_infoshapes(args)
 end
 
 --TODO fallback beautiful
-function infoshape:set_shape(shape)
-    self._default_shape = shape
+function infoshape:set_shape(s)
+    self._default_shape = s
 end
 
 --TODO fallback beautiful
@@ -277,9 +277,9 @@ function infoshape:set_shape_border_width(col)
     self._shape_border_width = col
 end
 
-function infoshape:set_default_font_description(desc)
-    default_font_description = desc
-end
+-- function infoshape:set_default_font_description(desc)
+--     default_font_description = desc
+-- end
 
 --TODO set default bg
 --TODO set default fg

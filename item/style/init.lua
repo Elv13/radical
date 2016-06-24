@@ -5,7 +5,7 @@ local unpack = unpack or table.unpack
 
 -- Create a generic item_style
 local function generic(_, args)
-    local args = args or {}
+    args = args or {}
 
     args.margins = args.margins or {
         TOP    = 0,
@@ -30,12 +30,10 @@ end
 return setmetatable({
     basic          = require("radical.item.style.basic"        ),
     classic        = require("radical.item.style.classic"      ),
-    subtle         = require("radical.item.style.subtle"       ),
     rounded_shadow = rounded.shadow                             ,
     rounded        = rounded                                    ,
     holo           = holo                                       ,
     holo_top       = holo.top                                   ,
-    arrow_alt      = require("radical.item.style.arrow_alt"    ),
     arrow_prefix   = require("radical.item.style.arrow_prefix" ),
     arrow_single   = require("radical.item.style.arrow_single" ),
     arrow_3d       = require("radical.item.style.arrow_3d"     ),
