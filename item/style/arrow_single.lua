@@ -1,5 +1,4 @@
 local setmetatable = setmetatable
-local wibox     = require("wibox"          )
 local theme     = require( "radical.theme" )
 local shape     = require( "gears.shape"   )
 

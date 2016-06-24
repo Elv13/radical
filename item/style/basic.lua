@@ -1,9 +1,5 @@
 local setmetatable = setmetatable
-local print = print
-local pairs=pairs
-local base      = require( "radical.base"     )
-local wibox     = require("wibox"                       )
-local theme     = require( "radical.theme" )
+local theme = require( "radical.theme" )
 
 local module = {
   margins = {

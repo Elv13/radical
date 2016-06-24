@@ -1,7 +1,7 @@
 local type = type
-local capi = {timer = timer}
 local beautiful = require("beautiful")
 local theme = require("radical.theme")
+local timer = require("gears.timer")
 local object = require("radical.object")
 
 local module = {
@@ -98,7 +98,7 @@ end
 -- end
 
 local function new_item(data,args)
-  local args = args or {}
+  args = args or {}
   local item,private_data = object({
     private_data  = {
       text        = args.text        or ""                                                                  ,
@@ -203,16 +203,15 @@ local function new_item(data,args)
       text_w:set_markup(text)
     end
 
-    if data.auto_resize then
-      local fit_w,fit_h = text_w:get_preferred_size()
-      local is_largest = item == data._internal.largest_item_h
-
-      --TODO find new largest is item is smaller
+--TODO find new largest is item is smaller
+--     if data.auto_resize then
+--       local fit_w,fit_h = text_w:get_preferred_size()
+--       local is_largest = item == data._internal.largest_item_h
 --       if not data._internal.largest_item_h_v or data._internal.largest_item_h_v < fit_h then
 --         data._internal.largest_item_h =item
 --         data._internal.largest_item_h_v = fit_h
 --       end
-    end
+--     end
 
     item._private_data.text = text
   end
@@ -248,8 +247,8 @@ local function new_item(data,args)
       main_timer.timeout = 1.5
       main_timer:connect_signal("timeout",function()
         item._internal._is_long_hover = true
-        item:emit_signal("long::hover",item,mod,geo)
-        data:emit_signal("long::hover",item,mod,geo)
+        item:emit_signal("long::hover",item,{},geo)
+        data:emit_signal("long::hover",item,{},geo) --TODO mouse::enter should have modifiers
         main_timer:stop()
       end)
     end

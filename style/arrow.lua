@@ -2,7 +2,6 @@ local setmetatable = setmetatable
 local unpack       = unpack or table.unpack
 local beautiful    = require( "beautiful"    )
 local color        = require( "gears.color"  )
-local cairo        = require( "lgi"          ).cairo
 local base         = require( "radical.base" )
 local shape        = require( "gears.shape"  )
 
@@ -89,16 +88,16 @@ local function update_margins(data, pos)
 end
 
 -- Generate a rounded cairo path with the arrow
-local function draw_roundedrect_path(cr, width, height, radius, data, direction)
+local function draw_roundedrect_path(cr, width, height, rad, data, direction)
     direction = direction or "right"
 
     if data.arrow_type == base.arrow_type.NONE then
         if direction == "left" then
-            data._internal.w:set_yoffset(-radius)
+            data._internal.w:set_yoffset(-rad)
         elseif direction == "right" then
-            data._internal.w:set_yoffset(radius)
+            data._internal.w:set_yoffset(rad)
         end
-        return shape.rounded_rect(cr, width, height, radius)
+        return shape.rounded_rect(cr, width, height, rad)
     end
 
     local angle, swap = angles[direction], swaps[direction]
@@ -118,12 +117,11 @@ local function draw_roundedrect_path(cr, width, height, radius, data, direction)
     gen_arrow_x(data, data.direction, width, height)
 
     -- Forward to the real shape
-    local ax = swap and width - (data._arrow_x or 20)-arrow_height - radius or (data._arrow_x or 20)
-    s(cr, width, height, radius, arrow_height, ax)
+    local ax = swap and width - (data._arrow_x or 20)-arrow_height - rad or (data._arrow_x or 20)
+    s(cr, width, height, rad, arrow_height, ax)
 end
 
-local function draw(data,args)
-    local args = args or {}
+local function draw(data)
 
     if not data._internal.arrow_setup then
         data._internal.w:set_shape_border_width(data.border_width or 1)
@@ -140,12 +138,10 @@ local function draw(data,args)
 --         if dir then
 --             data._internal.w:set_shape(function(cr, w, h) draw_roundedrect_path(cr, w, h, radius, data, data._internal.w.position) end)
 --         end
-        update_margins(data, dir)
+        update_margins(data, nil)
 
         data._internal.arrow_setup = true
     end
-
-  return w,w2
 end
 
 return setmetatable(module, { __call = function(_, ...) return draw(...) end })

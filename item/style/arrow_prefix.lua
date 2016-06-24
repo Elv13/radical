@@ -1,7 +1,6 @@
 local setmetatable = setmetatable
 local beautiful = require( "beautiful"     )
 local color     = require( "gears.color"   )
-local wibox     = require( "wibox"         )
 local theme     = require( "radical.theme" )
 local shape     = require( "gears.shape"   )
 
@@ -48,9 +47,7 @@ local function suffix_fit(box,context,w,h)
   return width + h/2 + h/6,height
 end
 
-local function draw(item,args)
-  local args = args or {}
-
+local function draw(item)
   if not item.widget._overlay_init then
     item.widget._overlay_init = true
   end

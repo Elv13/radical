@@ -74,7 +74,8 @@ end
 local theme_colors = {}
 
 local function load_section(data,priv,section,args)
-  local bg,fg,args = section.."_bg_", section.."_fg_",args or {}
+  args = args or {}
+  local bg,fg = section.."_bg_", section.."_fg_"
   for k,v in pairs(theme_colors) do
     priv[bg..k] = args[bg..v.beautiful_name] or beautiful["menu_"..bg..v.beautiful_name] or beautiful[bg..v.beautiful_name]
     priv[fg..k] = args[fg..v.beautiful_name] or beautiful["menu_"..fg..v.beautiful_name] or beautiful[fg..v.beautiful_name]

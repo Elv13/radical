@@ -1,7 +1,5 @@
 local setmetatable = setmetatable
-local print = print
 local color     = require( "gears.color")
-local cairo     = require( "lgi"        ).cairo
 local wibox     = require( "wibox"      )
 local beautiful = require( "beautiful"  )
 

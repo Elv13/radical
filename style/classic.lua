@@ -7,7 +7,7 @@ local module = {
     TOP    = 0 ,
     BOTTOM = 0 ,
     LEFT   = 0 ,
-    BOTTOM = 0 ,
+    RIGHT  = 0 ,
   }
 }
 

@@ -1,5 +1,4 @@
 local setmetatable = setmetatable
-local print        = print
 local ipairs       = ipairs
 local math         = math
 local wibox        = require( "wibox" )
@@ -49,7 +48,6 @@ local function item_fit(data,item,...)
 end
 
 local function new(data)
-  local counter = 0
   local mode = data.column ~= nil
   local rows = {}
   local l = wibox.layout.fixed[mode and "horizontal" or "vertical"]()
@@ -63,13 +61,13 @@ local function new(data)
     local r1,r2 = data.item_height*math.ceil(data.rowcount/constraint),data.item_height*constraint
     return (mode and r2 or r1),(mode and r1 or r2)
   end
-  l.add = function(l,item)
+  l.add = function(_, it)
     for k,v in ipairs(rows) do
       v:reset()
     end
     local rc = data.rowcount+1
     for i=1,rc do
-      rows[((i-1)%constraint)+1]:add((rc == i and item.widget or data.items[i].widget))
+      rows[((i-1)%constraint)+1]:add((rc == i and it.widget or data.items[i].widget))
     end
     return true
   end

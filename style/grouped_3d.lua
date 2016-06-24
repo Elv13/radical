@@ -1,14 +1,12 @@
 local setmetatable = setmetatable
-local base   = require( "radical.base" )
 local color  = require( "gears.color"  )
-local shape  = require( "gears.shape"  )
 
 local module = {
   margins = {
     TOP    = 0 ,
     BOTTOM = 0 ,
     LEFT   = 0 ,
-    BOTTOM = 0 ,
+    RIGHT  = 0 ,
   }
 }
 

@@ -39,8 +39,8 @@ local function compute_geo(data,width,height,force_values)
 
     local visblerow = data.visible_row_count
 
-    local sw,sh = data._internal.suf_l:get_preferred_size()
-    local pw,ph = data._internal.pref_l:get_preferred_size()
+    local _,sh = data._internal.suf_l:get_preferred_size()
+    local _,ph = data._internal.pref_l:get_preferred_size()
     if not data._internal.has_widget then
         return w, visblerow*data.item_height + ph + sh
     else

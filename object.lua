@@ -5,7 +5,8 @@ local rawget       = rawget
 local pairs        = pairs
 
 local function setup_object(args)
-    local data,args,private_data,signals = {},args or {},private_data or {},{}
+    args = args or {}
+    local data,signals = {},{}
     local private_data = args.private_data or {}
     
     function data:connect_signal(name,func)

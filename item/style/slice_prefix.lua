@@ -41,8 +41,7 @@ local function suffix_fit(box,context,w,h)
   return width + h/2 + h/6,height
 end
 
-local function draw(item,args)
-  local args = args or {}
+local function draw(item)
 
   if not item.widget._overlay_init then
     item.widget._drawprefix = item.widget.draw
