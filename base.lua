@@ -81,19 +81,23 @@ local function filter(data)
     -- * Is the item matching the filter
     --
     for k,v in ipairs(data.items) do
+      -- Do not count widgets as item
+      if not v._private_data.is_widget then
+        v.widget.visible =  (not fs or v.text and v.text:lower():find(fs) ~= nil)
+          and k >= start_at and visible_counter < max_items
 
-      v.widget.visible =  (not fs or v.text and v.text:lower():find(fs) ~= nil)
-        and k >= start_at and visible_counter < max_items
+        if v.widget.visible then
+          visible_counter = visible_counter + 1
+          v.f_key         = visible_counter
+        end
 
-      if v.widget.visible then
-        visible_counter = visible_counter + 1
-        v.f_key         = visible_counter
+        -- Don't waste CPU
+        if visible_counter >= max_items then break end
+
       end
-
-      -- Don't waste CPU
-      if visible_counter >= max_items then break end
-
     end
+
+    local changed = data._internal.visible_item_count ~= visible_counter
 
     data._internal.visible_item_count = visible_counter
 
@@ -103,6 +107,10 @@ local function filter(data)
       if n then
         n.selected = true
       end
+    end
+
+    if changed then
+      data:emit_signal("visible_item_count::changed", visible_counter)
     end
 end
 
@@ -237,6 +245,7 @@ local function add_widget(data,widget,args)
   local item,private_data = object({
     private_data = {
       widget = widget,
+      is_widget = true,
       selected = false,
     },
     force_private = {

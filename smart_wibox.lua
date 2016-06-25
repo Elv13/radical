@@ -29,7 +29,6 @@ local main_widget = {}
 -- This (try to) avoid going offscreen
 local function set_position(self)
     local pf = rawget(self, "_placement")
-
     if pf == false then return end
 
     if pf then
@@ -228,7 +227,6 @@ end
 -- @tparam[opt=next_to] function|string|boolean The placement function or name
 -- (or false to disable placement)
 function wb_func:set_placement(f)
-
     if type(f) == "string" then
         f = placement[f]
     end
@@ -280,7 +278,7 @@ local function create_auto_resize_widget(self, wdg, args)
     end
 
     for k,v in ipairs{"shape_border_color", "shape_border_width", "placement"} do
-        if args[v] then
+        if args[v] ~= nil then
             w["set_"..v](w, args[v])
         end
     end

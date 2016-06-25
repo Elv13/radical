@@ -41,11 +41,12 @@ local function compute_geo(data,width,height,force_values)
 
     local _,sh = data._internal.suf_l:get_preferred_size()
     local _,ph = data._internal.pref_l:get_preferred_size()
+
     if not data._internal.has_widget then
         return w, visblerow*data.item_height + ph + sh
     else
         local sumh = data.widget_fit_height_sum
-        local h = (visblerow-#data._internal.widgets)*data.item_height + sumh
+        local h = visblerow*data.item_height + sumh
         return w,h
     end
 end
