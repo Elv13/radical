@@ -44,7 +44,7 @@ local function adapt_size(data,w,h,screen)
 
     -- Get the number of items minus the number of widgets
     -- This can be used to approximate the number of pixel to remove
-    local visible_item = data.visible_row_count - #data._internal.widgets + 1
+    local visible_item = data.visible_row_count
 
     local orientation = "vertical"
 
@@ -97,7 +97,8 @@ local function get_wibox(data, screen)
 
     aplace.left(w, {
         attach          = true,
-        update_workarea = beautiful.dock_always_show
+        update_workarea = beautiful.dock_always_show,
+        honor_workarea  = false,
     })
 
     return w

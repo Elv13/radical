@@ -153,9 +153,12 @@ local function new_item(data,args)
     item["button"..i] = args["button"..i]
   end
 
-  -- Use _internal to avoid the radical.object trigger
-  data._internal.visible_item_count = (data._internal.visible_item_count or 0) + 1
-  item._internal.f_key = data._internal.visible_item_count
+  -- Invalidate the filter when there is still room for new items
+  -- this is slow, but more reliable than it was before
+  if data._internal.visible_item_count
+   and data._internal.visible_item_count < (data.max_items or 9999999) then
+    data._internal.visible_item_count = nil
+  end
 
   -- Need to be done before painting
   data._internal.items[#data._internal.items+1] = {}

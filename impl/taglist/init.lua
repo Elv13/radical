@@ -18,13 +18,11 @@ local surface   = require( "gears.surface" )
 local tracker   = require( "radical.impl.taglist.tracker" )
 local tag_menu  = require( "radical.impl.taglist.tag_menu" )
 
-local CLONED      = 100
 local HIGHLIGHTED = -2
 local EMPTY       = 412345
 
 local last_idx = EMPTY
 
-theme.register_color(CLONED , "cloned" , "cloned" , true )
 theme.register_color(HIGHLIGHTED , "highlight" , "highlight" , true )
 theme.register_color(EMPTY , "empty" , "empty" , true )
 
@@ -111,22 +109,6 @@ local function create_item(t,s)
   end
 
   item.tw = tw
-
-  if tag.getproperty(t,"clone_of") then
-    item.state[CLONED] = true
-  end
---   menu:move(item,index)
-
-  menu:connect_signal("button::press",function(_,_,button_id,mod,geo)
-    if module.buttons and module.buttons[button_id] then
-      if item.tag[1] then
-        assert(type(item.tag[1]) == "tag")
-        module.buttons[button_id](item.tag[1],menu,item,button_id,mod,geo)
-      else
-        print("Invalid tag")
-      end
-    end
-  end)
 
   item._internal.screen = capi.screen[s]
   item.state[radical.base.item_flags.SELECTED] = t.selected or nil
@@ -277,7 +259,7 @@ local function new(s)
     item_border_width    = beautiful.taglist_item_border_width                                          ,
 --     fkeys_prefix = true,
   }
-  for k,v in ipairs {"hover","used","urgent","cloned","changed","highlight"} do
+  for k,v in ipairs {"hover","used","urgent","changed","highlight"} do
     args["bg_"..v] = beautiful["taglist_bg_"..v]
     args["bgimage_"..v] = beautiful["taglist_bgimage_"..v]
     args["fg_"..v] = beautiful["taglist_fg_"..v]
@@ -294,9 +276,6 @@ local function new(s)
   for k,t in ipairs(capi.screen[s].tags) do
     create_item(t,capi.screen[s])
   end
-
-  -- Per screen signals
---   tag.attached_connect_signal(screen, "property::hide", ut)!
 
   instances[capi.screen[s]]:connect_signal("button::press",function(m,item,button_id,mod)
     if module.buttons and module.buttons[button_id] then

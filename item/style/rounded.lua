@@ -14,10 +14,10 @@ local module = {
 
 local function widget_draw(self, context, cr, width, height)
 
-  if not self.background then
+  if not self._private.background then
     cr:set_source_rgba(0,0,0,0)
   else
-    cr:set_source(color(self.background))
+    cr:set_source(color(self._private.background))
   end
 
   shape.rounded_rect(cr ,width, height, 3)
@@ -34,7 +34,7 @@ local function widget_draw(self, context, cr, width, height)
 end
 
 local function draw_width_shadow(self, context, cr, width, height)
-  if not self.background then return end
+  if not self._private.background then return end
 
   cr:save()
   cr:reset_clip()
@@ -62,7 +62,7 @@ local function shadow(item)
   theme.update_colors(item)
 end
 
-module.shadow = {}
+module.shadow = {need_full_repaint = true}
 setmetatable(module.shadow, { __call = function(_, ...) return shadow(...) end })
 
 return setmetatable(module, { __call = function(_, ...) return draw(...) end })
