@@ -38,6 +38,7 @@ function module.setup_fkey(item,data)
             item.button1(data)
             data.visible = false
         end)
+        item:emit_signal("f_key::changed", value)
     end
     item.get_f_key = function() return item._internal.f_key end
 
