@@ -75,6 +75,8 @@ local function filter(data)
 
     local start_at, visible_counter = data._start_at or -1, 0
 
+    local exit_soon = false
+
     -- There is 2 factors to consider to display the item:
     --
     -- * Is the item within range
@@ -92,7 +94,11 @@ local function filter(data)
         end
 
         -- Don't waste CPU
-        if visible_counter >= max_items then break end
+        if visible_counter >= max_items then
+          if exit_soon then break end
+
+          exit_soon = true
+        end
 
       end
     end
