@@ -40,10 +40,10 @@ local function compute_sum(data)
 end
 
 local function draw(self, context, cr, width, height)
-  if not self._data then return end
+  if not self._private.data then return end
 
   -- Load from cache
-  local cached = self._cache[width*123+height*89]
+  local cached = self._private.cache[width*123+height*89]
   if cached then
     cr:set_source_surface(cached)
     cr:paint()
@@ -54,14 +54,14 @@ local function draw(self, context, cr, width, height)
   local cr2 = cairo.Context(img)
 
   local radius = (height > width and width or height) / 4
-  local sum,start,count = compute_sum(self._data),0,0
-  for k,v in pairs(self._data) do
+  local sum,start,count = compute_sum(self._private.data),0,0
+  for k,v in pairs(self._private.data) do
     local end_angle = start + 2*math.pi*(v/sum)
     draw_pie(cr2,start,end_angle,radius,colors[math.mod(count,4)+1],width/2,height/2)
     draw_label(cr2,start+(end_angle-start)/2,radius,width/2,height/2,k)
     start,count = end_angle,count+1
   end
-  self._cache[width*123+height*89] = img
+  self._private.cache[width*123+height*89] = img
 
   --Paint on the drawable
   cr:set_source_surface(img)
@@ -69,16 +69,16 @@ local function draw(self, context, cr, width, height)
 end
 
 local function set_data(self,data)
-  self._cached = {}
-  self._data = data
-  self:emit_signal("widget::updated")
+  self._private.cache = {}
+  self._private.data = data
+  self:emit_signal("widget::redraw_needed")
 end
 
 local function new(data)
   if not colors then colors = {color(beautiful.fg_normal),color(beautiful.bg_alternate),color(beautiful.fg_focus),color(beautiful.bg_highlight)} end
   local im = wibox.widget.imagebox()
   im.draw,im.set_data = draw,set_data
-  im._cache = {}
+  im._private.cache = {}
   return im
 end
 
