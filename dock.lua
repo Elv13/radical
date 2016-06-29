@@ -104,25 +104,6 @@ local function get_wibox(data, screen)
     return w
 end
 
-local function setup_drawable(data)
-    local internal = data._internal
-
-    -- Create the layout
-    internal.layout = data.layout(data)
-
-    -- Getters
-    data.get_visible = function() return true end
-    data.get_margins = common.get_margins
-
-    function data:set_visible(value)
-        if internal.w then
-            internal.w.visible = value or false
-        end
-    end
-
-    common.setup_item_move_events(data)
-end
-
 local function new(args)
     args = args or {}
     local orientation = (not args.position or args.position == "left" or args.position == "right") and "vertical" or "horizontal"
@@ -131,7 +112,6 @@ local function new(args)
     -- The the Radical arguments
     args.internal = args.internal or {}
     args.internal.orientation = orientation
-    args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
     args.internal.setup_item     = args.internal.setup_item     or common.setup_item
     args.item_style              = args.item_style              or item_style
     args.bg                   = color("#00000000") --Use the dock bg instead
@@ -161,6 +141,23 @@ local function new(args)
             w.visible = true
         end)
     end
+
+    local internal = ret._internal
+
+    -- Create the layout
+    internal.layout = ret.layout(ret)
+
+    -- Getters
+    ret.get_visible = function() return true end
+    ret.get_margins = common.get_margins
+
+    function ret:set_visible(value)
+        if internal.w then
+            internal.w.visible = value or false
+        end
+    end
+
+    common.setup_item_move_events(ret)
 
     return ret
 end

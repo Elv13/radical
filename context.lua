@@ -23,7 +23,17 @@ local function set_visible(i, value)
     end
 end
 
-local function setup_drawable(data)
+local function new(args)
+    args                     = args or {}
+    args.internal            = args.internal or {}
+    args.internal.setup_item = args.internal.setup_item or common.setup_item
+    args.style = args.style or beautiful.menu_default_style or arrow_style
+    local data = base(args)
+
+    data:connect_signal("parent_geometry::changed", function()
+        args.internal.w:move_by_parent(data.parent_geometry, "widget")
+    end)
+
     local internal = data._internal
 
     -- Create the layout
@@ -52,27 +62,13 @@ local function setup_drawable(data)
     data.get_margins     = common.get_margins
     internal.set_visible = set_visible
 
-
     -- Support remove, swap, insert, append...
     common.setup_item_move_events(data)
-end
-
-local function new(args)
-    args                         = args or {}
-    args.internal                = args.internal or {}
-    args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
-    args.internal.setup_item     = args.internal.setup_item or common.setup_item
-    args.style = args.style or beautiful.menu_default_style or arrow_style
-    local ret = base(args)
-
-    ret:connect_signal("parent_geometry::changed", function()
-        args.internal.w:move_by_parent(ret.parent_geometry, "widget")
-    end)
 
     -- Init the style
-    args.style(ret)
+    args.style(data)
 
-    return ret
+    return data
 end
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })

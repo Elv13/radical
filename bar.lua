@@ -8,7 +8,17 @@ local shape      = require( "gears.shape"                     )
 
 local module = {}
 
-local function setup_drawable(data)
+local function new(args)
+    args                         = args                         or {}
+    args.border_width            = args.border_width            or 0
+    args.internal                = args.internal                or {}
+    args.internal.setup_item     = args.internal.setup_item     or common.setup_item
+    args.item_style              = args.item_style              or item_style
+    args.item_layout             = args.item_layout             or item_layout
+    args.sub_menu_on             = args.sub_menu_on             or base.event.BUTTON1
+
+    local data = base(args)
+
     local internal = data._internal
 
     -- Use a background to make the border work
@@ -46,21 +56,8 @@ local function setup_drawable(data)
     end
 
     common.setup_item_move_events(data)
-end
 
-local function new(args)
-    args                         = args                         or {}
-    args.border_width            = args.border_width            or 0
-    args.internal                = args.internal                or {}
-    args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
-    args.internal.setup_item     = args.internal.setup_item     or common.setup_item
-    args.item_style              = args.item_style              or item_style
-    args.item_layout             = args.item_layout             or item_layout
-    args.sub_menu_on             = args.sub_menu_on             or base.event.BUTTON1
-
-    local ret = base(args)
-
-    return ret,ret._internal.widget
+    return data, data._internal.widget
 end
 
 function module.flex(args)

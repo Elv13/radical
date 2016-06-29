@@ -638,8 +638,6 @@ local function new(args)
     end
   end
 
-  data._internal.setup_drawable(data)
-
   return data
 end
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
