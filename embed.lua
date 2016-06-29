@@ -4,7 +4,18 @@ local layout        = require( "radical.layout"        )
 local classic_style = require( "radical.style.classic" )
 local common        = require( "radical.common"        )
 
-local function setup_drawable(data)
+local function new(args)
+    args = args or {}
+    args.internal = args.internal or {}
+    args.internal.setup_item     = args.internal.setup_item or common.setup_item
+    args.style = args.style or classic_style
+    local data = base(args)
+
+    data:connect_signal("clear::menu",function(_,vis)
+        local l = data._internal.content_layout or data._internal.layout
+        l:reset()
+    end)
+
     local internal = data._internal
 
     -- An embeded menu can only be visible if the parent is
@@ -30,21 +41,8 @@ local function setup_drawable(data)
 
     -- Support remove, swap, insert, append...
     common.setup_item_move_events(data)
-end
 
-local function new(args)
-    args = args or {}
-    args.internal = args.internal or {}
-    args.internal.setup_drawable = args.internal.setup_drawable or setup_drawable
-    args.internal.setup_item     = args.internal.setup_item or common.setup_item
-    args.style = args.style or classic_style
-    local ret = base(args)
-    ret:connect_signal("clear::menu",function(_,vis)
-        local l = ret._internal.content_layout or ret._internal.layout
-        l:reset()
-    end)
-
-    return ret
+    return data
 end
 
 return setmetatable({}, { __call = function(_, ...) return new(...) end })
