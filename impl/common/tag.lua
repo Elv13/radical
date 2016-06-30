@@ -56,7 +56,7 @@ function module.layouts(menu,layouts)
         if mod then
           screenSelect[mod[1] == "Shift" and "previous_item" or "next_item"].selected = true
         end
-        awful.layout.set(layouts[screenSelect.current_index] or layouts[1],(capi.client.focus and capi.client.focus.screen).selected_tag)
+        awful.layout.set(layouts[screenSelect.current_index ] or layouts[1], (capi.client.focus and capi.client.focus.screen.selected_tag))
       end, selected = is_current, item_layout = radical.item.layout.icon})
     end
   end
