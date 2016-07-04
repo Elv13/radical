@@ -2,7 +2,6 @@ local setmetatable = setmetatable
 local beautiful    = require( "beautiful"                      )
 local color        = require( "gears.color"                    )
 local wibox        = require( "wibox"                          )
-local checkbox     = require( "radical.widgets.checkbox"       )
 local util         = require( "awful.util"                     )
 local margins2     = require( "radical.margins"                )
 local common       = require( "radical.item.common"            )
@@ -36,7 +35,7 @@ local function icon_draw(self, context, cr, width, height)
 end
 
 local function create_item(item,data,args)
-    local pref, subArrow, ck = nil, nil, nil
+    local pref, subArrow = nil, nil
 
     if data.fkeys_prefix == true then
         pref = wibox.widget.textbox()
@@ -50,7 +49,9 @@ local function create_item(item,data,args)
 
     local icon = common.setup_icon(item,data)
     icon.fit   = function(...) return icon_fit(data,...) end
-    icon.draw  = icon_draw
+    icon.draw  = icon_draw --TODO use a constraint
+
+    local checkbox = common.setup_checked(item,data)
 
     local has_children = item._private_data.sub_menu_f or item._private_data.sub_menu_m
 
@@ -69,24 +70,6 @@ local function create_item(item,data,args)
             return data._internal.layout.item_fit(data,item,box,context, w, h)
         else
             return wibox.container.background.fit(box,context, w,h)
-        end
-    end
-
-    if item.checkable then
-        function item.get_checked(_, i)
-            if type(i._private_data.checked) == "function" then
-                return i._private_data.checked()
-            else
-                return i._private_data.checked
-            end
-        end
-
-        ck = wibox.widget.imagebox()
-        ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
-
-        function item:set_checked(value)
-            item._private_data.checked = value
-            ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
         end
     end
 
@@ -110,7 +93,7 @@ local function create_item(item,data,args)
 
                     -- Widgets
                     subArrow or nil    ,
-                    ck       or nil    ,
+                    checkbox or nil    ,
                     args.suffix_widget                    ,
 
                     -- Attributes

@@ -1,4 +1,5 @@
-local wibox = require( "wibox" )
+local wibox     = require( "wibox"     )
+local beautiful = require( "beautiful" )
 
 local module = {}
 
@@ -45,6 +46,31 @@ function module.setup_fkey(item,data)
     if item._internal.f_key then
         item:set_f_key(item._internal.f_key)
     end
+end
+
+-- Setup the checkbox
+function module.setup_checked(item, data)
+    if item.checkable then
+        item.get_checked = function()
+            if type(item._private_data.checked) == "function" then
+                return item._private_data.checked(data,item)
+            else
+                return item._private_data.checked
+            end
+        end
+
+        local ck = wibox.widget.checkbox(item.checked or false, {
+            style = beautiful.menu_checkbox_style,
+            color = beautiful.fg_normal
+        })
+
+        item.set_checked = function (_,value)
+        item._private_data.checked = value
+        ck.checked = value
+        item._internal.has_changed = true
+        end
+    return ck
+  end
 end
 
 -- Proxy all events to the parent

@@ -1,7 +1,6 @@
 local setmetatable = setmetatable
 local beautiful    = require( "beautiful"                  )
 local wibox        = require( "wibox"                      )
-local checkbox     = require( "radical.widgets.checkbox"   )
 local fkey         = require( "radical.widgets.fkey"       )
 local infoshapes   = require( "radical.widgets.infoshapes" )
 local util         = require( "awful.util"                 )
@@ -11,27 +10,6 @@ local surface      = require( "gears.surface"              )
 local common       = require( "radical.item.common"        )
 
 local module = {}
-
--- Show the checkbox
-function module:setup_checked(item,data)
-  if item.checkable then
-    item.get_checked = function()
-      if type(item._private_data.checked) == "function" then
-        return item._private_data.checked(data,item)
-      else
-        return item._private_data.checked
-      end
-    end
-    local ck = wibox.widget.imagebox()
-    ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
-    item.set_checked = function (_,value)
-      item._private_data.checked = value
-      ck:set_image(item.checked and checkbox.checked() or checkbox.unchecked())
-      item._internal.has_changed = true
-    end
-    return ck
-  end
-end
 
 -- Create sub_menu arrows
 local sub_arrow = nil
@@ -64,6 +42,8 @@ local function create_item(item,data,args)
 
     -- Icon
     local icon = common.setup_icon(item,data)
+
+    local checkbox = common.setup_checked(item,data)
 
     if data.icon_per_state == true then --TODO create an icon widget, see item/common.lua
         item:connect_signal("state::changed",function(i,d,st)
@@ -119,7 +99,7 @@ local function create_item(item,data,args)
                     -- Suffixes
 
                     -- Widget
-                    module:setup_checked(item,data)       ,
+                    checkbox                              ,
                     module:setup_sub_menu_arrow(item,data),
                     args.suffix_widget                    ,
 
