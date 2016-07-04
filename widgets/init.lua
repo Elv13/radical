@@ -1,3 +1,8 @@
+-- Do some evil monkeypatching for upstreamable widgets
+local wibox = require("wibox")
+
+wibox.layout.grid = require("radical.widgets.grid")
+
 return {
     checkbox        = require( "radical.widgets.checkbox"        ),
     scroll          = require( "radical.widgets.scroll"          ),
