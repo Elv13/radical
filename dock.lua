@@ -22,6 +22,8 @@ local default_shape =  function(cr, width, height) shape.partially_rounded_rect(
 local capi,module = { mouse = mouse , screen = screen, keygrabber = keygrabber },{}
 local max_size = {height={},width={}}
 
+local docks = setmetatable({}, {__mode="k"})
+
 -- Compute the optimal maxmimum size
 local function get_max_size(data,screen)
     local dir = "left"
@@ -101,6 +103,10 @@ local function get_wibox(data, screen)
         honor_workarea  = false,
     })
 
+    -- Make sure it is resized
+    docks[screen] = docks[screen] or setmetatable({}, {__mode="v"})
+    table.insert(docks[capi.screen[screen]], data)
+
     return w
 end
 
@@ -161,6 +167,15 @@ local function new(args)
 
     return ret
 end
+
+-- Resize the docks when the stuts (wibars, docked client) change
+capi.screen.connect_signal("property::workarea", function(s)
+    docks[s] = docks[s] or setmetatable({}, {__mode="v"})
+
+    for _, v in ipairs(docks[s]) do
+       adapt_size(v, v._internal.w.width, v._internal.w.height, s)
+    end
+end)
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
 -- kate: space-indent on; indent-width 4; replace-tabs on;
