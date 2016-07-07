@@ -54,13 +54,13 @@ local function adapt_size(data,w,h,screen)
         local wdg_height = data.widget_fit_height_sum
         --TODO this assume the widget size wont change
 
-        data.item_height   = math.ceil((max-wdg_height)/visible_item)
+        data.item_height   = math.floor((max-wdg_height)/visible_item)
         data.item_width    = data.item_height
         data.default_width = data.item_width
 
     elseif orientation == "horizontal" and w > max then
         --TODO merge this with above
-        data.item_width = math.ceil((data.item_height*max)/w)
+        data.item_width = math.floor((data.item_height*max)/w)
         h = data.item_width
         data.item_height  = h
     end
