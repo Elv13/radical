@@ -30,7 +30,7 @@ local function get_cell_sizes(self, context, orig_width, orig_height)
         for col_idx, v in ipairs(row) do
             local w, h = base.fit_widget(self, context, v, width, height)
             max_col[col_idx] = math.max(max_col[col_idx] or 0, w)
-            max_row[row_idx] = math.max(max_col[row_idx] or 0, h)
+            max_row[row_idx] = math.max(max_row[row_idx] or 0, h)
             max_h = math.max(max_h, h)
         end
         height = height - max_h
@@ -72,7 +72,7 @@ end
 local function get_next_empty(self, row, column)
     row, column = row or 1, column or 1
     local cc = self._private.column_count
-    for i = column, math.huge do
+    for i = row, math.huge do
         local r = self._private.rows[i]
 
         if not r then
@@ -81,7 +81,7 @@ local function get_next_empty(self, row, column)
             self._private.row_count = i
         end
 
-        for j = row, cc do
+        for j = column, cc do
             if not r[j] then
                 return i, j
             end
@@ -114,6 +114,20 @@ function grid:add(...)
     self:emit_signal("widget::layout_changed")
 end
 
+function grid:set_cell_widget(row, column, widget)
+    if row < self._private.row_count then
+        grid:set_row_count(row)
+    end
+
+    if column < self._private.column_count then
+        grid:set_column_count(column)
+    end
+
+    self._private.rows[row] = self._private.rows[row] or {}
+
+    self:emit_signal("widget::layout_changed")
+end
+
 function grid:set_row_count(count)
     self._private.row_count = count
 end
@@ -124,7 +138,7 @@ end
 
 --- Re-pack all the widget according to the current `row_count` and `column_count`.
 function grid:reflow()
-    
+    --TODO
     self:emit_signal("widget::layout_changed")
 end
 
