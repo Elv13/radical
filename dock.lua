@@ -80,7 +80,7 @@ local function get_wibox(data, screen)
 
     local w = smart_wibox(data._internal.margin, {
         screen             = screen                                         ,
-        ontop              = true                                           ,
+        ontop              = not beautiful.dock_always_show                 ,
         shape              = beautiful.dock_shape or default_shape          ,
         shape_border_width = 1                                              ,
         shape_border_color = color(data.border_color or data.fg            ),
@@ -129,6 +129,7 @@ local function new(args)
     args.layout               = args.layout or args.internal.layout_func
     args.item_style           = args.item_style
     args.item_layout          = args.item_layout or item_layout
+    args.icon_per_state       = beautiful.dock_icon_per_state or args.icon_per_state or false
     args[length_inv]          = args[length_inv] or 40
 
     -- Create the dock
