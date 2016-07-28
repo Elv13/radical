@@ -45,14 +45,6 @@ local function create_item(item,data,args)
 
     local checkbox = common.setup_checked(item,data)
 
-    if data.icon_per_state == true then --TODO create an icon widget, see item/common.lua
-        item:connect_signal("state::changed",function(i,d,st)
-            if item._original_icon and data.icon_transformation then
-                wibox.widget.imagebox.set_image(icon,data.icon_transformation(item._original_icon,data,item))
-            end
-        end)
-    end
-
     -- Define the item layout
     item.widget = wibox.widget.base.make_widget_declarative {
         -- Widgets
