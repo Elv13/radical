@@ -42,7 +42,8 @@ end
 local function get_extents(text, height)
     local l = init_pango(height)
     l.text = text or ""
-    return l:get_pixel_extents()
+    local _, ex = l:get_pixel_extents()
+    return ex
 end
 
 local function get_group_extents(self, group, height)
@@ -85,16 +86,17 @@ local function draw_shape(self, cr, width, height, infoshape)
     end
 
     -- The background
-    local bg = infoshape.bg or self._bg or beautiful.infoshape_shape_bg or beautiful.bg_focus
+    local bg = infoshape.bg or self.bg or beautiful.infoshape_shape_bg or beautiful.bg_focus
     cr:set_source(color(bg))
 
     -- The text
-    local fg = infoshape.fg or self._bg or beautiful.infoshape_shape_fg-- or "#ff0000"
+    local fg = infoshape.fg or self.fg or beautiful.infoshape_shape_fg-- or "#ff0000"
 
     local l = init_pango(height)
+
     if fg then
         cr:fill()
-        cr:translate(height, 0)
+        cr:translate(height, extents.y - (height-extents.height)/2)
         cr:set_source(color(fg))
         cr:show_layout(l)
     else
@@ -105,7 +107,7 @@ local function draw_shape(self, cr, width, height, infoshape)
         local cr3 = cairo.Context(img)
         cr3:set_source_rgba(1,1,0,1)
         cr3:paint_with_alpha(infoshape.alpha or 1)
-        cr3:translate(height, 0)
+        cr3:translate(height, extents.y)
         cr3:layout_path(l)
         cr3:set_operator(cairo.Operator.CLEAR)
         cr3:fill()
@@ -301,9 +303,8 @@ function infoshape:set_bg(col)
     
 end
 
-function infoshape:set_fg(col)
-    
-end
+-- function infoshape:set_fg(col)
+-- end
 
 --- Set the expand mode.
 -- Valid modes are:
