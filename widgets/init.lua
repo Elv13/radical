@@ -3,6 +3,7 @@ local wibox = require("wibox")
 
 wibox.layout.grid     = require( "radical.widgets.grid"     )
 wibox.widget.checkbox = require( "radical.widgets.checkbox" )
+wibox.widget.slider   = require( "radical.widgets.slider"   )
 
 return {
     checkbox        = require( "radical.widgets.checkbox"        ),
