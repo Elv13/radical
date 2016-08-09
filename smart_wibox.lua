@@ -71,9 +71,13 @@ function main_widget:layout(context, width, height)
     if self.widget then
         local w, h = wibox.widget.base.fit_widget(self, context, self.widget, 9999, 9999)
         glib.idle_add(glib.PRIORITY_HIGH_IDLE, function()
+            local prev_geo = self._wb:geometry()
             self._wb.width  = math.ceil(w or 1)
             self._wb.height = math.ceil(h or 1)
-            set_position(self._wb)
+
+            if self._wb.width ~= prev_geo.width and self._wb.height ~= prev_geo.height then
+                set_position(self._wb)
+            end
         end)
         return { wibox.widget.base.place_widget_at(self.widget, 0, 0, width, height) }
     end
