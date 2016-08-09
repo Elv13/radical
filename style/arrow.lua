@@ -130,7 +130,7 @@ local function draw(data)
 
         data._internal.w:connect_signal("property::direction", function(_, dir)
             data.direction = dir
-            data._internal.w:set_shape(function(cr, w, h) draw_roundedrect_path(cr, w, h, radius, data, dir) end)
+            data._internal.w:set_shape(function(cr, w, h) draw_roundedrect_path(cr, w, h, data.radius or radius, data, dir) end)
             update_margins(data, dir)
         end)
 
