@@ -59,6 +59,7 @@ local function new(args)
     -- Accessors
     data.get_wibox       = function() return internal.w                    end
     data.get_visible     = function() return internal.private_data.visible end
+    data.get_screen      = function() return internal.w.screen             end
     data.get_margins     = common.get_margins
     internal.set_visible = set_visible
 
