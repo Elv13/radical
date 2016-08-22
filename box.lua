@@ -17,6 +17,17 @@ local function new(args)
 
   w.placement = placement.centered
 
+  if args.screen then
+    w.screen = args.screen
+  end
+
+  local s = w.screen
+  w:connect_signal("property::geometry", function()
+    if w.screen ~= s then
+      w:move_by_parent()
+    end
+  end)
+
   return ret
 end
 
