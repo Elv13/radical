@@ -137,10 +137,19 @@ local function new(args)
 
   local scr = capi.client.focus and capi.client.focus.screen or capi.mouse.screen
   local t,auto_release = scr.selected_tag,args.auto_release
-  local currentMenu = radical.box({filter = true, show_filter=not auto_release, autodiscard = true,
-    disable_markup=true,fkeys_prefix=not auto_release,width=(((capi.screen[scr]).geometry.width)/2),
-    icon_transformation = beautiful.alttab_icon_transformation,filter_underlay="Use [Shift] and [Control] to toggle clients",filter_underlay_color=beautiful.menu_bg_normal,
-    filter_placeholder="<span fgcolor='".. (beautiful.menu_fg_disabled or beautiful.fg_disabled or "#777777") .."'>Type to filter</span>"})
+  local currentMenu = radical.box {
+    screen                = scr,
+    filter                = true,
+    show_filter           = not auto_release,
+    autodiscard           = true,
+    disable_markup        = true,
+    fkeys_prefix          = not auto_release,
+    width                 = (((capi.screen[scr]).geometry.width)/2),
+    icon_transformation   =  beautiful.alttab_icon_transformation,
+    filter_underlay       = "Use [Shift] and [Control] to toggle clients",
+    filter_underlay_color = beautiful.menu_bg_normal,
+    filter_placeholder    = "<span fgcolor='".. (beautiful.menu_fg_disabled or beautiful.fg_disabled or "#777777") .."'>Type to filter</span>"
+  }
 
   currentMenu.margins.top = currentMenu.border_width
   currentMenu.margins.bottom = currentMenu.border_width
