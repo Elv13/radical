@@ -558,21 +558,15 @@ local function new(args)
         break
       end
     end
-    if idx1 then
---       if idx < idx1 then
---         idx = idx + 1
---       end
-      if idx1 > #internal.items + 1 then
-        idx1 = #internal.items + 1
+    if idx1 and idx ~= idx1 then
+      table.remove(internal.items,idx1)
+      table.insert(internal.items,idx, item)
+
+      for i=math.min(idx,idx1), idx1 > idx and idx1 or #internal.items do
+        internal.items[i].index = i
       end
-      if idx ~= idx1 then
-        table.insert(internal.items,idx1,table.remove(internal.items,idx))
-        item.index = idx
-        data:emit_signal("item::moved",item,idx,idx1)
-        for i=idx,idx1 do
-          internal.items[i].index = i
-        end
-      end
+
+      data:emit_signal("item::moved",item,idx,idx1)
     end
   end
 
