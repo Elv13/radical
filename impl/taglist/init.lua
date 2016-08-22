@@ -15,8 +15,8 @@ local wibox     = require( "wibox"        )
 local awful     = require( "awful"        )
 local theme     = require( "radical.theme")
 local surface   = require( "gears.surface" )
-local tracker   = require( "radical.impl.taglist.tracker" )
 local tag_menu  = require( "radical.impl.taglist.tag_menu" )
+local timer = require("gears.timer")
 
 local HIGHLIGHTED = -2
 local EMPTY       = 412345
@@ -92,6 +92,25 @@ local function create_item(t,s)
   end
   item.add_prefix = function(_,w2)
     w:add(w2)
+  end
+
+  if not beautiful.taglist_disable_index then
+      item:connect_signal("index::changed", function()
+                          print("INDEX", item.index, table.concat {
+                    (menu.index_prefix or " <b>#"),
+                    (item.index or 00),
+                    (menu.index_suffix or "</b>: ")
+                })
+        if item.tw then
+            item.tw:set_markup(
+                table.concat {
+                    (menu.index_prefix or " <b>#"),
+                    (item.index or 00),
+                    (menu.index_suffix or "</b>: ")
+                }
+            )
+        end
+    end)
   end
 
   -- Redraw the icon when necessary
@@ -239,8 +258,6 @@ end
 
 local function new(s)
 
-  local track = tracker(s)
-
   local args = {
     item_style = beautiful.taglist_item_style or radical.item.style.arrow_prefix,
     style      = beautiful.taglist_style,
@@ -284,21 +301,43 @@ local function new(s)
   end)
 
   init()
-  track:reload()
+
   return instances[capi.screen[s]]
 end
 
+local delayed_reflow = {}
+
+local function force_reflow(s)
+    if not delayed_reflow[s] then
+        timer.delayed_call(function()
+            delayed_reflow[s] = false
+            local tags = capi.screen[s].tags
+            local menu = instances[capi.screen[s]]
+--                           print("\n\nHERE!")
+            if menu then
+                for i, t in ipairs(tags) do
+                    local item = cache[t]
+                    -- It is possible that the items hasn't been created yet
+                    if item then
+--                           print("ITEM", t.name, i)
+                        menu:move(item,i)
+                    end
+                end
+            end
+        end)
+        delayed_reflow[s] = true
+    end
+end
+
 capi.tag.connect_signal("property::selected" , select)
-capi.tag.connect_signal("property::index2",function(t,i)
+capi.tag.connect_signal("property::index",function(t)
   if t and not beautiful.taglist_disable_index then
+    local i = t.index
     local s = t.screen
     local item = cache[t]
     if item then
       local menu = instances[capi.screen[s]]
-      menu:move(item,i)
-      if item.tw then
-        item.tw:set_markup((menu.index_prefix or " <b>#")..(i)..(menu.index_suffix or "</b>: "))
-      end
+      force_reflow(s)
     end
   end
 end)
@@ -318,4 +357,4 @@ end
 
 
 return setmetatable(module, { __call = function(_, ...) return new(...) end })
--- kate: space-indent on; indent-width 2; replace-tabs on;
+-- kate: space-indent on; indent-width 4; replace-tabs on;
