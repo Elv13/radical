@@ -86,6 +86,7 @@ local function get_wibox(data, screen)
         shape_border_color = color(data.border_color or data.fg            ),
         bg                 = color(beautiful.bg_dock or beautiful.bg_normal),
         placement          = false                                          ,
+        type               = "dock"                                         ,
     })
 
 
