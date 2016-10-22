@@ -353,7 +353,6 @@ Radical also use the some of the same theme options as awful.menu, plus some:
 | menu_corner_radius           | Arrow based menu corner radius         | Number (default = 10)     |
 | dock_corner_radius           | The dock menu type corner radius       | Number (default 10)       |
 | menu_outline_color           | Arrow menu outer border color          | String/Gradient/Pattern   |
-| menu_checkbox_style          | The style used for checkboxes          | "holo" or "default"       |
 
 
 Styling can also be done using the icon_transformation option. This feature

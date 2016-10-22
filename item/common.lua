@@ -1,6 +1,5 @@
 local wibox     = require( "wibox"     )
 local beautiful = require( "beautiful" )
-
 local module = {}
 
 -- Apply icon transformation
@@ -59,26 +58,17 @@ end
 -- Setup the checkbox
 function module.setup_checked(item, data)
     if item.checkable then
+        local ck = wibox.widget.checkbox(item.checked or false)
+
+        item.set_checked = function(_,value)
+            ck.checked = value
+        end
         item.get_checked = function()
-            if type(item._private_data.checked) == "function" then
-                return item._private_data.checked(data,item)
-            else
-                return item._private_data.checked
-            end
+            return ck.checked
         end
 
-        local ck = wibox.widget.checkbox(item.checked or false, {
-            style = beautiful.menu_checkbox_style,
-            color = beautiful.fg_normal
-        })
-
-        item.set_checked = function (_,value)
-        item._private_data.checked = value
-        ck.checked = value
-        item._internal.has_changed = true
-        end
-    return ck
-  end
+        return ck
+    end
 end
 
 -- Proxy all events to the parent
