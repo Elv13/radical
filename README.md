@@ -8,6 +8,13 @@ unified interface to generate multiple types of menus.
 
 [![Too many menus](https://raw.github.com/Elv13/radical/master/screenshot/all.png)](https://raw.github.com/Elv13/radical/master/screenshot/all.png)
 
+## News
+
+### December 2016
+
+This module master branch is now for Awesome 4.0+. If you use Awesome 3.5,
+please use the `awesome3.5` branch.
+
 ## Installation
 
 Installing Radical is simple, just move to ~/.config/awesome and clone the
