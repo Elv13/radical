@@ -94,6 +94,7 @@ function module.setup_colors(data,args)
       priv["bg_"..k] = args["bg_"..k] or beautiful["menu_bg_"..v.beautiful_name] or beautiful["bg_"..v.beautiful_name] or (v.fallback and beautiful.bg_normal)
       priv["bgimage_"..k] = args["bgimage_"..k] or beautiful["menu_bgimage_"..v.beautiful_name] or beautiful["bgimage_"..v.beautiful_name]
       priv["border_color_"..k] = args["border_color_"..k]
+        or args["item_border_color"] or args["border_color"]
         or beautiful["menu_border_color_"..v.beautiful_name]
         or beautiful["border_color_"..v.beautiful_name]
         or (v.fallback and beautiful.border_color)

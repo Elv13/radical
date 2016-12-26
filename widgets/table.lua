@@ -49,11 +49,16 @@ end
 local function new(content,args)
   args = args or {}
   local cols = 0
+  local row_count = args.row_count or #content
+
   for k,v in ipairs(content) do
     if #v > cols then
       cols = #v
     end
   end
+
+  local col_count = math.max(args.column_count or 0, cols)
+
   local main_l = wibox.layout.fixed.vertical()
 
   main_l.fit = function(self,context,width,height)
@@ -87,4 +92,4 @@ local function new(content,args)
 end
 
 return setmetatable({}, { __call = function(_, ...) return new(...) end })
--- kate: space-indent on; indent-width 2; replace-tabs on;
+-- kate: space-indent on; indent-width 4; replace-tabs on;
