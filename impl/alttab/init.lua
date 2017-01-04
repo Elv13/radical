@@ -232,9 +232,9 @@ local function new(args)
       checkable     = (not auto_release) and v.screen == scr,
       checked       = v.screen == scr and (not auto_release and is_in_tag(t,v)) or nil,
       button1       = function(a,b,c,d,no_hide)
-        if t and t.selected == false and not util.table.hasitem(v:tags(),capi.screen[v.screen].selected_tag) then
+        if v and not v:isvisible() then
           lock_history = true
-          tag.viewonly(t)
+          v:jump_to()
           lock_history = false
         end
         capi.client.focus = v
