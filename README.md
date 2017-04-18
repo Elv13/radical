@@ -209,7 +209,7 @@ Multiple items can have multiple sets of options.
 | default_item_margins| Default margins for items ({left=1,right=1...})    | array of direction            |
 | default_margins     | Default margins for the menu ({left=1,right=1...}) | array of direction            |
 
-###Item options
+### Item options
 
 |      Name      |                 Description                  |        Type        |
 | -------------- | -------------------------------------------- | ------------------ |
@@ -235,7 +235,7 @@ Multiple items can have multiple sets of options.
 | infoshapes     | See the infoshapes widget documentation      | array of infoshapes|
 | overlay_draw   | Draw a custom painter on top of the item     | draw function      |
 
-###Colors options
+### Colors options
 
 The colors option are available for both menus and items objects.
 
@@ -264,7 +264,7 @@ The colors option are available for both menus and items objects.
 | bg_highlight | theme.state.HIGHLIGHT | The item is hightlighted                      |
 | fg_highlight | theme.state.HIGHLIGHT | The item is hightlighted                      |
 
-###Common methods
+### Common methods
 
 All menus provide a bunch of methods. Most of them have been coverred above, but
 here is the list:
@@ -292,7 +292,7 @@ here is the list:
 | add_colors_group     | Add a new color group (see below for details)| the group name        |  ---   |
 
 
-###Signals
+### Signals
 
 Menu also emit many signals, the syntax is usually `PROPERTY_NAME::changed`.
 Some others are `item::moved`, `item::swapped`, `item::removed`, `item::appended`
@@ -338,7 +338,7 @@ An example of how to use them:
     end)
 ```
 
-###Beautiful options
+### Beautiful options
 
 Radical also use the some of the same theme options as awful.menu, plus some:
 
