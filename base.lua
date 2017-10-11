@@ -4,10 +4,13 @@ local table        = table
 local beautiful    = require( "beautiful"               )
 local util         = require( "awful.util"              )
 local aw_key       = require( "awful.key"               )
+local aw_mouse     = require( "awful.mouse"             )
+local aw_screen    = require( "awful.screen"            )
 local object       = require( "radical.object"          )
 local theme        = require( "radical.theme"           )
 local item_mod     = require( "radical.item"            )
 local common       = require( "radical.common"          )
+local matrix       = require( "gears.matrix"            )
 
 local capi = { mouse = mouse, screen = screen , keygrabber = keygrabber, root=root, }
 
@@ -317,6 +320,29 @@ local function add_key_binding(data,mod,key,func)
 end
 
 
+---------------------------------WIDGET GEOMETRY--------------------------------
+
+-- adapted from wibox.drawable.find_widgets:
+local function _get_widget_geometry(_hierarchy, widget)
+    local width, height = _hierarchy:get_size()
+    if _hierarchy:get_widget() == widget then
+        -- Get the extents of this widget in the device space
+        local x, y, w, h = matrix.transform_rectangle(
+            _hierarchy:get_matrix_to_device(),
+            0, 0, width, height)
+        return { x = x, y = y, width = w, height = h, hierarchy = _hierarchy }
+    end
+    for _, child in ipairs(_hierarchy:get_children()) do
+        local ret = _get_widget_geometry(child, widget)
+        if ret then return ret end
+    end
+end
+
+local function get_widget_geometry(wibox, widget)
+    return _get_widget_geometry(wibox._drawable._widget_hierarchy, widget)
+end
+
+
 ---------------------------------MENU HANDLING----------------------------------
 local function new(args)
   args = args or {}
@@ -618,6 +644,31 @@ local function new(args)
       filter(data)
 
     end
+  end
+
+  function data:show(args)
+    local mode = args.mode or "widget"
+    local geometry = args.geometry
+    local widget = args.widget
+    local wibox = args.wibox
+    local show = args.show ~= false   -- default to true if unspecified (nil)
+
+    if not geometry then
+      if widget then
+        -- In general, you have to provide the wibox argument. However, we can
+        -- do some lucky guesses if you use something close to the default
+        -- rc.lua of awesome 4.0:
+        wibox = wibox or aw_screen.focused().mywibox  -- must be set in rc.lua
+        wibox = wibox or aw_mouse.get_current_wibox() -- wibox is under cursor
+        geometry = get_widget_geometry(wibox, widget)
+      else
+        geometry = aw_mouse.object.get_current_widget_geometry()
+      end
+    end
+
+    self.parent_geometry = geometry
+    self._internal.w:move_by_parent(geometry, mode or "widget")
+    self.visible = show
   end
 
   function data:hide()
