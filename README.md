@@ -52,7 +52,7 @@ The most simple kind of menus, contexts one, can be created like this:
     
     -- To add the menu to a widget:
     local mytextbox = wibox.widget.textbox()
-    mytextbox:set_menu(menu, "button:pressed", 3) -- 3 = right mouse button, 1 = left mouse button
+    mytextbox:set_menu(menu, "button::pressed", 3) -- 3 = right mouse button, 1 = left mouse button
     
     -- To add a key binding on a "box" menu (and every other types)
     menu:add_key_binding({"Mod4"},",")
