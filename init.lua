@@ -46,6 +46,7 @@ local function set_menu(self,menu, event, button_id, mode)
         return
       end
       m = menu(self)
+      self._tmp_menu = m
     end
     if not m then return end
 
