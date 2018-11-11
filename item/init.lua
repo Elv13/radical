@@ -196,6 +196,11 @@ local function new_item(data,args)
     item_style(item)
   end
 
+  function item:set_font(f)
+    local text_w = item._internal.text_w
+    text_w:set_font(f)
+  end
+
   function item:set_text(text)
     local text_w = item._internal.text_w
     if not text_w then return end

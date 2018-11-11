@@ -235,6 +235,7 @@ Multiple items can have multiple sets of options.
 | margins        | Read/Write table (left,right,top and bottom) | dynamic table      |
 | infoshapes     | See the infoshapes widget documentation      | array of infoshapes|
 | overlay_draw   | Draw a custom painter on top of the item     | draw function      |
+| font           | Set a custom font                            | font_string        |
 
 ### Colors options
 
