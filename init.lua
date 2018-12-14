@@ -50,10 +50,7 @@ local function set_menu(self,menu, event, button_id, mode)
     end
     if not m then return end
 
-    m.parent_geometry = geo
-    m._internal.w:move_by_parent(geo, mode)
-
-    m.visible = not m.visible
+    m:show{ geometry=geo, mode=mode, show=not m.visible }
   end
 
   if event == "button::pressed" then

@@ -71,6 +71,28 @@ menu. The second and third parameters are not mandatory, the defaults are
 parameter. However, it wont correctly place "context" menu as it have no idea
 where you expect them. It work better with "box" menus.
 
+You can also show a menu from your own `buttons` callback, like so:
+
+```lua
+    widget:buttons(awful.util.table.join(
+        awful.button({}, 3, function(geometry)
+            menu:show{ geometry=geometry, show=not menu.visible }
+        end),
+    ))
+```
+
+If you want to manually show a menu from a point where you do not have direct
+access to the widget geometry, you have to provide the wibox in which the
+widget resides:
+
+```lua
+    menu:show{ wibox=wibox, widget=widget }
+```
+
+If you don't provide the `wibox`, radical will try to guess one but this may
+very well fail.
+
+
 ### Menu types
 
 The current valid types are:
